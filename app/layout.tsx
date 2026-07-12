@@ -8,21 +8,9 @@ export const metadata: Metadata = {
   description: 'Complete IPO management solution for SME companies',
   generator: 'v0.app',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: [{ url: '/brands/gff-2026.webp', type: 'image/webp' }],
+    shortcut: '/brands/gff-2026.webp',
+    apple: '/brands/gff-2026.webp',
   },
 }
 
