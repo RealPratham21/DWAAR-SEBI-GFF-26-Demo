@@ -1,22 +1,28 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
-import { AuthProvider, CompanyProvider, QuestionnaireProvider, DocumentsProvider } from '@/lib/contexts'
 
 export const metadata: Metadata = {
-  title: 'Dwaar - SEBI SME IPO Portal',
-  description: 'Complete IPO management solution for SME companies',
+  title: 'Dwaar - DRHP Preparation Platform',
+  description: 'AI-powered platform for IPO-ready DRHP preparation',
   generator: 'v0.app',
   icons: {
-    icon: [{ url: '/brands/gff-2026.webp', type: 'image/webp' }],
-    shortcut: '/brands/gff-2026.webp',
-    apple: '/brands/gff-2026.webp',
+    icon: [
+      {
+        url: '/icon-light-32x32.png',
+      },
+      {
+        url: '/icon.svg',
+        type: 'image/svg+xml',
+      },
+    ],
+    apple: '/apple-icon.png',
   },
 }
 
 export const viewport: Viewport = {
   colorScheme: 'light',
-  themeColor: '#24156f',
+  themeColor: 'white',
 }
 
 export default function RootLayout({
@@ -26,16 +32,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="bg-background">
-      <body className="antialiased">
-        <AuthProvider>
-          <CompanyProvider>
-            <QuestionnaireProvider>
-              <DocumentsProvider>
-                {children}
-              </DocumentsProvider>
-            </QuestionnaireProvider>
-          </CompanyProvider>
-        </AuthProvider>
+      <body className="antialiased bg-background text-foreground">
+        {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
