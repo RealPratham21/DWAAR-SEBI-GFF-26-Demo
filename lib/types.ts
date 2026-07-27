@@ -1,98 +1,86 @@
-// Auth types
-export interface User {
+export type StatusType = 'not-started' | 'in-progress' | 'pending-review' | 'approved' | 'blocked';
+
+export type SeverityType = 'critical' | 'high' | 'medium' | 'low';
+
+export type VerificationStatus = 'unverified' | 'pending' | 'verified' | 'pending-update';
+
+export type UserRole = 'sme' | 'merchant-banker';
+
+export type DRHPPhase = 'establish' | 'core-disclosures' | 'due-diligence' | 'filing';
+
+export interface Company {
   id: string;
-  email: string;
-  companyName?: string;
-  isAdmin?: boolean;
-}
-
-// Company Profile types
-export interface CompanyProfile {
-  companyName: string;
-  registrationNumber: string;
+  name: string;
+  cin: string;
+  registeredOffice: string;
+  website?: string;
   sector: string;
-  businessDescription: string;
-  yearOfIncorporation: number;
-  promotersNames: string;
-  boardMembers: string;
-  keyFinancials: {
-    turnover: number;
-    profitAfterTax: number;
-    totalAssets: number;
-    year: number;
-  };
 }
 
-// Questionnaire types
-export interface QuestionnaireAnswer {
-  questionId: string;
-  sectionId: string;
-  answer: string | string[] | number | boolean;
-  completed: boolean;
+export interface Workstream {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  completionPercentage: number;
+  evidenceCoverage: number;
+  openIssuesCount: number;
+  status: StatusType;
+  subsections?: string[];
+  phase: DRHPPhase;
 }
 
-export interface QuestionnaireSection {
+export interface DRHPSection {
   id: string;
   title: string;
-  description?: string;
-  questions: Question[];
-  completedQuestions: number;
+  description: string;
+  status: StatusType;
+  evidenceCoverage: number;
+  openGaps: string[];
 }
 
-export interface Question {
-  id: string;
-  sectionId: string;
-  question: string;
-  type: "text" | "textarea" | "number" | "select" | "checkbox" | "radio" | "date";
-  options?: string[];
-  required: boolean;
-  placeholder?: string;
-}
-
-// Document types
 export interface Document {
   id: string;
   name: string;
-  type: string;
   category: string;
-  uploadedAt: string;
-  status: "pending" | "approved" | "rejected";
-  fileSize?: number;
+  status: StatusType;
+  uploadedDate: string;
+  fileSize: string;
+  url?: string;
 }
 
-// DRHP types
-export interface DRHPContent {
-  companyInfo: Partial<CompanyProfile>;
-  questionnaireSummary: Record<string, any>;
-  documentsUploaded: string[];
-  generatedAt: string;
-  completionPercentage: number;
-  gaps: GapItem[];
-}
-
-export interface GapItem {
-  section: string;
-  gap: string;
-  severity: "critical" | "high" | "medium" | "low";
-  recommendation: string;
-}
-
-// Admin Dashboard types
-export interface AdminStats {
-  totalApplications: number;
-  completedApplications: number;
-  pendingReview: number;
-  rejectedApplications: number;
-  averageCompletionTime: number; // in days
-}
-
-export interface ApplicationReview {
+export interface Fact {
   id: string;
-  companyName: string;
-  sector: string;
-  completionPercentage: number;
-  status: "draft" | "submitted" | "under_review" | "approved" | "rejected";
-  submittedAt?: string;
-  reviewer?: string;
-  comments?: string;
+  fact: string;
+  value: string;
+  source: string;
+  verificationStatus: VerificationStatus;
+  drwhUses: string[];
+}
+
+export interface IssueCard {
+  id: string;
+  severity: SeverityType;
+  workstream: string;
+  description: string;
+  status: StatusType;
+  relatedFacts?: string[];
+  evidence?: string;
+}
+
+export interface ActionItem {
+  id: string;
+  title: string;
+  workstream: string;
+  dueDate?: string;
+  priority: 'high' | 'medium' | 'low';
+}
+
+export interface ReviewComment {
+  id: string;
+  drhpSection: string;
+  author: string;
+  comment: string;
+  timestamp: string;
+  status: 'open' | 'resolved';
 }
