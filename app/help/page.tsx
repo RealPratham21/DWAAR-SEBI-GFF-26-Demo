@@ -117,7 +117,7 @@ export default function HelpPage() {
                     },
                     {
                       q: 'What documents do I need to upload?',
-                      a: 'You'll need incorporation certificates, financial statements, board resolutions, director IDs, and other regulatory documents specific to your business.',
+                      a: "You'll need incorporation certificates, financial statements, board resolutions, director IDs, and other regulatory documents specific to your business.",
                     },
                     {
                       q: 'Is my data secure in Dwaar?',
