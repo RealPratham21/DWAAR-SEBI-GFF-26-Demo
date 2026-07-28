@@ -193,9 +193,12 @@ After startup:
 ```bash
 docker compose up --build
 docker compose up -d
+docker compose logs -f migrate
 docker compose logs -f backend
 docker compose logs -f frontend
 docker compose exec backend bash
+docker compose exec backend uv run alembic current
+docker compose exec backend uv run alembic heads
 docker compose exec db psql -U dwaar -d dwaar
 docker compose down
 docker compose down -v
