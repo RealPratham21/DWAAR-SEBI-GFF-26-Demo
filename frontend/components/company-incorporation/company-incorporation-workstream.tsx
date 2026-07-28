@@ -1,9 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PageHeader } from '@/components/page-header';
+import { CompanyIncorporationDisclosuresTab } from '@/components/company-incorporation/company-incorporation-disclosures-tab';
+import { CompanyIncorporationDocumentsTab } from '@/components/company-incorporation/company-incorporation-documents-tab';
+import { CompanyIncorporationFactsTab } from '@/components/company-incorporation/company-incorporation-facts-tab';
 import { CompanyIncorporationInformationTab } from '@/components/company-incorporation/company-incorporation-information-tab';
-import { WorkstreamTabPlaceholder } from '@/components/company-incorporation/workstream-tab-placeholder';
+import { CompanyIncorporationOverviewTab } from '@/components/company-incorporation/company-incorporation-overview-tab';
+import { CompanyIncorporationQuestionsTab } from '@/components/company-incorporation/company-incorporation-questions-tab';
+import { CompanyIncorporationReviewTab } from '@/components/company-incorporation/company-incorporation-review-tab';
 import { CompanyIncorporationProvider } from '@/lib/company-incorporation/context';
 import type { Workstream } from '@/lib/types';
 import {
@@ -18,6 +23,16 @@ interface CompanyIncorporationWorkstreamProps {
 
 export function CompanyIncorporationWorkstream({ workstream }: CompanyIncorporationWorkstreamProps) {
   const [activeTab, setActiveTab] = useState<WorkstreamTabId>('information');
+  const mainScrollRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    mainScrollRef.current = document.querySelector('main');
+  }, []);
+
+  const handleTabChange = (tabId: WorkstreamTabId) => {
+    setActiveTab(tabId);
+    mainScrollRef.current?.scrollTo({ top: 0 });
+  };
 
   return (
     <CompanyIncorporationProvider>
@@ -38,7 +53,7 @@ export function CompanyIncorporationWorkstream({ workstream }: CompanyIncorporat
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={cn(
                   'px-4 py-3 border-b-2 whitespace-nowrap font-medium text-sm transition-colors',
                   activeTab === tab.id
@@ -53,48 +68,22 @@ export function CompanyIncorporationWorkstream({ workstream }: CompanyIncorporat
         </div>
 
         {activeTab === 'overview' ? (
-          <WorkstreamTabPlaceholder
-            title="Overview"
-            description="A structured summary of this workstream will appear here once section information has been saved and review workflows are connected."
+          <CompanyIncorporationOverviewTab
+            onContinueToInformation={() => handleTabChange('information')}
           />
         ) : null}
 
         {activeTab === 'information' ? <CompanyIncorporationInformationTab /> : null}
 
-        {activeTab === 'documents' ? (
-          <WorkstreamTabPlaceholder
-            title="Documents"
-            description="Document upload, categorisation, and evidence linking for this workstream will be added in a later release."
-          />
-        ) : null}
+        {activeTab === 'documents' ? <CompanyIncorporationDocumentsTab /> : null}
 
-        {activeTab === 'questions' ? (
-          <WorkstreamTabPlaceholder
-            title="Questions & Conflicts"
-            description="Reviewer questions and detected information conflicts will be managed here once professional review workflows are connected."
-          />
-        ) : null}
+        {activeTab === 'questions' ? <CompanyIncorporationQuestionsTab /> : null}
 
-        {activeTab === 'facts' ? (
-          <WorkstreamTabPlaceholder
-            title="Facts & Evidence"
-            description="Extracted facts and supporting evidence references will appear here once document processing is connected."
-          />
-        ) : null}
+        {activeTab === 'facts' ? <CompanyIncorporationFactsTab /> : null}
 
-        {activeTab === 'disclosures' ? (
-          <WorkstreamTabPlaceholder
-            title="Generated Disclosures"
-            description="Draft DRHP disclosure text generated from verified information will be available here in a later release."
-          />
-        ) : null}
+        {activeTab === 'disclosures' ? <CompanyIncorporationDisclosuresTab /> : null}
 
-        {activeTab === 'review' ? (
-          <WorkstreamTabPlaceholder
-            title="Review History"
-            description="Merchant banker and legal review comments will be tracked here once review workflows are connected."
-          />
-        ) : null}
+        {activeTab === 'review' ? <CompanyIncorporationReviewTab /> : null}
       </div>
     </CompanyIncorporationProvider>
   );

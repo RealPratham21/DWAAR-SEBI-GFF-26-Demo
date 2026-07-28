@@ -156,6 +156,55 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Local Docker Development
+
+Run the frontend, backend, and PostgreSQL together with Docker Compose.
+
+### Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine with Compose v2)
+
+### 1. Configure environment variables
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` if needed. Do not commit `.env`.
+
+### 2. Start the stack
+
+```bash
+docker compose up --build
+```
+
+After startup:
+
+| Service | URL |
+| --- | --- |
+| Frontend | http://localhost:3000 |
+| Backend | http://localhost:8000 |
+| Swagger | http://localhost:8000/docs |
+| ReDoc | http://localhost:8000/redoc |
+| PostgreSQL | localhost:5432 |
+
+### Useful Docker commands
+
+```bash
+docker compose up --build
+docker compose up -d
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose exec backend bash
+docker compose exec db psql -U dwaar -d dwaar
+docker compose down
+docker compose down -v
+```
+
+**Warning:** `docker compose down -v` deletes the named PostgreSQL volume and all local database data. Use it only when you intentionally want a fresh database.
+
+The frontend uses **npm** with `package-lock.json`. The backend uses **uv** with `uv.lock`. Source directories are bind-mounted for hot reload; frontend `node_modules` and backend dependencies remain in container volumes/layers outside the bind mounts.
+
 ### 5. Create a production build
 
 ```bash

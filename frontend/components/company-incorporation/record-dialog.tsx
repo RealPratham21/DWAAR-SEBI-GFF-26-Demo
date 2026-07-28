@@ -63,7 +63,7 @@ export function RecordDialog({
           className="px-6 py-6 space-y-4"
         >
           {children}
-          <div className="flex justify-end gap-3 pt-4 border-t border-border pb-24 md:pb-0 md:pr-[88px]">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border md:pr-[88px]">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
