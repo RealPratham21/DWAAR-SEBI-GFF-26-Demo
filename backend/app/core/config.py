@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -21,6 +22,32 @@ class Settings(BaseSettings):
     )
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     app_version: str = "0.1.0"
+    database_url: str = Field(
+        default="postgresql+psycopg://dwaar:dwaar_local@localhost:5432/dwaar",
+        alias="DATABASE_URL",
+    )
+    jwt_secret: str = Field(
+        default="change-me-in-production-use-a-long-random-secret",
+        alias="JWT_SECRET",
+    )
+    jwt_algorithm: str = Field(default="HS256", alias="JWT_ALGORITHM")
+    jwt_access_token_expire_minutes: int = Field(
+        default=15,
+        alias="JWT_ACCESS_TOKEN_EXPIRE_MINUTES",
+    )
+    refresh_token_expire_days: int = Field(default=7, alias="REFRESH_TOKEN_EXPIRE_DAYS")
+    refresh_token_remember_me_expire_days: int = Field(
+        default=30,
+        alias="REFRESH_TOKEN_REMEMBER_ME_EXPIRE_DAYS",
+    )
+    refresh_cookie_name: str = Field(default="dwaar_refresh", alias="REFRESH_COOKIE_NAME")
+    refresh_cookie_path: str = Field(default="/api/v1/auth", alias="REFRESH_COOKIE_PATH")
+    refresh_cookie_secure: bool = Field(default=False, alias="REFRESH_COOKIE_SECURE")
+    refresh_cookie_samesite: Literal["lax", "strict", "none"] = Field(
+        default="lax",
+        alias="REFRESH_COOKIE_SAMESITE",
+    )
+    refresh_cookie_domain: str | None = Field(default=None, alias="REFRESH_COOKIE_DOMAIN")
 
     @property
     def frontend_origins_list(self) -> list[str]:

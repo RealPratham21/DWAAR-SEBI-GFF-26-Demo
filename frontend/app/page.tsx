@@ -1,10 +1,14 @@
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2, Zap, BarChart3 } from 'lucide-react';
+import {
+  LandingAuthActions,
+  LandingCtaAction,
+  LandingHeroActions,
+} from '@/components/auth/landing-auth-actions';
 
 export default function Page() {
   return (
     <main className="min-h-screen bg-background">
-      {/* Navigation */}
       <nav className="border-b border-border">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -13,24 +17,10 @@ export default function Page() {
             </div>
             <span className="font-semibold text-foreground">Dwaar</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/login"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Login
-            </Link>
-            <Link
-              href="/role-selection"
-              className="text-sm font-medium px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
-            >
-              Register
-            </Link>
-          </div>
+          <LandingAuthActions />
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section className="max-w-4xl mx-auto px-6 py-20 text-center">
         <h1 className="text-5xl font-bold text-foreground mb-6 leading-tight">
           From Company Evidence to a Review-Ready DRHP
@@ -38,24 +28,9 @@ export default function Page() {
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
           Dwaar simplifies DRHP preparation for Indian SME IPOs. Organize your company information, evidence, and documentation in one intelligent platform.
         </p>
-        <div className="flex items-center justify-center gap-4">
-          <Link
-            href="/role-selection"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-md font-medium hover:opacity-90 transition-opacity"
-          >
-            Get Started
-            <ArrowRight size={20} />
-          </Link>
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 px-6 py-3 border border-border text-foreground rounded-md font-medium hover:bg-muted transition-colors"
-          >
-            I Already Have Access
-          </Link>
-        </div>
+        <LandingHeroActions />
       </section>
 
-      {/* Features Section */}
       <section className="bg-card border-y border-border py-16">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-3xl font-bold text-foreground mb-12 text-center">
@@ -113,7 +88,6 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Benefits Section */}
       <section className="max-w-6xl mx-auto px-6 py-16">
         <h2 className="text-3xl font-bold text-foreground mb-12 text-center">
           Benefits
@@ -161,7 +135,6 @@ export default function Page() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="bg-card border-t border-border py-16">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold text-foreground mb-4">
@@ -170,17 +143,10 @@ export default function Page() {
           <p className="text-lg text-muted-foreground mb-8">
             Join SME companies preparing for their IPO journey with Dwaar.
           </p>
-          <Link
-            href="/role-selection"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-md font-semibold hover:opacity-90 transition-opacity text-lg"
-          >
-            Get Started Now
-            <ArrowRight size={24} />
-          </Link>
+          <LandingCtaAction />
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="max-w-6xl mx-auto px-6 text-center text-muted-foreground text-sm">
           <p>&copy; 2025 Dwaar DRHP Preparation Platform. All rights reserved.</p>
