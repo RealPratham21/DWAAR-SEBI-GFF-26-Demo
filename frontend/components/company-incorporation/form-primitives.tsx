@@ -73,9 +73,6 @@ export function EmptyState({ message }: { message: string }) {
   );
 }
 
-/** Keeps bottom-right actions clear of the floating Copilot on desktop and mobile. */
 export function FormActionRow({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex justify-end gap-3 pb-24 md:pb-0 md:pr-[88px]">{children}</div>
-  );
+  return <div className="flex justify-end gap-3 md:pr-[88px]">{children}</div>;
 }
