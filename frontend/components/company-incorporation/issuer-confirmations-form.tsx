@@ -51,7 +51,7 @@ const confirmationFields: {
 ];
 
 export function IssuerConfirmationsForm() {
-  const { data, setConfirmations, notifySaved, saveNotice, clearSaveNotice } =
+  const { data, saveConfirmations, saveNotice, saveError, clearSaveNotice, clearSaveError, isSaving } =
     useCompanyIncorporation();
 
   const { register, handleSubmit } = useForm<IssuerConfirmation>({
@@ -59,9 +59,9 @@ export function IssuerConfirmationsForm() {
     values: data.confirmations,
   });
 
-  const onSubmit = handleSubmit((values) => {
-    setConfirmations(values);
-    notifySaved();
+  const onSubmit = handleSubmit(async (values) => {
+    clearSaveError();
+    await saveConfirmations(values);
   });
 
   return (
@@ -70,6 +70,11 @@ export function IssuerConfirmationsForm() {
       description="Management representations for incorporation and constitutional disclosures."
     >
       {saveNotice ? <SessionSaveNotice message={saveNotice} onDismiss={clearSaveNotice} /> : null}
+      {saveError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {saveError}
+        </p>
+      ) : null}
 
       <div className="rounded-lg border border-border bg-muted/20 px-4 py-3">
         <p className="text-sm text-muted-foreground">
@@ -94,7 +99,9 @@ export function IssuerConfirmationsForm() {
         ))}
 
         <FormActionRow>
-          <Button type="submit">Save Confirmations</Button>
+          <Button type="submit" disabled={isSaving}>
+            {isSaving ? 'Saving…' : 'Save Confirmations'}
+          </Button>
         </FormActionRow>
       </form>
     </SectionCard>

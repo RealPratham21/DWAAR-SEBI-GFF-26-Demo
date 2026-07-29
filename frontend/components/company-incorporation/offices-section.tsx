@@ -35,22 +35,23 @@ function formatEffectivePeriod(office: OfficeAddress) {
 }
 
 export function OfficesSection() {
-  const { data, setOffices, notifySaved, saveNotice, clearSaveNotice } = useCompanyIncorporation();
+  const { data, saveOffices, saveNotice, saveError, clearSaveNotice, clearSaveError } =
+    useCompanyIncorporation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOffice, setEditingOffice] = useState<OfficeAddress | null>(null);
 
-  const handleSave = (office: OfficeAddress) => {
+  const handleSave = async (office: OfficeAddress) => {
     const exists = data.offices.some((item) => item.id === office.id);
     const nextOffices = exists
       ? data.offices.map((item) => (item.id === office.id ? office : item))
       : [...data.offices, office];
-    setOffices(nextOffices);
-    notifySaved();
+    clearSaveError();
+    await saveOffices(nextOffices);
   };
 
-  const handleDelete = (office: OfficeAddress) => {
-    setOffices(data.offices.filter((item) => item.id !== office.id));
-    notifySaved();
+  const handleDelete = async (office: OfficeAddress) => {
+    clearSaveError();
+    await saveOffices(data.offices.filter((item) => item.id !== office.id));
   };
 
   return (
@@ -70,6 +71,11 @@ export function OfficesSection() {
       }
     >
       {saveNotice ? <SessionSaveNotice message={saveNotice} onDismiss={clearSaveNotice} /> : null}
+      {saveError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {saveError}
+        </p>
+      ) : null}
 
       <RepeatableRecordsTable
         records={data.offices}

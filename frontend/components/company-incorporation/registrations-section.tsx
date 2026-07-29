@@ -14,23 +14,23 @@ import {
 } from '@/lib/types/company-incorporation';
 
 export function RegistrationsSection() {
-  const { data, setRegistrations, notifySaved, saveNotice, clearSaveNotice } =
+  const { data, saveRegistrations, saveNotice, saveError, clearSaveNotice, clearSaveError } =
     useCompanyIncorporation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRegistration, setEditingRegistration] = useState<CompanyRegistration | null>(null);
 
-  const handleSave = (registration: CompanyRegistration) => {
+  const handleSave = async (registration: CompanyRegistration) => {
     const exists = data.registrations.some((item) => item.id === registration.id);
     const nextRegistrations = exists
       ? data.registrations.map((item) => (item.id === registration.id ? registration : item))
       : [...data.registrations, registration];
-    setRegistrations(nextRegistrations);
-    notifySaved();
+    clearSaveError();
+    await saveRegistrations(nextRegistrations);
   };
 
-  const handleDelete = (registration: CompanyRegistration) => {
-    setRegistrations(data.registrations.filter((item) => item.id !== registration.id));
-    notifySaved();
+  const handleDelete = async (registration: CompanyRegistration) => {
+    clearSaveError();
+    await saveRegistrations(data.registrations.filter((item) => item.id !== registration.id));
   };
 
   return (
@@ -50,6 +50,11 @@ export function RegistrationsSection() {
       }
     >
       {saveNotice ? <SessionSaveNotice message={saveNotice} onDismiss={clearSaveNotice} /> : null}
+      {saveError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {saveError}
+        </p>
+      ) : null}
 
       <RepeatableRecordsTable
         records={data.registrations}

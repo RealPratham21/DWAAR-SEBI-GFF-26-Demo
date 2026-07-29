@@ -34,7 +34,7 @@ import {
 } from '@/lib/types/company-incorporation';
 
 export function LegalIdentityForm() {
-  const { data, setIdentity, notifySaved, saveNotice, clearSaveNotice } =
+  const { data, saveIdentity, saveNotice, saveError, clearSaveNotice, clearSaveError, isSaving } =
     useCompanyIncorporation();
   const eligibleContacts = getEligibleIssuerContactPersons();
 
@@ -67,17 +67,17 @@ export function LegalIdentityForm() {
       typeof watchedClassification[3] === 'string' ? watchedClassification[3] : undefined,
   });
 
-  const onSubmit = handleSubmit((values) => {
+  const onSubmit = handleSubmit(async (values) => {
     const specialCompanyType =
       typeof values.specialCompanyType === 'string' && values.specialCompanyType.length > 0
         ? values.specialCompanyType
         : 'none';
 
-    setIdentity({
+    clearSaveError();
+    await saveIdentity({
       ...values,
       specialCompanyType,
     } as CompanyIncorporationSessionData['identity']);
-    notifySaved();
   });
 
   return (
@@ -86,6 +86,11 @@ export function LegalIdentityForm() {
       description="Core incorporation and listing details as recorded with the Registrar of Companies."
     >
       {saveNotice ? <SessionSaveNotice message={saveNotice} onDismiss={clearSaveNotice} /> : null}
+      {saveError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {saveError}
+        </p>
+      ) : null}
 
       <form onSubmit={onSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -409,7 +414,9 @@ export function LegalIdentityForm() {
         </div>
 
         <FormActionRow>
-          <Button type="submit">Save Legal Identity</Button>
+          <Button type="submit" disabled={isSaving}>
+            {isSaving ? 'Saving…' : 'Save Legal Identity'}
+          </Button>
         </FormActionRow>
       </form>
     </SectionCard>

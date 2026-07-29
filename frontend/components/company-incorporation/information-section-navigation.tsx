@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { useCompanyIncorporation } from '@/lib/company-incorporation/context';
 import type { InformationSectionId } from '@/lib/types/company-incorporation';
 import { INFORMATION_SECTIONS } from '@/lib/types/company-incorporation';
 
@@ -9,10 +10,18 @@ interface InformationSectionNavigationProps {
   onSectionChange: (section: InformationSectionId) => void;
 }
 
+function sectionStatusSuffix(status: string | undefined) {
+  if (status === 'complete') return ' ✓';
+  if (status === 'in_progress') return ' •';
+  return '';
+}
+
 export function InformationSectionNavigation({
   activeSection,
   onSectionChange,
 }: InformationSectionNavigationProps) {
+  const { progress } = useCompanyIncorporation();
+
   return (
     <nav className="space-y-1">
       {INFORMATION_SECTIONS.map((section) => (
@@ -28,6 +37,7 @@ export function InformationSectionNavigation({
           )}
         >
           {section.label}
+          {sectionStatusSuffix(progress?.sections[section.id])}
         </button>
       ))}
     </nav>

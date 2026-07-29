@@ -1,8 +1,9 @@
 'use client';
 
 import { Search, Bell, User, LogOut } from 'lucide-react';
-import { demoCompany } from '@/lib/mock-data';
 import { useAuth } from '@/lib/auth/context';
+import { useOptionalWorkspaceBootstrap } from '@/lib/workspace/context';
+import { workspaceLabels } from '@/lib/workspace/format';
 
 interface AppTopBarProps {
   pageTitle?: string;
@@ -10,11 +11,33 @@ interface AppTopBarProps {
 
 export function AppTopBar({ pageTitle }: AppTopBarProps) {
   const { user, logout } = useAuth();
+  const bootstrap = useOptionalWorkspaceBootstrap();
+
+  const heading =
+    pageTitle ?? bootstrap?.workspace.displayName ?? bootstrap?.company.legalName ?? 'Dwaar';
+
+  const representativeSummary = bootstrap
+    ? [
+        bootstrap.representative.designation,
+        workspaceLabels.relationship(
+          bootstrap.representative.relationship,
+          bootstrap.representative.relationshipOther,
+        ),
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : null;
+
+  const displayName = bootstrap?.user.fullName ?? user?.fullName ?? 'Signed in user';
+  const displayEmail = bootstrap?.user.email ?? user?.email ?? 'Authorised Rep';
 
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6 sticky top-0 z-20">
-      <div className="flex-1">
-        <h1 className="text-sm font-semibold text-foreground">{pageTitle || demoCompany.name}</h1>
+      <div className="flex-1 min-w-0">
+        <h1 className="text-sm font-semibold text-foreground truncate">{heading}</h1>
+        {representativeSummary ? (
+          <p className="text-xs text-muted-foreground truncate">{representativeSummary}</p>
+        ) : null}
       </div>
 
       <div className="flex items-center gap-4">
@@ -37,8 +60,8 @@ export function AppTopBar({ pageTitle }: AppTopBarProps) {
 
         <div className="flex items-center gap-2 pl-4 border-l border-border">
           <div className="text-right hidden sm:block">
-            <p className="text-xs font-medium text-foreground">{user?.fullName ?? 'Signed in user'}</p>
-            <p className="text-xs text-muted-foreground">{user?.email ?? 'Authorised Rep'}</p>
+            <p className="text-xs font-medium text-foreground">{displayName}</p>
+            <p className="text-xs text-muted-foreground">{displayEmail}</p>
           </div>
           <button
             type="button"

@@ -67,8 +67,8 @@ def db_session(engine) -> Generator[Session, None, None]:
     with engine.begin() as connection:
         connection.execute(
             text(
-                "TRUNCATE TABLE refresh_sessions, onboarding_applications, users "
-                "RESTART IDENTITY CASCADE"
+                "TRUNCATE TABLE company_incorporation_workspaces, refresh_sessions, "
+                "onboarding_applications, users RESTART IDENTITY CASCADE"
             )
         )
     session.close()
@@ -125,8 +125,8 @@ def truncate_auth_tables(engine) -> None:
     with engine.begin() as connection:
         connection.execute(
             text(
-                "TRUNCATE TABLE refresh_sessions, onboarding_applications, users "
-                "RESTART IDENTITY CASCADE"
+                "TRUNCATE TABLE company_incorporation_workspaces, refresh_sessions, "
+                "onboarding_applications, users RESTART IDENTITY CASCADE"
             )
         )
 

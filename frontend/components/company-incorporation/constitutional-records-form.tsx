@@ -24,8 +24,15 @@ import {
 import { SessionSaveNotice } from '@/components/company-incorporation/session-save-notice';
 
 export function ConstitutionalRecordsForm() {
-  const { data, setConstitutionalRecord, notifySaved, saveNotice, clearSaveNotice } =
-    useCompanyIncorporation();
+  const {
+    data,
+    saveConstitutionalRecord,
+    saveNotice,
+    saveError,
+    clearSaveNotice,
+    clearSaveError,
+    isSaving,
+  } = useCompanyIncorporation();
   const [clauseInput, setClauseInput] = useState('');
 
   const {
@@ -57,9 +64,11 @@ export function ConstitutionalRecordsForm() {
     );
   };
 
-  const onSubmit = handleSubmit((values) => {
-    setConstitutionalRecord(values as CompanyIncorporationSessionData['constitutionalRecord']);
-    notifySaved();
+  const onSubmit = handleSubmit(async (values) => {
+    clearSaveError();
+    await saveConstitutionalRecord(
+      values as CompanyIncorporationSessionData['constitutionalRecord'],
+    );
   });
 
   return (
@@ -68,6 +77,11 @@ export function ConstitutionalRecordsForm() {
       description="Current MoA/AoA position, main objects, and legal-review status."
     >
       {saveNotice ? <SessionSaveNotice message={saveNotice} onDismiss={clearSaveNotice} /> : null}
+      {saveError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {saveError}
+        </p>
+      ) : null}
 
       <form onSubmit={onSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -257,7 +271,9 @@ export function ConstitutionalRecordsForm() {
         </FormField>
 
         <FormActionRow>
-          <Button type="submit">Save Constitutional Information</Button>
+          <Button type="submit" disabled={isSaving}>
+            {isSaving ? 'Saving…' : 'Save Constitutional Information'}
+          </Button>
         </FormActionRow>
       </form>
     </SectionCard>

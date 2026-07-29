@@ -51,3 +51,21 @@ export const READINESS_CHECKLIST_ITEMS = [
 ] as const;
 
 export const READINESS_NEUTRAL_STATUS = 'Not assessed' as const;
+
+export const READINESS_SECTION_MAP: Record<
+  (typeof READINESS_CHECKLIST_ITEMS)[number]['id'],
+  string | null
+> = {
+  'legal-identity': 'legal-identity',
+  'incorporation-history': 'corporate-history',
+  'registered-office': 'offices-contact',
+  'moa-aoa': 'constitutional-documents',
+  'core-registrations': 'core-registrations',
+  'blocking-conflicts': null,
+  'disclosures-generated': null,
+  'professional-review': null,
+};
+
+export const READINESS_COMPLETE_STATUS = 'Complete' as const;
+export const READINESS_IN_PROGRESS_STATUS = 'In progress' as const;
+export const READINESS_NOT_STARTED_STATUS = 'Not started' as const;

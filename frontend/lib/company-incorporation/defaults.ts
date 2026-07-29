@@ -61,8 +61,7 @@ export const emptyCompanyIncorporationFormData = {
 
 export type CompanyIncorporationSessionData = typeof emptyCompanyIncorporationFormData;
 
-export const SESSION_SAVE_MESSAGE =
-  'Saved for the current frontend session. Permanent persistence will be connected later.';
+export const SESSION_SAVE_MESSAGE = 'Changes saved successfully.';
 
 export function createRecordId() {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {

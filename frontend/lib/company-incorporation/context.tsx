@@ -4,15 +4,27 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from 'react';
 import {
+  initializeCompanyIncorporationWorkspace,
+  saveConstitutionalDocumentsSection,
+  saveCoreRegistrationsSection,
+  saveCorporateHistorySection,
+  saveIssuerConfirmationsSection,
+  saveLegalIdentitySection,
+  saveOfficesContactSection,
+} from '@/lib/api/company-incorporation';
+import { ApiClientError } from '@/lib/api/errors';
+import {
   emptyCompanyIncorporationFormData,
   SESSION_SAVE_MESSAGE,
   type CompanyIncorporationSessionData,
 } from '@/lib/company-incorporation/defaults';
+import type { WorkspaceProgress } from '@/lib/company-incorporation/types';
 import type {
   CompanyRegistration,
   ConstitutionalAmendment,
@@ -20,61 +32,254 @@ import type {
   IssuerConfirmation,
   OfficeAddress,
 } from '@/lib/schemas/company-incorporation';
-import type { CompanyIdentityInput } from '@/lib/schemas/company-incorporation';
 
 interface CompanyIncorporationContextValue {
   data: CompanyIncorporationSessionData;
+  version: number;
+  progress: WorkspaceProgress | null;
+  isLoading: boolean;
+  isSaving: boolean;
+  loadError: string | null;
   saveNotice: string | null;
-  setIdentity: (identity: CompanyIncorporationSessionData['identity']) => void;
-  setCorporateEvents: (events: CorporateEvent[]) => void;
-  setOffices: (offices: OfficeAddress[]) => void;
-  setConstitutionalRecord: (record: CompanyIncorporationSessionData['constitutionalRecord']) => void;
-  setConstitutionalAmendments: (amendments: ConstitutionalAmendment[]) => void;
-  setRegistrations: (registrations: CompanyRegistration[]) => void;
-  setConfirmations: (confirmations: IssuerConfirmation) => void;
-  notifySaved: () => void;
+  saveError: string | null;
+  saveIdentity: (identity: CompanyIncorporationSessionData['identity']) => Promise<boolean>;
+  saveCorporateEvents: (events: CorporateEvent[]) => Promise<boolean>;
+  saveOffices: (offices: OfficeAddress[]) => Promise<boolean>;
+  saveConstitutionalRecord: (
+    record: CompanyIncorporationSessionData['constitutionalRecord'],
+  ) => Promise<boolean>;
+  saveConstitutionalAmendments: (amendments: ConstitutionalAmendment[]) => Promise<boolean>;
+  saveRegistrations: (registrations: CompanyRegistration[]) => Promise<boolean>;
+  saveConfirmations: (confirmations: IssuerConfirmation) => Promise<boolean>;
   clearSaveNotice: () => void;
+  clearSaveError: () => void;
 }
 
-const CompanyIncorporationContext = createContext<CompanyIncorporationContextValue | null>(
-  null,
-);
+const CompanyIncorporationContext = createContext<CompanyIncorporationContextValue | null>(null);
+
+function applySaveResponse(
+  response: {
+    version: number;
+    payload: CompanyIncorporationSessionData;
+    progress: WorkspaceProgress;
+  },
+  setData: (data: CompanyIncorporationSessionData) => void,
+  setVersion: (version: number) => void,
+  setProgress: (progress: WorkspaceProgress) => void,
+) {
+  setData(response.payload);
+  setVersion(response.version);
+  setProgress(response.progress);
+}
 
 export function CompanyIncorporationProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<CompanyIncorporationSessionData>(
     emptyCompanyIncorporationFormData,
   );
+  const [version, setVersion] = useState(0);
+  const [progress, setProgress] = useState<WorkspaceProgress | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  const notifySaved = useCallback(() => {
-    setSaveNotice(SESSION_SAVE_MESSAGE);
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadWorkspace() {
+      setIsLoading(true);
+      setLoadError(null);
+      try {
+        const response = await initializeCompanyIncorporationWorkspace();
+        if (cancelled) return;
+        setData(response.payload);
+        setVersion(response.version);
+        setProgress(response.progress);
+      } catch (error) {
+        if (cancelled) return;
+        if (error instanceof ApiClientError) {
+          setLoadError(error.message);
+        } else {
+          setLoadError('Unable to load Company & Incorporation workspace.');
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadWorkspace();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const clearSaveNotice = useCallback(() => {
     setSaveNotice(null);
   }, []);
 
+  const clearSaveError = useCallback(() => {
+    setSaveError(null);
+  }, []);
+
+  const handleSaveError = useCallback((error: unknown) => {
+    if (error instanceof ApiClientError) {
+      if (error.code === 'COMPANY_INCORPORATION_VERSION_CONFLICT') {
+        const details = error.details as {
+          currentVersion?: number;
+          payload?: CompanyIncorporationSessionData;
+          progress?: WorkspaceProgress;
+        } | undefined;
+        if (details?.payload && details.currentVersion && details.progress) {
+          setData(details.payload);
+          setVersion(details.currentVersion);
+          setProgress(details.progress);
+        }
+        setSaveError('This section was updated elsewhere. Your view has been refreshed — try again.');
+        return false;
+      }
+      const fieldErrors = (
+        error.details as { fieldErrors?: Record<string, string> } | undefined
+      )?.fieldErrors;
+      if (fieldErrors && Object.keys(fieldErrors).length > 0) {
+        setSaveError(Object.values(fieldErrors).join(' '));
+        return false;
+      }
+      setSaveError(error.message);
+      return false;
+    }
+    setSaveError('Unable to save changes. Please try again.');
+    return false;
+  }, []);
+
+  const runSave = useCallback(
+    async (saveFn: () => Promise<{ version: number; payload: CompanyIncorporationSessionData; progress: WorkspaceProgress }>) => {
+      setIsSaving(true);
+      setSaveError(null);
+      try {
+        const response = await saveFn();
+        applySaveResponse(response, setData, setVersion, setProgress);
+        setSaveNotice(SESSION_SAVE_MESSAGE);
+        return true;
+      } catch (error) {
+        handleSaveError(error);
+        return false;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [handleSaveError],
+  );
+
+  const saveIdentity = useCallback(
+    async (identity: CompanyIncorporationSessionData['identity']) =>
+      runSave(() => saveLegalIdentitySection(version, identity)),
+    [runSave, version],
+  );
+
+  const saveCorporateEvents = useCallback(
+    async (events: CorporateEvent[]) =>
+      runSave(() => saveCorporateHistorySection(version, events)),
+    [runSave, version],
+  );
+
+  const saveOffices = useCallback(
+    async (offices: OfficeAddress[]) => runSave(() => saveOfficesContactSection(version, offices)),
+    [runSave, version],
+  );
+
+  const saveConstitutionalRecord = useCallback(
+    async (record: CompanyIncorporationSessionData['constitutionalRecord']) =>
+      runSave(() =>
+        saveConstitutionalDocumentsSection(version, {
+          constitutionalRecord: record,
+          constitutionalAmendments: data.constitutionalAmendments,
+        }),
+      ),
+    [data.constitutionalAmendments, runSave, version],
+  );
+
+  const saveConstitutionalAmendments = useCallback(
+    async (amendments: ConstitutionalAmendment[]) =>
+      runSave(() =>
+        saveConstitutionalDocumentsSection(version, {
+          constitutionalRecord: data.constitutionalRecord,
+          constitutionalAmendments: amendments,
+        }),
+      ),
+    [data.constitutionalRecord, runSave, version],
+  );
+
+  const saveRegistrations = useCallback(
+    async (registrations: CompanyRegistration[]) =>
+      runSave(() => saveCoreRegistrationsSection(version, registrations)),
+    [runSave, version],
+  );
+
+  const saveConfirmations = useCallback(
+    async (confirmations: IssuerConfirmation) =>
+      runSave(() => saveIssuerConfirmationsSection(version, confirmations)),
+    [runSave, version],
+  );
+
   const value = useMemo<CompanyIncorporationContextValue>(
     () => ({
       data,
+      version,
+      progress,
+      isLoading,
+      isSaving,
+      loadError,
       saveNotice,
-      setIdentity: (identity) => setData((current) => ({ ...current, identity })),
-      setCorporateEvents: (corporateEvents) =>
-        setData((current) => ({ ...current, corporateEvents })),
-      setOffices: (offices) => setData((current) => ({ ...current, offices })),
-      setConstitutionalRecord: (constitutionalRecord) =>
-        setData((current) => ({ ...current, constitutionalRecord })),
-      setConstitutionalAmendments: (constitutionalAmendments) =>
-        setData((current) => ({ ...current, constitutionalAmendments })),
-      setRegistrations: (registrations) =>
-        setData((current) => ({ ...current, registrations })),
-      setConfirmations: (confirmations) =>
-        setData((current) => ({ ...current, confirmations })),
-      notifySaved,
+      saveError,
+      saveIdentity,
+      saveCorporateEvents,
+      saveOffices,
+      saveConstitutionalRecord,
+      saveConstitutionalAmendments,
+      saveRegistrations,
+      saveConfirmations,
       clearSaveNotice,
+      clearSaveError,
     }),
-    [data, notifySaved, clearSaveNotice, saveNotice],
+    [
+      data,
+      version,
+      progress,
+      isLoading,
+      isSaving,
+      loadError,
+      saveNotice,
+      saveError,
+      saveIdentity,
+      saveCorporateEvents,
+      saveOffices,
+      saveConstitutionalRecord,
+      saveConstitutionalAmendments,
+      saveRegistrations,
+      saveConfirmations,
+      clearSaveNotice,
+      clearSaveError,
+    ],
   );
+
+  if (isLoading) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-8 text-sm text-muted-foreground">
+        Loading Company & Incorporation workspace…
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
+        {loadError}
+      </div>
+    );
+  }
 
   return (
     <CompanyIncorporationContext.Provider value={value}>

@@ -15,7 +15,7 @@ import {
 } from '@/lib/types/company-incorporation';
 
 export function CorporateEventsSection() {
-  const { data, setCorporateEvents, notifySaved, saveNotice, clearSaveNotice } =
+  const { data, saveCorporateEvents, saveNotice, saveError, clearSaveNotice, clearSaveError } =
     useCompanyIncorporation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CorporateEvent | null>(null);
@@ -25,18 +25,18 @@ export function CorporateEventsSection() {
     [data.corporateEvents],
   );
 
-  const handleSave = (event: CorporateEvent) => {
+  const handleSave = async (event: CorporateEvent) => {
     const exists = data.corporateEvents.some((item) => item.id === event.id);
     const nextEvents = exists
       ? data.corporateEvents.map((item) => (item.id === event.id ? event : item))
       : [...data.corporateEvents, event];
-    setCorporateEvents(nextEvents);
-    notifySaved();
+    clearSaveError();
+    await saveCorporateEvents(nextEvents);
   };
 
-  const handleDelete = (event: CorporateEvent) => {
-    setCorporateEvents(data.corporateEvents.filter((item) => item.id !== event.id));
-    notifySaved();
+  const handleDelete = async (event: CorporateEvent) => {
+    clearSaveError();
+    await saveCorporateEvents(data.corporateEvents.filter((item) => item.id !== event.id));
   };
 
   return (
@@ -56,6 +56,11 @@ export function CorporateEventsSection() {
       }
     >
       {saveNotice ? <SessionSaveNotice message={saveNotice} onDismiss={clearSaveNotice} /> : null}
+      {saveError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {saveError}
+        </p>
+      ) : null}
 
       <RepeatableRecordsTable
         records={sortedEvents}
