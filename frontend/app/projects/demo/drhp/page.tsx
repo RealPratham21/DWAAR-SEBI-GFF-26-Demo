@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { ChevronRight, ZoomIn, ZoomOut, FileText, CheckCircle2, AlertCircle, Calculator, MessageSquare, BarChart3 } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
 import { drwhChapters } from '@/lib/mock-data';
+import { useWorkspaceBootstrap } from '@/lib/workspace/context';
 
 export default function DRHPPreviewPage() {
+  const bootstrap = useWorkspaceBootstrap();
   const [selectedChapter, setSelectedChapter] = useState(drwhChapters[0]);
   const [zoom, setZoom] = useState(100);
   const [evidenceTab, setEvidenceTab] = useState(0);
@@ -94,7 +96,7 @@ export default function DRHPPreviewPage() {
                   <div className="text-center border-b-2 border-gray-300 pb-4 mb-6">
                     <h1 className="text-2xl font-bold">DRAFT RED HERRING PROSPECTUS</h1>
                     <p className="text-sm mt-2 text-gray-600">
-                      Aarohan Embedded Systems Limited
+                      {bootstrap.workspace.displayName}
                     </p>
                   </div>
 

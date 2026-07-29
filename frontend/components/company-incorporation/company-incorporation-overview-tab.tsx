@@ -10,12 +10,18 @@ import {
 import { Button } from '@/components/ui/button';
 import { FormActionRow, SectionCard } from '@/components/company-incorporation/form-primitives';
 import { NeutralStatusBadge } from '@/components/company-incorporation/tab-shared';
+import { useCompanyIncorporation } from '@/lib/company-incorporation/context';
 import {
   DRHP_CONTRIBUTION_SECTIONS,
   READINESS_CHECKLIST_ITEMS,
+  READINESS_COMPLETE_STATUS,
+  READINESS_IN_PROGRESS_STATUS,
   READINESS_NEUTRAL_STATUS,
+  READINESS_NOT_STARTED_STATUS,
+  READINESS_SECTION_MAP,
   WORKSTREAM_SCOPE_CARDS,
 } from '@/lib/company-incorporation/overview-config';
+import type { SectionStatus } from '@/lib/company-incorporation/types';
 
 const SCOPE_ICONS: Record<(typeof WORKSTREAM_SCOPE_CARDS)[number]['id'], typeof Building2> = {
   'legal-identity': Building2,
@@ -25,6 +31,17 @@ const SCOPE_ICONS: Record<(typeof WORKSTREAM_SCOPE_CARDS)[number]['id'], typeof 
   'core-registrations': ShieldCheck,
 };
 
+function statusLabel(status: SectionStatus) {
+  switch (status) {
+    case 'complete':
+      return READINESS_COMPLETE_STATUS;
+    case 'in_progress':
+      return READINESS_IN_PROGRESS_STATUS;
+    default:
+      return READINESS_NOT_STARTED_STATUS;
+  }
+}
+
 interface CompanyIncorporationOverviewTabProps {
   onContinueToInformation: () => void;
 }
@@ -32,6 +49,10 @@ interface CompanyIncorporationOverviewTabProps {
 export function CompanyIncorporationOverviewTab({
   onContinueToInformation,
 }: CompanyIncorporationOverviewTabProps) {
+  const { progress } = useCompanyIncorporation();
+  const sectionsComplete = progress?.sectionsComplete ?? 0;
+  const totalSections = progress?.totalSections ?? 6;
+
   return (
     <div className="space-y-6">
       <SectionCard
@@ -44,6 +65,9 @@ export function CompanyIncorporationOverviewTab({
           registration summaries in the DRHP. Complete the Information sections, upload supporting
           documents, resolve conflicts, and obtain professional review before disclosures can be
           generated.
+        </p>
+        <p className="text-sm font-medium text-foreground mt-4">
+          Information: {sectionsComplete} of {totalSections} sections complete
         </p>
       </SectionCard>
 
@@ -98,28 +122,37 @@ export function CompanyIncorporationOverviewTab({
 
       <SectionCard
         title="Readiness Checklist"
-        description="Readiness will be assessed once information, documents, conflicts, disclosures, and review workflows are connected."
+        description="Information readiness is derived from saved workstream data. Documents, conflicts, disclosures, and review remain unassessed."
       >
         <ul className="space-y-3">
-          {READINESS_CHECKLIST_ITEMS.map((item) => (
-            <li
-              key={item.id}
-              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-md border border-border px-4 py-3"
-            >
-              <label className="flex items-start gap-3 text-sm text-foreground">
-                <input
-                  type="checkbox"
-                  checked={false}
-                  disabled
-                  readOnly
-                  aria-label={item.label}
-                  className="mt-0.5 h-4 w-4 rounded border-input accent-accent opacity-60"
-                />
-                <span>{item.label}</span>
-              </label>
-              <NeutralStatusBadge label={READINESS_NEUTRAL_STATUS} />
-            </li>
-          ))}
+          {READINESS_CHECKLIST_ITEMS.map((item) => {
+            const sectionId = READINESS_SECTION_MAP[item.id];
+            const sectionStatus = sectionId ? progress?.sections[sectionId] : undefined;
+            const isComplete = sectionStatus === 'complete';
+            const label = sectionId
+              ? statusLabel(sectionStatus ?? 'not_started')
+              : READINESS_NEUTRAL_STATUS;
+
+            return (
+              <li
+                key={item.id}
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-md border border-border px-4 py-3"
+              >
+                <label className="flex items-start gap-3 text-sm text-foreground">
+                  <input
+                    type="checkbox"
+                    checked={isComplete}
+                    disabled
+                    readOnly
+                    aria-label={item.label}
+                    className="mt-0.5 h-4 w-4 rounded border-input accent-accent opacity-60"
+                  />
+                  <span>{item.label}</span>
+                </label>
+                <NeutralStatusBadge label={label} />
+              </li>
+            );
+          })}
         </ul>
       </SectionCard>
 

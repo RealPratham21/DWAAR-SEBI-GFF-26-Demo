@@ -1,6 +1,14 @@
-import { AlertTriangle } from 'lucide-react';
+'use client';
+
 import { PageHeader } from '@/components/page-header';
-import { demoCompany } from '@/lib/mock-data';
+import { useWorkspaceBootstrap } from '@/lib/workspace/context';
+import {
+  formatIncorporationDate,
+  formatOptionalValue,
+  formatPercent,
+  formatRegisteredOffice,
+  workspaceLabels,
+} from '@/lib/workspace/format';
 
 interface InfoSectionProps {
   title: string;
@@ -15,12 +23,12 @@ function InfoSection({ title, items }: InfoSectionProps) {
     <div className="bg-card border border-border rounded-lg p-6 mb-6">
       <h3 className="font-semibold text-foreground mb-4">{title}</h3>
       <div className="grid md:grid-cols-2 gap-6">
-        {items.map((item, idx) => (
-          <div key={idx}>
+        {items.map((item) => (
+          <div key={item.label}>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               {item.label}
             </p>
-            <p className="text-foreground font-medium mt-2">{item.value}</p>
+            <p className="text-foreground font-medium mt-2 whitespace-pre-wrap">{item.value}</p>
           </div>
         ))}
       </div>
@@ -29,97 +37,181 @@ function InfoSection({ title, items }: InfoSectionProps) {
 }
 
 export default function CompanyProfilePage() {
+  const bootstrap = useWorkspaceBootstrap();
+  const { user, representative, company, business, registrations, ownership, ipoIntent } =
+    bootstrap;
+
   const legalIdentity = [
-    { label: 'Company Name', value: demoCompany.name },
-    { label: 'CIN', value: demoCompany.cin },
-    { label: 'Date of Incorporation', value: '15-Mar-2018' },
-    { label: 'Business Type', value: 'Private Limited Company' },
+    { label: 'Legal name', value: company.legalName },
+    { label: 'CIN', value: company.cin },
+    { label: 'Date of incorporation', value: formatIncorporationDate(company.incorporationDate) },
+    { label: 'Company class', value: workspaceLabels.companyClass(company.companyClass) },
+    { label: 'Registered state', value: formatOptionalValue(company.registeredState) },
+    { label: 'Registrar of Companies', value: formatOptionalValue(company.registrarOfCompanies) },
+    { label: 'Company email', value: formatOptionalValue(company.companyEmail) },
+    { label: 'Website', value: formatOptionalValue(company.companyWebsite) },
   ];
 
   const registeredOffice = [
-    { label: 'Address', value: demoCompany.registeredOffice },
-    { label: 'City', value: 'Delhi' },
-    { label: 'Verification Status', value: 'Pending with MCA' },
+    { label: 'Full address', value: formatRegisteredOffice(company.registeredOffice) },
+    { label: 'City', value: formatOptionalValue(company.registeredOffice.city) },
+    { label: 'State', value: formatOptionalValue(company.registeredOffice.state) },
+    { label: 'PIN code', value: formatOptionalValue(company.registeredOffice.pinCode) },
+    { label: 'Country', value: formatOptionalValue(company.registeredOffice.country) },
   ];
 
-  const registrations = [
-    { label: 'GST Registration', value: '07AABCU0321E1ZL' },
-    { label: 'PAN', value: 'AABCU0321E' },
-    { label: 'DPIN Status', value: 'Active' },
+  const businessItems = [
+    {
+      label: 'Primary industry',
+      value: workspaceLabels.primaryIndustry(
+        business.primaryIndustry,
+        business.primaryIndustryOther,
+      ),
+    },
+    { label: 'Business sector', value: formatOptionalValue(business.businessSector) },
+    { label: 'Operations description', value: formatOptionalValue(business.operationsDescription) },
+    {
+      label: 'Employee count range',
+      value: workspaceLabels.employeeCountRange(business.employeeCountRange),
+    },
   ];
 
-  const promotersDirectors = [
-    { label: 'Number of Directors', value: '3' },
-    { label: 'Total Promoter Shareholding', value: '72.5%' },
-    { label: 'Independent Directors', value: '1' },
-    { label: 'Woman Directors', value: '1' },
+  const registrationItems = [
+    { label: 'PAN', value: formatOptionalValue(registrations.pan) },
+    {
+      label: 'GST registration required',
+      value: workspaceLabels.gstRegistrationRequired(registrations.gstRegistrationRequired),
+    },
+    {
+      label: 'GST registrations',
+      value:
+        registrations.gstRegistrations.length > 0
+          ? registrations.gstRegistrations
+              .map(
+                (entry) =>
+                  `${entry.gstin}${entry.state ? ` (${entry.state})` : ''}${
+                    entry.principalPlaceOfBusiness
+                      ? ` — ${entry.principalPlaceOfBusiness}`
+                      : ''
+                  }`,
+              )
+              .join('\n')
+          : 'Not provided',
+    },
+    { label: 'Udyam registration', value: formatOptionalValue(registrations.udyamRegistration) },
+    { label: 'Import Export Code', value: formatOptionalValue(registrations.importExportCode) },
   ];
 
-  const ipoIntent = [
-    { label: 'IPO Intent Declared', value: 'Yes - Board Resolution dated 12-Aug-2025' },
-    { label: 'Intended IPO Size', value: '₹50-60 Crore' },
-    { label: 'Expected Timeline', value: 'Q2 FY2026' },
+  const ownershipItems = [
+    { label: 'Promoter count', value: String(ownership.promoterCount) },
+    { label: 'Director count', value: String(ownership.directorCount) },
+    {
+      label: 'Promoter holding',
+      value: formatPercent(ownership.promoterHoldingPercent),
+    },
+    {
+      label: 'Non-promoter holding',
+      value: formatPercent(ownership.nonPromoterHoldingPercent),
+    },
+    {
+      label: 'Institutional shareholders',
+      value: workspaceLabels.yesNoUnsure(ownership.institutionalShareholdersPresent),
+    },
+    {
+      label: 'Foreign shareholders',
+      value: workspaceLabels.yesNoUnsure(ownership.foreignShareholdersPresent),
+    },
+    {
+      label: 'Promoter group entities',
+      value: workspaceLabels.yesNoUnsure(ownership.promoterGroupEntitiesPresent),
+    },
+  ];
+
+  const ipoIntentItems = [
+    {
+      label: 'Proposed issue type',
+      value: workspaceLabels.proposedIssueType(ipoIntent.proposedIssueType),
+    },
+    {
+      label: 'Indicative issue size',
+      value: workspaceLabels.issueSize(ipoIntent.issueSizeCrore, ipoIntent.issueSizeNotDecided),
+    },
+    {
+      label: 'Target timeline',
+      value: workspaceLabels.targetTimeline(ipoIntent.targetTimeline),
+    },
+    {
+      label: 'Intended exchange',
+      value: workspaceLabels.intendedExchange(ipoIntent.intendedExchange),
+    },
+    {
+      label: 'Primary purposes',
+      value: workspaceLabels.primaryPurposes(
+        ipoIntent.primaryPurposes,
+        ipoIntent.primaryPurposeOther,
+      ),
+    },
+    {
+      label: 'Merchant banker status',
+      value: workspaceLabels.merchantBankerAppointed(ipoIntent.merchantBankerAppointed),
+    },
+    {
+      label: 'Merchant banker name',
+      value: formatOptionalValue(ipoIntent.merchantBankerName),
+    },
+    {
+      label: 'Preparation stage',
+      value: workspaceLabels.preparationStage(ipoIntent.preparationStage),
+    },
+  ];
+
+  const representativeItems = [
+    { label: 'Full name', value: user.fullName },
+    { label: 'Email', value: user.email },
+    { label: 'Mobile', value: user.phone },
+    { label: 'Designation', value: formatOptionalValue(representative.designation) },
+    {
+      label: 'Relationship',
+      value: workspaceLabels.relationship(
+        representative.relationship,
+        representative.relationshipOther,
+      ),
+    },
+    {
+      label: 'Authorised signatory',
+      value: workspaceLabels.authorisedSignatory(representative.authorisedSignatory),
+    },
+    {
+      label: 'Basis of authority',
+      value: workspaceLabels.basisOfAuthority(
+        representative.basisOfAuthority,
+        representative.basisOfAuthorityOther,
+      ),
+    },
+    {
+      label: 'Primary onboarding contact',
+      value: workspaceLabels.primaryOnboardingContact(representative.primaryOnboardingContact),
+    },
   ];
 
   return (
     <div className="space-y-8">
       <PageHeader
         title="Company Profile"
-        description="Complete information about your company and IPO intent"
+        description="Information captured during SME onboarding"
         breadcrumbs={[
           { label: 'Dashboard', href: '/projects/demo' },
           { label: 'Company Profile' },
         ]}
       />
 
-      {/* Warning Alert */}
-      <div className="bg-warning/5 border border-warning/20 rounded-lg p-4 flex items-start gap-3">
-        <AlertTriangle size={20} className="text-warning flex-shrink-0 mt-0.5" />
-        <div>
-          <h3 className="font-semibold text-warning">Registered Office Verification Pending</h3>
-          <p className="text-sm text-warning/80 mt-1">
-            Your registered office address is pending verification with the MCA. Please follow up on the verification status.
-          </p>
-        </div>
-      </div>
-
-      {/* Legal Identity Section */}
+      <InfoSection title="Representative" items={representativeItems} />
       <InfoSection title="Legal Identity" items={legalIdentity} />
-
-      {/* Registered Office Section */}
       <InfoSection title="Registered Office" items={registeredOffice} />
-
-      {/* Registrations Section */}
-      <InfoSection title="Registrations & Identifiers" items={registrations} />
-
-      {/* Promoters and Directors Section */}
-      <InfoSection title="Promoters & Directors" items={promotersDirectors} />
-
-      {/* IPO Intent Section */}
-      <InfoSection title="IPO Intent" items={ipoIntent} />
-
-      {/* Verification Status */}
-      <div className="bg-card border border-border rounded-lg p-6">
-        <h3 className="font-semibold text-foreground mb-4">Verification Status</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-3 bg-success/5 border border-success/20 rounded-md">
-            <span className="text-sm text-foreground">Certificate of Incorporation</span>
-            <span className="text-xs font-medium text-success">Verified</span>
-          </div>
-          <div className="flex items-center justify-between p-3 bg-warning/5 border border-warning/20 rounded-md">
-            <span className="text-sm text-foreground">Registered Office Address</span>
-            <span className="text-xs font-medium text-warning">Pending</span>
-          </div>
-          <div className="flex items-center justify-between p-3 bg-success/5 border border-success/20 rounded-md">
-            <span className="text-sm text-foreground">Director Identification</span>
-            <span className="text-xs font-medium text-success">Verified</span>
-          </div>
-          <div className="flex items-center justify-between p-3 bg-success/5 border border-success/20 rounded-md">
-            <span className="text-sm text-foreground">Tax Compliance</span>
-            <span className="text-xs font-medium text-success">Verified</span>
-          </div>
-        </div>
-      </div>
+      <InfoSection title="Business" items={businessItems} />
+      <InfoSection title="Registrations & Identifiers" items={registrationItems} />
+      <InfoSection title="Ownership Snapshot" items={ownershipItems} />
+      <InfoSection title="IPO Intent" items={ipoIntentItems} />
     </div>
   );
 }

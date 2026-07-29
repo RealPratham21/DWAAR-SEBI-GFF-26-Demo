@@ -9,7 +9,8 @@ import type { ConstitutionalAmendment } from '@/lib/schemas/company-incorporatio
 import { CONSTITUTIONAL_DOCUMENT_TYPE_LABELS } from '@/lib/types/company-incorporation';
 
 export function ConstitutionalAmendmentsSection() {
-  const { data, setConstitutionalAmendments, notifySaved } = useCompanyIncorporation();
+  const { data, saveConstitutionalAmendments, saveNotice, saveError, clearSaveError } =
+    useCompanyIncorporation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAmendment, setEditingAmendment] = useState<ConstitutionalAmendment | null>(null);
 
@@ -21,20 +22,20 @@ export function ConstitutionalAmendmentsSection() {
     [data.constitutionalAmendments],
   );
 
-  const handleSave = (amendment: ConstitutionalAmendment) => {
+  const handleSave = async (amendment: ConstitutionalAmendment) => {
     const exists = data.constitutionalAmendments.some((item) => item.id === amendment.id);
     const nextAmendments = exists
       ? data.constitutionalAmendments.map((item) => (item.id === amendment.id ? amendment : item))
       : [...data.constitutionalAmendments, amendment];
-    setConstitutionalAmendments(nextAmendments);
-    notifySaved();
+    clearSaveError();
+    await saveConstitutionalAmendments(nextAmendments);
   };
 
-  const handleDelete = (amendment: ConstitutionalAmendment) => {
-    setConstitutionalAmendments(
+  const handleDelete = async (amendment: ConstitutionalAmendment) => {
+    clearSaveError();
+    await saveConstitutionalAmendments(
       data.constitutionalAmendments.filter((item) => item.id !== amendment.id),
     );
-    notifySaved();
   };
 
   return (
@@ -57,6 +58,12 @@ export function ConstitutionalAmendmentsSection() {
           Add Amendment
         </Button>
       </div>
+
+      {saveError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {saveError}
+        </p>
+      ) : null}
 
       <RepeatableRecordsTable
         records={sortedAmendments}

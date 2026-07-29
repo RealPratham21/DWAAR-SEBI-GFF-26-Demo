@@ -17,7 +17,11 @@ export function MetricCard({
   icon,
   variant = 'default',
 }: MetricCardProps) {
-  const displayValue = max ? `${value}/${max}` : `${value}${max ? '' : '%'}`;
+  const displayValue = max
+    ? `${value}/${max}`
+    : typeof value === 'number'
+      ? `${value}%`
+      : String(value);
 
   return (
     <div className="bg-card border border-border rounded-lg p-6">

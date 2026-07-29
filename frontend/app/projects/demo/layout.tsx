@@ -1,15 +1,18 @@
+'use client';
+
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppTopBar } from '@/components/app-topbar';
 import { DwaarCopilot } from '@/components/dwaar-copilot';
 import { ScrollContainerLock } from '@/components/scroll-container-lock';
+import { WorkspaceProvider } from '@/lib/workspace/context';
 
-export default function AuthLayout({
+export default function DemoProjectLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <WorkspaceProvider>
       <ScrollContainerLock />
       <div className="flex h-screen overflow-hidden">
         <AppSidebar />
@@ -21,6 +24,6 @@ export default function AuthLayout({
         </div>
       </div>
       <DwaarCopilot />
-    </>
+    </WorkspaceProvider>
   );
 }
