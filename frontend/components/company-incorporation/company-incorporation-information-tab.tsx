@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { ConstitutionalAmendmentsSection } from '@/components/company-incorporation/constitutional-amendments-section';
 import { ConstitutionalRecordsForm } from '@/components/company-incorporation/constitutional-records-form';
 import { CorporateEventsSection } from '@/components/company-incorporation/corporate-events-section';
@@ -11,15 +10,21 @@ import { OfficesSection } from '@/components/company-incorporation/offices-secti
 import { RegistrationsSection } from '@/components/company-incorporation/registrations-section';
 import type { InformationSectionId } from '@/lib/types/company-incorporation';
 
-export function CompanyIncorporationInformationTab() {
-  const [activeSection, setActiveSection] = useState<InformationSectionId>('legal-identity');
+interface CompanyIncorporationInformationTabProps {
+  activeSection: InformationSectionId;
+  onSectionChange: (section: InformationSectionId) => void;
+}
 
+export function CompanyIncorporationInformationTab({
+  activeSection,
+  onSectionChange,
+}: CompanyIncorporationInformationTabProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-6">
       <aside className="lg:sticky lg:top-6 lg:self-start">
         <InformationSectionNavigation
           activeSection={activeSection}
-          onSectionChange={setActiveSection}
+          onSectionChange={onSectionChange}
         />
       </aside>
 

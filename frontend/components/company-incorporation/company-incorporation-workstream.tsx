@@ -12,22 +12,52 @@ import { CompanyIncorporationReviewTab } from '@/components/company-incorporatio
 import { CompanyIncorporationProvider } from '@/lib/company-incorporation/context';
 import type { Workstream } from '@/lib/types';
 import {
+  INFORMATION_SECTIONS,
   WORKSTREAM_TABS,
+  type InformationSectionId,
   type WorkstreamTabId,
 } from '@/lib/types/company-incorporation';
 import { cn } from '@/lib/utils';
 
 interface CompanyIncorporationWorkstreamProps {
   workstream: Workstream;
+  initialTab?: string;
+  initialSection?: string;
 }
 
-export function CompanyIncorporationWorkstream({ workstream }: CompanyIncorporationWorkstreamProps) {
-  const [activeTab, setActiveTab] = useState<WorkstreamTabId>('information');
+function isWorkstreamTabId(value: string | undefined): value is WorkstreamTabId {
+  return WORKSTREAM_TABS.some((tab) => tab.id === value);
+}
+
+function isInformationSectionId(value: string | undefined): value is InformationSectionId {
+  return INFORMATION_SECTIONS.some((section) => section.id === value);
+}
+
+export function CompanyIncorporationWorkstream({
+  workstream,
+  initialTab,
+  initialSection,
+}: CompanyIncorporationWorkstreamProps) {
+  const [activeTab, setActiveTab] = useState<WorkstreamTabId>(
+    isWorkstreamTabId(initialTab) ? initialTab : 'information',
+  );
+  const [activeSection, setActiveSection] = useState<InformationSectionId>(
+    isInformationSectionId(initialSection) ? initialSection : 'legal-identity',
+  );
   const mainScrollRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     mainScrollRef.current = document.querySelector('main');
   }, []);
+
+  useEffect(() => {
+    if (isWorkstreamTabId(initialTab)) {
+      setActiveTab(initialTab);
+    }
+    if (isInformationSectionId(initialSection)) {
+      setActiveSection(initialSection);
+    }
+  }, [initialSection, initialTab]);
 
   const handleTabChange = (tabId: WorkstreamTabId) => {
     setActiveTab(tabId);
@@ -73,7 +103,12 @@ export function CompanyIncorporationWorkstream({ workstream }: CompanyIncorporat
           />
         ) : null}
 
-        {activeTab === 'information' ? <CompanyIncorporationInformationTab /> : null}
+        {activeTab === 'information' ? (
+          <CompanyIncorporationInformationTab
+            activeSection={activeSection}
+            onSectionChange={setActiveSection}
+          />
+        ) : null}
 
         {activeTab === 'documents' ? <CompanyIncorporationDocumentsTab /> : null}
 

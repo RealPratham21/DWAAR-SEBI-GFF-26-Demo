@@ -67,8 +67,9 @@ def db_session(engine) -> Generator[Session, None, None]:
     with engine.begin() as connection:
         connection.execute(
             text(
-                "TRUNCATE TABLE company_incorporation_workspaces, refresh_sessions, "
-                "onboarding_applications, users RESTART IDENTITY CASCADE"
+                "TRUNCATE TABLE document_versions, documents, user_notifications, "
+                "company_incorporation_workspaces, "
+                "refresh_sessions, onboarding_applications, users RESTART IDENTITY CASCADE"
             )
         )
     session.close()
@@ -118,6 +119,9 @@ def auth_settings(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("REFRESH_COOKIE_SECURE", "false")
     monkeypatch.setenv("REFRESH_COOKIE_SAMESITE", "lax")
     get_settings.cache_clear()
+    from app.storage.s3 import get_object_storage
+
+    get_object_storage.cache_clear()
 
 
 @pytest.fixture
@@ -125,8 +129,9 @@ def truncate_auth_tables(engine) -> None:
     with engine.begin() as connection:
         connection.execute(
             text(
-                "TRUNCATE TABLE company_incorporation_workspaces, refresh_sessions, "
-                "onboarding_applications, users RESTART IDENTITY CASCADE"
+                "TRUNCATE TABLE document_versions, documents, user_notifications, "
+                "company_incorporation_workspaces, "
+                "refresh_sessions, onboarding_applications, users RESTART IDENTITY CASCADE"
             )
         )
 
