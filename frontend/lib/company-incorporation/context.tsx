@@ -21,10 +21,10 @@ import {
 import { ApiClientError } from '@/lib/api/errors';
 import {
   emptyCompanyIncorporationFormData,
-  SESSION_SAVE_MESSAGE,
   type CompanyIncorporationSessionData,
 } from '@/lib/company-incorporation/defaults';
-import type { WorkspaceProgress } from '@/lib/company-incorporation/types';
+import type { SectionSaveResponse, WorkspaceProgress } from '@/lib/company-incorporation/types';
+import { useNotifications } from '@/lib/notifications/context';
 import type {
   CompanyRegistration,
   ConstitutionalAmendment,
@@ -58,11 +58,7 @@ interface CompanyIncorporationContextValue {
 const CompanyIncorporationContext = createContext<CompanyIncorporationContextValue | null>(null);
 
 function applySaveResponse(
-  response: {
-    version: number;
-    payload: CompanyIncorporationSessionData;
-    progress: WorkspaceProgress;
-  },
+  response: SectionSaveResponse,
   setData: (data: CompanyIncorporationSessionData) => void,
   setVersion: (version: number) => void,
   setProgress: (progress: WorkspaceProgress) => void,
@@ -73,6 +69,7 @@ function applySaveResponse(
 }
 
 export function CompanyIncorporationProvider({ children }: { children: ReactNode }) {
+  const { prependNotification } = useNotifications();
   const [data, setData] = useState<CompanyIncorporationSessionData>(
     emptyCompanyIncorporationFormData,
   );
@@ -155,13 +152,14 @@ export function CompanyIncorporationProvider({ children }: { children: ReactNode
   }, []);
 
   const runSave = useCallback(
-    async (saveFn: () => Promise<{ version: number; payload: CompanyIncorporationSessionData; progress: WorkspaceProgress }>) => {
+    async (saveFn: () => Promise<SectionSaveResponse>) => {
       setIsSaving(true);
       setSaveError(null);
       try {
         const response = await saveFn();
         applySaveResponse(response, setData, setVersion, setProgress);
-        setSaveNotice(SESSION_SAVE_MESSAGE);
+        prependNotification(response.notification);
+        setSaveNotice(response.notification.title);
         return true;
       } catch (error) {
         handleSaveError(error);
@@ -170,7 +168,7 @@ export function CompanyIncorporationProvider({ children }: { children: ReactNode
         setIsSaving(false);
       }
     },
-    [handleSaveError],
+    [handleSaveError, prependNotification],
   );
 
   const saveIdentity = useCallback(

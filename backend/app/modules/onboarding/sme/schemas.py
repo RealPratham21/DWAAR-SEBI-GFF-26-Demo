@@ -20,43 +20,87 @@ CIN_REGEX = re.compile(r"^[A-Z0-9]{21}$")
 PIN_REGEX = re.compile(r"^[1-9][0-9]{5}$")
 
 RELATIONSHIP_OPTIONS = {
-    "promoter", "director", "kmp", "employee", "professional-adviser",
-    "authorised-external-representative", "other",
+    "promoter",
+    "director",
+    "kmp",
+    "employee",
+    "professional-adviser",
+    "authorised-external-representative",
+    "other",
 }
 AUTHORISED_SIGNATORY_OPTIONS = {"yes", "no", "unsure"}
 BASIS_OF_AUTHORITY_OPTIONS = {
-    "board-resolution", "power-of-attorney", "employment-position",
-    "constitutional-authority", "other",
+    "board-resolution",
+    "power-of-attorney",
+    "employment-position",
+    "constitutional-authority",
+    "other",
 }
 YES_NO_OPTIONS = {"yes", "no"}
 YES_NO_UNSURE_OPTIONS = {"yes", "no", "unsure"}
 COMPANY_CLASS_OPTIONS = {"public", "private"}
 GST_REQUIRED_OPTIONS = {"yes", "no", "unsure"}
 EMPLOYEE_COUNT_OPTIONS = {
-    "1-10", "11-50", "51-100", "101-250", "251-500", "501-1000", "1000-plus",
+    "1-10",
+    "11-50",
+    "51-100",
+    "101-250",
+    "251-500",
+    "501-1000",
+    "1000-plus",
 }
 ISSUE_TYPE_OPTIONS = {"fresh-issue", "offer-for-sale", "combination", "not-decided"}
 TIMELINE_OPTIONS = {
-    "within-3-months", "3-6-months", "6-12-months", "12-18-months",
-    "more-than-18-months", "not-decided",
+    "within-3-months",
+    "3-6-months",
+    "6-12-months",
+    "12-18-months",
+    "more-than-18-months",
+    "not-decided",
 }
 EXCHANGE_OPTIONS = {"nse-emerge", "bse-sme", "not-decided"}
 MERCHANT_BANKER_OPTIONS = {"yes", "no", "in-discussion", "not-decided"}
 PREPARATION_STAGE_OPTIONS = {
-    "exploring", "internal-preparation", "advisers-being-appointed",
-    "due-diligence-started", "drafting-started", "filing-preparation", "not-sure",
+    "exploring",
+    "internal-preparation",
+    "advisers-being-appointed",
+    "due-diligence-started",
+    "drafting-started",
+    "filing-preparation",
+    "not-sure",
 }
 PRIMARY_INDUSTRY_OPTIONS = {
-    "agriculture-allied", "automotive", "chemicals", "consumer-products",
-    "electronics-electrical", "engineering-capital-goods", "financial-services",
-    "food-processing", "healthcare-pharma", "it-software", "infrastructure-construction",
-    "logistics-transportation", "manufacturing", "media-entertainment",
-    "professional-services", "renewable-energy", "retail-ecommerce", "textiles-apparel", "other",
+    "agriculture-allied",
+    "automotive",
+    "chemicals",
+    "consumer-products",
+    "electronics-electrical",
+    "engineering-capital-goods",
+    "financial-services",
+    "food-processing",
+    "healthcare-pharma",
+    "it-software",
+    "infrastructure-construction",
+    "logistics-transportation",
+    "manufacturing",
+    "media-entertainment",
+    "professional-services",
+    "renewable-energy",
+    "retail-ecommerce",
+    "textiles-apparel",
+    "other",
 }
 ISSUE_PURPOSE_OPTIONS = {
-    "capital-expenditure", "working-capital", "debt-repayment", "acquisition",
-    "general-corporate-purposes", "offer-for-sale", "brand-building-marketing",
-    "technology-investment", "other", "not-decided",
+    "capital-expenditure",
+    "working-capital",
+    "debt-repayment",
+    "acquisition",
+    "general-corporate-purposes",
+    "offer-for-sale",
+    "brand-building-marketing",
+    "technology-investment",
+    "other",
+    "not-decided",
 }
 
 

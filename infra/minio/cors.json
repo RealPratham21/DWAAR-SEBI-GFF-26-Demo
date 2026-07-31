@@ -1,0 +1,9 @@
+[
+  {
+    "AllowedOrigin": ["http://localhost:3000"],
+    "AllowedMethod": ["GET", "PUT", "HEAD"],
+    "AllowedHeader": ["*"],
+    "ExposeHeader": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]

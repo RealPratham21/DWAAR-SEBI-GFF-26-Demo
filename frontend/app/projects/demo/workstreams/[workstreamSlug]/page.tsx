@@ -8,12 +8,18 @@ interface WorkstreamDetailPageProps {
   params: Promise<{
     workstreamSlug: string;
   }>;
+  searchParams: Promise<{
+    tab?: string;
+    section?: string;
+  }>;
 }
 
 export default async function WorkstreamDetailPage({
   params,
+  searchParams,
 }: WorkstreamDetailPageProps) {
   const { workstreamSlug } = await params;
+  const { tab, section } = await searchParams;
   const workstream = getWorkstreamBySlug(workstreamSlug);
 
   if (!workstream) {
@@ -32,7 +38,13 @@ export default async function WorkstreamDetailPage({
   }
 
   if (workstream.slug === 'company-incorporation') {
-    return <CompanyIncorporationWorkstream workstream={workstream} />;
+    return (
+      <CompanyIncorporationWorkstream
+        workstream={workstream}
+        initialTab={tab}
+        initialSection={section}
+      />
+    );
   }
 
   return (

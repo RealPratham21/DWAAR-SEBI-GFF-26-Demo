@@ -29,6 +29,12 @@ from app.modules.company_incorporation.validation import (
     validate_registrations_draft,
 )
 from app.modules.dashboard.service import get_submitted_sme_application
+from app.modules.notifications.constants import WORKSTREAM_SAVE_MESSAGE
+from app.modules.notifications.schemas import SaveAcknowledgementResponse
+from app.modules.notifications.service import (
+    create_workstream_save_notification,
+    to_notification_response,
+)
 
 
 def _now() -> datetime:
@@ -132,7 +138,9 @@ def _assert_version(workspace: CompanyIncorporationWorkspace, expected_version: 
 def _save_payload(
     db: Session,
     workspace: CompanyIncorporationWorkspace,
+    user: User,
     *,
+    section_id: str,
     expected_version: int,
     payload: dict[str, Any],
     saved_section: dict[str, Any],
@@ -144,6 +152,12 @@ def _save_payload(
     workspace.last_saved_at = now
     db.flush()
     db.refresh(workspace)
+    notification = create_workstream_save_notification(
+        db,
+        user=user,
+        section_id=section_id,
+        saved_at=now,
+    )
     progress = _build_progress(workspace.payload)
     return SectionSaveResponse(
         version=workspace.version,
@@ -151,6 +165,11 @@ def _save_payload(
         saved_section=saved_section,
         progress=progress,
         payload=workspace.payload,
+        acknowledgement=SaveAcknowledgementResponse(
+            message=WORKSTREAM_SAVE_MESSAGE,
+            saved_at=now,
+        ),
+        notification=to_notification_response(notification),
     )
 
 
@@ -184,6 +203,8 @@ def save_legal_identity(
     return _save_payload(
         db,
         workspace,
+        user,
+        section_id="legal-identity",
         expected_version=expected_version,
         payload=payload,
         saved_section={"identity": normalized},
@@ -212,6 +233,8 @@ def save_corporate_history(
     return _save_payload(
         db,
         workspace,
+        user,
+        section_id="corporate-history",
         expected_version=expected_version,
         payload=payload,
         saved_section={"corporateEvents": corporate_events},
@@ -240,6 +263,8 @@ def save_offices_contact(
     return _save_payload(
         db,
         workspace,
+        user,
+        section_id="offices-contact",
         expected_version=expected_version,
         payload=payload,
         saved_section={"offices": offices},
@@ -270,6 +295,8 @@ def save_constitutional_documents(
     return _save_payload(
         db,
         workspace,
+        user,
+        section_id="constitutional-documents",
         expected_version=expected_version,
         payload=payload,
         saved_section={
@@ -307,6 +334,8 @@ def save_core_registrations(
     return _save_payload(
         db,
         workspace,
+        user,
+        section_id="core-registrations",
         expected_version=expected_version,
         payload=payload,
         saved_section={"registrations": normalized},
@@ -335,6 +364,8 @@ def save_issuer_confirmations(
     return _save_payload(
         db,
         workspace,
+        user,
+        section_id="issuer-confirmations",
         expected_version=expected_version,
         payload=payload,
         saved_section={"confirmations": confirmations},

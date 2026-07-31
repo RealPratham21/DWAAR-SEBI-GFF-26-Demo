@@ -48,6 +48,20 @@ class Settings(BaseSettings):
         alias="REFRESH_COOKIE_SAMESITE",
     )
     refresh_cookie_domain: str | None = Field(default=None, alias="REFRESH_COOKIE_DOMAIN")
+    s3_endpoint: str = Field(
+        default="http://minio:9000",
+        alias="S3_ENDPOINT",
+    )
+    s3_public_endpoint: str = Field(
+        default="http://localhost:9000",
+        alias="S3_PUBLIC_ENDPOINT",
+    )
+    s3_access_key: str = Field(default="dwaar_minio", alias="S3_ACCESS_KEY")
+    s3_secret_key: str = Field(default="dwaar_minio_secret", alias="S3_SECRET_KEY")
+    s3_bucket: str = Field(default="dwaar-documents", alias="S3_BUCKET")
+    s3_region: str = Field(default="us-east-1", alias="S3_REGION")
+    s3_secure: bool = Field(default=False, alias="S3_SECURE")
+    s3_presigned_expiry_seconds: int = Field(default=900, alias="S3_PRESIGNED_EXPIRY_SECONDS")
 
     @property
     def frontend_origins_list(self) -> list[str]:

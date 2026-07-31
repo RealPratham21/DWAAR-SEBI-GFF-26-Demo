@@ -4,6 +4,8 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
+from app.modules.notifications.schemas import NotificationResponse, SaveAcknowledgementResponse
+
 
 class ApiModel(BaseModel):
     model_config = ConfigDict(
@@ -73,6 +75,8 @@ class SectionSaveResponse(ApiModel):
     saved_section: dict[str, Any]
     progress: WorkspaceProgressResponse
     payload: dict[str, Any]
+    acknowledgement: SaveAcknowledgementResponse
+    notification: NotificationResponse
 
 
 class DashboardCompanyIncorporationProgress(ApiModel):

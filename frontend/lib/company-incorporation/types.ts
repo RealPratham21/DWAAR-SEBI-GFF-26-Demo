@@ -1,4 +1,5 @@
 import type { CompanyIncorporationSessionData } from '@/lib/company-incorporation/defaults';
+import type { SaveAcknowledgement, UserNotification } from '@/lib/notifications/types';
 
 export type SectionStatus = 'not_started' | 'in_progress' | 'complete';
 export type OverallStatus = 'not_started' | 'in_progress' | 'complete';
@@ -31,6 +32,8 @@ export interface SectionSaveResponse {
   savedSection: Record<string, unknown>;
   progress: WorkspaceProgress;
   payload: CompanyIncorporationSessionData;
+  acknowledgement: SaveAcknowledgement;
+  notification: UserNotification;
 }
 
 export interface DashboardCompanyIncorporationProgress {
