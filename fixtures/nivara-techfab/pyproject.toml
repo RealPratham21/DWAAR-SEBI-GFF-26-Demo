@@ -1,0 +1,43 @@
+[project]
+name = "nivara-techfab-fixtures"
+version = "0.1.0"
+description = "Synthetic Company & Incorporation document fixtures for Dwaar"
+requires-python = ">=3.11"
+dependencies = [
+    "jinja2>=3.1.0",
+    "weasyprint>=62.0",
+    "pymupdf>=1.24.0",
+    "pillow>=10.4.0",
+    "opencv-python-headless>=4.10.0",
+    "numpy>=2.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = []
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+    "ruff>=0.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "ruff>=0.9.0",
+]
+local = [
+    "playwright>=1.49.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "scripts"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100

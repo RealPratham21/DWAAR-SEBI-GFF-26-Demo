@@ -1,0 +1,28 @@
+{
+  "fixtureDocumentId": "06-inc22-acknowledgement",
+  "outputFilename": "06-nivara-inc22-acknowledgement.pdf",
+  "requirementKey": "filing-acknowledgement-or-srn",
+  "templateName": "filing-acknowledgement.html",
+  "outputCategory": "clean",
+  "documentTitle": "Filing Acknowledgement Receipt",
+  "documentSpecific": {
+    "receiptReference": "SYN-ACK-INC22-2023-328517",
+    "acknowledgementStatus": "Accepted for processing"
+  },
+  "sharedFactsUsed": [
+    "documentReferences.officeChange",
+    "identity.legalName",
+    "identity.cin"
+  ],
+  "overrides": {},
+  "expectedPageCount": 1,
+  "expectedExtractedFacts": [
+    { "factKey": "corporateEvents.registered-office-change.srn", "expectedValueRef": "documentReferences.officeChange.srn", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "corporateEvents.registered-office-change.filingDate", "expectedValueRef": "documentReferences.officeChange.filingDate", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "corporateEvents.registered-office-change.filingForm", "expectedValueRef": "documentReferences.officeChange.filingForm", "evidencePage": 1, "confidenceCategory": "high" }
+  ],
+  "expectedNativeText": true,
+  "expectedConflicts": [],
+  "expectedWarnings": [],
+  "mainJuryDemoPack": true
+}

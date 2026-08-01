@@ -49,8 +49,19 @@ class DocumentVersion(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     document: Mapped["Document"] = relationship(back_populates="versions")
     uploaded_by_user: Mapped["User"] = relationship()
+    processing_runs: Mapped[list["DocumentProcessingRun"]] = relationship(
+        back_populates="document_version",
+        cascade="all, delete-orphan",
+    )
+    pages: Mapped[list["DocumentPage"]] = relationship(
+        back_populates="document_version",
+        cascade="all, delete-orphan",
+        foreign_keys="DocumentPage.document_version_id",
+    )
 
 
 if TYPE_CHECKING:
     from app.models.document import Document
+    from app.models.document_page import DocumentPage
+    from app.models.document_processing_run import DocumentProcessingRun
     from app.models.user import User

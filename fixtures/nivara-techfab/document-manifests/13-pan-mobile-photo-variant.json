@@ -1,0 +1,33 @@
+{
+  "fixtureDocumentId": "13-pan-mobile-photo-variant",
+  "outputFilename": "13-nivara-pan-mobile-photo.jpg",
+  "requirementKey": "pan-certificate",
+  "templateName": null,
+  "outputCategory": "quality-stress",
+  "sourceCleanFilename": "08-nivara-pan-registration.pdf",
+  "documentTitle": "PAN Registration Record — Mobile Photo Variant",
+  "documentSpecific": {
+    "transformation": "mobile-photo",
+    "seed": 20260731,
+    "jpegQuality": 78
+  },
+  "sharedFactsUsed": [
+    "registrations.pan.number",
+    "identity.legalName"
+  ],
+  "overrides": {},
+  "expectedPageCount": 1,
+  "expectedExtractedFacts": [
+    { "factKey": "registrations.pan.number", "expectedValueRef": "canonicalCurrentFacts.registrations.pan.number", "evidencePage": 1, "confidenceCategory": "medium" },
+    { "factKey": "identity.legalName", "expectedValueRef": "canonicalCurrentFacts.identity.legalName", "evidencePage": 1, "confidenceCategory": "medium" }
+  ],
+  "expectedNativeText": false,
+  "expectedConflicts": [],
+  "expectedWarnings": [
+    {
+      "issueCategory": "quality-warning",
+      "message": "Mobile photo JPEG; OCR required; review-required confidence expected."
+    }
+  ],
+  "mainJuryDemoPack": false
+}

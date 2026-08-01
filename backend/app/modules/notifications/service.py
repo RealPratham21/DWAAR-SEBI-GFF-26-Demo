@@ -15,10 +15,14 @@ from app.modules.notifications.constants import (
     DOCUMENT_UPLOAD_TITLE,
     MAX_NOTIFICATION_LIMIT,
     SECTION_SAVE_TITLES,
+    STRUCTURED_EXTRACTION_FAILED_PREFIX,
+    STRUCTURED_ISSUE_TITLE_PREFIX,
     WORKSTREAM_SAVE_MESSAGE,
     NotificationErrorCode,
     NotificationType,
     build_company_incorporation_documents_route,
+    build_company_incorporation_facts_route,
+    build_company_incorporation_questions_route,
     build_company_incorporation_target_route,
 )
 from app.modules.notifications.schemas import (
@@ -172,6 +176,170 @@ def create_document_archive_notification(
         message=DOCUMENT_ARCHIVE_MESSAGE,
         saved_at=saved_at,
     )
+
+
+def _processing_notification_route(processing_run_id: uuid.UUID) -> str:
+    base = build_company_incorporation_documents_route()
+    return f"{base}&processingRunId={processing_run_id}"
+
+
+def _find_processing_notification(
+    db: Session,
+    *,
+    user_id: uuid.UUID,
+    processing_run_id: uuid.UUID,
+) -> UserNotification | None:
+    route = _processing_notification_route(processing_run_id)
+    return db.scalar(
+        select(UserNotification).where(
+            UserNotification.user_id == user_id,
+            UserNotification.target_route == route,
+        )
+    )
+
+
+def create_document_processing_success_notification(
+    db: Session,
+    *,
+    user: User,
+    requirement_name: str,
+    processing_run_id: uuid.UUID,
+    saved_at: datetime,
+) -> UserNotification | None:
+    existing = _find_processing_notification(
+        db,
+        user_id=user.id,
+        processing_run_id=processing_run_id,
+    )
+    if existing is not None:
+        return existing
+
+    notification = UserNotification(
+        user_id=user.id,
+        notification_type=NotificationType.WORKSTREAM_DOCUMENT,
+        title=f"{requirement_name} processed",
+        message=f"{requirement_name} was processed successfully.",
+        workstream_slug=COMPANY_INCORPORATION_SLUG,
+        section_id="documents",
+        target_route=_processing_notification_route(processing_run_id),
+        read_at=None,
+        created_at=saved_at,
+        updated_at=saved_at,
+    )
+    db.add(notification)
+    db.flush()
+    db.refresh(notification)
+    return notification
+
+
+def create_document_processing_failed_notification(
+    db: Session,
+    *,
+    user: User,
+    requirement_name: str,
+    processing_run_id: uuid.UUID,
+    saved_at: datetime,
+) -> UserNotification | None:
+    from app.modules.notifications.constants import DOCUMENT_PROCESSING_FAILED_PREFIX
+
+    existing = _find_processing_notification(
+        db,
+        user_id=user.id,
+        processing_run_id=processing_run_id,
+    )
+    if existing is not None:
+        return existing
+
+    notification = UserNotification(
+        user_id=user.id,
+        notification_type=NotificationType.WORKSTREAM_DOCUMENT,
+        title=f"{DOCUMENT_PROCESSING_FAILED_PREFIX} {requirement_name}",
+        message=f"{requirement_name} could not be processed. You can retry processing later.",
+        workstream_slug=COMPANY_INCORPORATION_SLUG,
+        section_id="documents",
+        target_route=_processing_notification_route(processing_run_id),
+        read_at=None,
+        created_at=saved_at,
+        updated_at=saved_at,
+    )
+    db.add(notification)
+    db.flush()
+    db.refresh(notification)
+    return notification
+
+
+def create_structured_extraction_failed_notification(
+    db: Session,
+    *,
+    user: User,
+    requirement_name: str,
+    structured_run_id: uuid.UUID,
+    saved_at: datetime,
+) -> UserNotification | None:
+    route = build_company_incorporation_facts_route(structured_run_id=str(structured_run_id))
+    existing = db.scalar(
+        select(UserNotification).where(
+            UserNotification.user_id == user.id,
+            UserNotification.target_route == route,
+        )
+    )
+    if existing is not None:
+        return existing
+    notification = UserNotification(
+        user_id=user.id,
+        notification_type=NotificationType.WORKSTREAM_DOCUMENT,
+        title=f"{STRUCTURED_EXTRACTION_FAILED_PREFIX} {requirement_name}",
+        message=(
+            f"Fact extraction for {requirement_name} did not complete successfully. "
+            "You can retry structured extraction later."
+        ),
+        workstream_slug=COMPANY_INCORPORATION_SLUG,
+        section_id="facts-evidence",
+        target_route=route,
+        read_at=None,
+        created_at=saved_at,
+        updated_at=saved_at,
+    )
+    db.add(notification)
+    db.flush()
+    db.refresh(notification)
+    return notification
+
+
+def create_structured_issue_notification(
+    db: Session,
+    *,
+    user: User,
+    issue: object,
+    saved_at: datetime,
+) -> UserNotification | None:
+    issue_id = str(getattr(issue, "id"))
+    route = build_company_incorporation_questions_route(issue_id=issue_id)
+    existing = db.scalar(
+        select(UserNotification).where(
+            UserNotification.user_id == user.id,
+            UserNotification.target_route == route,
+        )
+    )
+    if existing is not None:
+        return existing
+    title = str(getattr(issue, "title", "Fact issue"))
+    notification = UserNotification(
+        user_id=user.id,
+        notification_type=NotificationType.WORKSTREAM_DOCUMENT,
+        title=f"{STRUCTURED_ISSUE_TITLE_PREFIX}: {title}"[:255],
+        message=str(getattr(issue, "description", "A document fact needs review.")),
+        workstream_slug=COMPANY_INCORPORATION_SLUG,
+        section_id="questions-conflicts",
+        target_route=route,
+        read_at=None,
+        created_at=saved_at,
+        updated_at=saved_at,
+    )
+    db.add(notification)
+    db.flush()
+    db.refresh(notification)
+    return notification
 
 
 def list_notifications(

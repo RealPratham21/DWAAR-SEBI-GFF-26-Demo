@@ -63,6 +63,109 @@ class Settings(BaseSettings):
     s3_secure: bool = Field(default=False, alias="S3_SECURE")
     s3_presigned_expiry_seconds: int = Field(default=900, alias="S3_PRESIGNED_EXPIRY_SECONDS")
 
+    # Document processing worker
+    doc_processing_poll_interval_seconds: float = Field(
+        default=2.0,
+        alias="DOC_PROCESSING_POLL_INTERVAL_SECONDS",
+    )
+    doc_processing_max_attempts: int = Field(default=3, alias="DOC_PROCESSING_MAX_ATTEMPTS")
+    doc_processing_timeout_seconds: int = Field(
+        default=300,
+        alias="DOC_PROCESSING_TIMEOUT_SECONDS",
+    )
+    doc_processing_heartbeat_interval_seconds: float = Field(
+        default=15.0,
+        alias="DOC_PROCESSING_HEARTBEAT_INTERVAL_SECONDS",
+    )
+    doc_processing_stale_heartbeat_seconds: int = Field(
+        default=90,
+        alias="DOC_PROCESSING_STALE_HEARTBEAT_SECONDS",
+    )
+    doc_processing_max_pages: int = Field(default=50, alias="DOC_PROCESSING_MAX_PAGES")
+    doc_processing_ocr_dpi: int = Field(default=280, alias="DOC_PROCESSING_OCR_DPI")
+    doc_processing_max_image_pixels: int = Field(
+        default=40_000_000,
+        alias="DOC_PROCESSING_MAX_IMAGE_PIXELS",
+    )
+    doc_processing_max_render_pixels: int = Field(
+        default=25_000_000,
+        alias="DOC_PROCESSING_MAX_RENDER_PIXELS",
+    )
+    doc_processing_native_min_alnum: int = Field(
+        default=40,
+        alias="DOC_PROCESSING_NATIVE_MIN_ALNUM",
+    )
+    doc_processing_native_min_words: int = Field(
+        default=8,
+        alias="DOC_PROCESSING_NATIVE_MIN_WORDS",
+    )
+    doc_processing_native_min_printable_ratio: float = Field(
+        default=0.75,
+        alias="DOC_PROCESSING_NATIVE_MIN_PRINTABLE_RATIO",
+    )
+    doc_processing_ocr_low_confidence: float = Field(
+        default=55.0,
+        alias="DOC_PROCESSING_OCR_LOW_CONFIDENCE",
+    )
+    doc_processing_low_resolution_dpi: int = Field(
+        default=120,
+        alias="DOC_PROCESSING_LOW_RESOLUTION_DPI",
+    )
+    doc_processing_processor_version: str = Field(
+        default="1.1.0",
+        alias="DOC_PROCESSING_PROCESSOR_VERSION",
+    )
+    doc_processing_output_schema_version: int = Field(
+        default=2,
+        alias="DOC_PROCESSING_OUTPUT_SCHEMA_VERSION",
+    )
+    doc_processing_pages_default_limit: int = Field(
+        default=20,
+        alias="DOC_PROCESSING_PAGES_DEFAULT_LIMIT",
+    )
+    doc_processing_pages_max_limit: int = Field(
+        default=50,
+        alias="DOC_PROCESSING_PAGES_MAX_LIMIT",
+    )
+    doc_processing_allow_full_content_api: bool = Field(
+        default=True,
+        alias="DOC_PROCESSING_ALLOW_FULL_CONTENT_API",
+    )
+    doc_processing_heartbeat_path: str = Field(
+        default="/tmp/document-worker.heartbeat",
+        alias="DOC_PROCESSING_HEARTBEAT_PATH",
+    )
+
+    # Structured fact extraction
+    structured_extraction_enabled: bool = Field(
+        default=False,
+        alias="STRUCTURED_EXTRACTION_ENABLED",
+    )
+    structured_extraction_provider: str = Field(
+        default="cohere",
+        alias="STRUCTURED_EXTRACTION_PROVIDER",
+    )
+    cohere_api_key: str = Field(default="", alias="COHERE_API_KEY")
+    cohere_model: str = Field(
+        default="command-a-plus-05-2026",
+        alias="COHERE_MODEL",
+    )
+    cohere_timeout_seconds: int = Field(default=60, alias="COHERE_TIMEOUT_SECONDS")
+    cohere_max_retries: int = Field(default=2, alias="COHERE_MAX_RETRIES")
+    cohere_temperature: float = Field(default=0.0, alias="COHERE_TEMPERATURE")
+    structured_extraction_max_attempts: int = Field(
+        default=3,
+        alias="STRUCTURED_EXTRACTION_MAX_ATTEMPTS",
+    )
+    structured_extraction_stale_heartbeat_seconds: int = Field(
+        default=120,
+        alias="STRUCTURED_EXTRACTION_STALE_HEARTBEAT_SECONDS",
+    )
+    structured_extraction_input_max_chars: int = Field(
+        default=120_000,
+        alias="STRUCTURED_EXTRACTION_INPUT_MAX_CHARS",
+    )
+
     @property
     def frontend_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.frontend_origins.split(",") if origin.strip()]

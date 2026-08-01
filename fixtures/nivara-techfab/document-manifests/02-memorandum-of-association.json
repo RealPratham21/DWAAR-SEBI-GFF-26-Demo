@@ -1,0 +1,32 @@
+{
+  "fixtureDocumentId": "02-memorandum-of-association",
+  "outputFilename": "02-nivara-memorandum-of-association.pdf",
+  "requirementKey": "current-certified-moa",
+  "templateName": "memorandum-of-association.html",
+  "outputCategory": "clean",
+  "documentTitle": "Memorandum of Association",
+  "documentSpecific": {
+    "certificationDate": "2019-06-12",
+    "certificationLabel": "Certified true copy — synthetic demo record"
+  },
+  "sharedFactsUsed": [
+    "constitutionalRecord.moaVersionDate",
+    "constitutionalRecord.mainObjectClauseNumbers",
+    "constitutionalRecord.mainObjectText",
+    "identity.legalName",
+    "identity.governingAct"
+  ],
+  "overrides": {},
+  "expectedPageCount": { "min": 3, "max": 6 },
+  "expectedExtractedFacts": [
+    { "factKey": "constitutionalRecord.moaVersionDate", "expectedValueRef": "canonicalCurrentFacts.constitutionalRecord.moaVersionDate", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "constitutionalRecord.mainObjectClauseNumbers", "expectedValueRef": "canonicalCurrentFacts.constitutionalRecord.mainObjectClauseNumbers", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "constitutionalRecord.mainObjectText", "expectedValueRef": "canonicalCurrentFacts.constitutionalRecord.mainObjectText", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "identity.legalName", "expectedValueRef": "canonicalCurrentFacts.identity.legalName", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "identity.governingAct", "expectedValueRef": "canonicalCurrentFacts.identity.governingAct", "evidencePage": 2, "confidenceCategory": "medium" }
+  ],
+  "expectedNativeText": true,
+  "expectedConflicts": [],
+  "expectedWarnings": [],
+  "mainJuryDemoPack": true
+}

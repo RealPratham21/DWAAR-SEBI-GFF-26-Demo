@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Articles of Association{% endblock %}
+{% block content %}
+<div class="doc-header">
+  <h1>ARTICLES OF ASSOCIATION</h1>
+  <div class="subtitle">{{ gt.informationTab.identity.legalName }} · CIN {{ gt.informationTab.identity.cin }}</div>
+</div>
+<p><span class="badge">Version date: {{ gt.informationTab.constitutionalRecord.aoaVersionDate }}</span></p>
+<p>{{ doc.certificationLabel }}</p>
+
+<div class="section-title">1. Preliminary</div>
+<p>These Articles of Association regulate the management of {{ gt.informationTab.identity.legalName }} in accordance with the {{ labels.governingAct }}.</p>
+
+<div class="section-title">2. Share Capital and Variation of Rights</div>
+<p>The issued share capital of the company shall be as stated in the Memorandum of Association. The company may issue preference shares or other classes of shares in accordance with applicable law.</p>
+
+<div class="section-title">3. Transfer and Transmission of Shares</div>
+<p>Subject to the provisions of the Act and these Articles, shares shall be transferable by instrument in writing in the prescribed form.</p>
+
+<div class="page-break"></div>
+<div class="section-title">4. General Meetings</div>
+<p>General meetings of the company shall be convened in accordance with the Act. Not less than twenty-one days' notice shall be given for an annual general meeting unless a shorter period is agreed.</p>
+
+<div class="section-title">5. Board of Directors</div>
+<p>The number of directors shall not be less than two and not more than fifteen. Directors shall be appointed in accordance with the Act and these Articles.</p>
+
+<div class="section-title">6. Notices</div>
+<p>Any notice may be served by the company upon any member by sending it through post, courier, electronic communication or delivery at the registered office address.</p>
+
+<div class="page-break"></div>
+<div class="section-title">7. Dividends and Reserves</div>
+<p>The company may declare dividends subject to applicable law and the recommendations of the board. A general reserve may be created and maintained as the board considers appropriate.</p>
+
+<div class="section-title">8. Accounts and Audit</div>
+<p>The board shall cause proper books of account to be kept and shall prepare financial statements in accordance with applicable accounting standards. Auditors shall be appointed in the manner prescribed by law.</p>
+
+<div class="section-title">9. Common Seal</div>
+<p>The company may adopt a common seal, the custody and use of which shall be regulated by the board.</p>
+
+<div class="page-break"></div>
+<div class="section-title">10. Indemnity and Insurance</div>
+<p>Subject to applicable law, the company may indemnify directors and officers to the extent permitted and may maintain insurance for their benefit.</p>
+
+<div class="section-title">Certification</div>
+<p>{{ doc.certificationLabel }}. Synthetic demo record for extraction testing only.</p>
+
+<div class="signature-block">
+  <div><div class="signature-line">Company Secretary (Synthetic Placeholder)</div></div>
+  <div><div class="signature-line">Certification date: {{ doc.certificationDate }}</div></div>
+</div>
+{% endblock %}

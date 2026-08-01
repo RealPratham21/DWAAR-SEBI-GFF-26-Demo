@@ -1,0 +1,37 @@
+{
+  "fixtureDocumentId": "05-inc22-registered-office",
+  "outputFilename": "05-nivara-inc22-registered-office.pdf",
+  "requirementKey": "current-registered-office-filing",
+  "templateName": "inc22-filing.html",
+  "outputCategory": "clean",
+  "documentTitle": "Form INC-22 — Notice of Situation of Registered Office",
+  "documentSpecific": {
+    "attachments": [
+      "Board resolution dated 2023-08-07",
+      "Registered-office address proof",
+      "Copy of lease deed (extract)"
+    ]
+  },
+  "sharedFactsUsed": [
+    "documentReferences.officeChange",
+    "identity.legalName",
+    "identity.cin",
+    "offices.original",
+    "offices.current"
+  ],
+  "overrides": {},
+  "expectedPageCount": 2,
+  "expectedExtractedFacts": [
+    { "factKey": "offices.current.fullAddress", "expectedValueRef": "canonicalCurrentFacts.offices.current", "evidencePage": 2, "confidenceCategory": "high" },
+    { "factKey": "offices.original.fullAddress", "expectedValueRef": "historicalFacts.offices.original", "evidencePage": 2, "confidenceCategory": "high" },
+    { "factKey": "corporateEvents.registered-office-change.effectiveDate", "expectedValueRef": "documentReferences.officeChange.effectiveDate", "evidencePage": 2, "confidenceCategory": "high" },
+    { "factKey": "corporateEvents.registered-office-change.filingDate", "expectedValueRef": "documentReferences.officeChange.filingDate", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "corporateEvents.registered-office-change.filingForm", "expectedValueRef": "documentReferences.officeChange.filingForm", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "corporateEvents.registered-office-change.srn", "expectedValueRef": "documentReferences.officeChange.srn", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "offices.current.occupancyType", "expectedValueRef": "canonicalCurrentFacts.offices.current.occupancyType", "evidencePage": 2, "confidenceCategory": "medium" }
+  ],
+  "expectedNativeText": true,
+  "expectedConflicts": [],
+  "expectedWarnings": [],
+  "mainJuryDemoPack": true
+}

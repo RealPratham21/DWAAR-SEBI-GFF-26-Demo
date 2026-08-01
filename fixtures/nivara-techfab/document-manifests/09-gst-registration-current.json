@@ -1,0 +1,37 @@
+{
+  "fixtureDocumentId": "09-gst-registration-current",
+  "outputFilename": "09-nivara-gst-registration-current.pdf",
+  "requirementKey": "gst-registration-certificates",
+  "templateName": "gst-registration.html",
+  "outputCategory": "clean",
+  "documentTitle": "GST Registration Certificate — Current",
+  "documentSpecific": {
+    "variant": "current",
+    "tradeName": "Nivara Techfab",
+    "constitutionOfBusiness": "Private Limited Company",
+    "stateJurisdiction": "Maharashtra",
+    "additionalPlacesOfBusiness": "None",
+    "certificateLabel": "Amended certificate reflecting current principal place of business"
+  },
+  "sharedFactsUsed": [
+    "registrations.gstin",
+    "offices.current",
+    "identity.legalName"
+  ],
+  "overrides": {
+    "principalAddressKey": "current"
+  },
+  "expectedPageCount": 2,
+  "expectedExtractedFacts": [
+    { "factKey": "registrations.gstin.number", "expectedValueRef": "canonicalCurrentFacts.registrations.gstin.number", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "identity.legalName", "expectedValueRef": "canonicalCurrentFacts.identity.legalName", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "registrations.gstin.addressOnRegistration", "expectedValueRef": "canonicalCurrentFacts.offices.current", "evidencePage": 2, "confidenceCategory": "high" },
+    { "factKey": "registrations.gstin.registrationDate", "expectedValueRef": "canonicalCurrentFacts.registrations.gstin.registrationDate", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "registrations.gstin.effectiveDate", "expectedValueRef": "canonicalCurrentFacts.registrations.gstin.effectiveDate", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "registrations.gstin.status", "expectedValueRef": "canonicalCurrentFacts.registrations.gstin.status", "evidencePage": 1, "confidenceCategory": "high" }
+  ],
+  "expectedNativeText": true,
+  "expectedConflicts": [],
+  "expectedWarnings": [],
+  "mainJuryDemoPack": true
+}

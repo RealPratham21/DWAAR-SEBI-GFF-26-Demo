@@ -27,6 +27,8 @@ services:
       UV_PROJECT_ENVIRONMENT: /opt/venv
       DATABASE_URL: ${DATABASE_URL}
     command: ["uv", "run", "alembic", "upgrade", "head"]
+    volumes:
+      - ./backend:/app
     depends_on:
       db:
         condition: service_healthy
@@ -106,6 +108,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - ./fixtures:/fixtures:ro
     depends_on:
       db:
         condition: service_healthy
@@ -125,6 +128,72 @@ services:
       timeout: 5s
       retries: 10
       start_period: 15s
+
+  document-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      UV_PROJECT_ENVIRONMENT: /opt/venv
+      APP_NAME: ${APP_NAME}
+      APP_ENV: ${APP_ENV}
+      DEBUG: ${DEBUG}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      S3_ENDPOINT: ${S3_ENDPOINT:-http://minio:9000}
+      S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT:-http://localhost:9000}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-dwaar_minio}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-dwaar_minio_secret}
+      S3_BUCKET: ${S3_BUCKET:-dwaar-documents}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_SECURE: ${S3_SECURE:-false}
+      DOC_PROCESSING_POLL_INTERVAL_SECONDS: ${DOC_PROCESSING_POLL_INTERVAL_SECONDS:-2}
+      DOC_PROCESSING_MAX_ATTEMPTS: ${DOC_PROCESSING_MAX_ATTEMPTS:-3}
+      DOC_PROCESSING_TIMEOUT_SECONDS: ${DOC_PROCESSING_TIMEOUT_SECONDS:-300}
+      DOC_PROCESSING_HEARTBEAT_INTERVAL_SECONDS: ${DOC_PROCESSING_HEARTBEAT_INTERVAL_SECONDS:-15}
+      DOC_PROCESSING_STALE_HEARTBEAT_SECONDS: ${DOC_PROCESSING_STALE_HEARTBEAT_SECONDS:-90}
+      DOC_PROCESSING_MAX_PAGES: ${DOC_PROCESSING_MAX_PAGES:-50}
+      DOC_PROCESSING_OCR_DPI: ${DOC_PROCESSING_OCR_DPI:-280}
+      DOC_PROCESSING_HEARTBEAT_PATH: /tmp/document-worker.heartbeat
+      STRUCTURED_EXTRACTION_ENABLED: ${STRUCTURED_EXTRACTION_ENABLED:-false}
+      STRUCTURED_EXTRACTION_PROVIDER: ${STRUCTURED_EXTRACTION_PROVIDER:-cohere}
+      COHERE_API_KEY: ${COHERE_API_KEY:-}
+      COHERE_MODEL: ${COHERE_MODEL:-command-a-plus-05-2026}
+      COHERE_TIMEOUT_SECONDS: ${COHERE_TIMEOUT_SECONDS:-60}
+      COHERE_MAX_RETRIES: ${COHERE_MAX_RETRIES:-2}
+      COHERE_TEMPERATURE: ${COHERE_TEMPERATURE:-0}
+      STRUCTURED_EXTRACTION_MAX_ATTEMPTS: ${STRUCTURED_EXTRACTION_MAX_ATTEMPTS:-3}
+    command:
+      [
+        "uv",
+        "run",
+        "python",
+        "-m",
+        "app.modules.company_incorporation.document_processing.worker",
+      ]
+    volumes:
+      - ./backend:/app
+      - ./fixtures:/fixtures:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"from pathlib import Path; from datetime import datetime, timezone; p=Path('/tmp/document-worker.heartbeat'); import sys; sys.exit(0 if p.exists() and (datetime.now(timezone.utc)-datetime.fromisoformat(p.read_text().strip())).total_seconds()<60 else 1)\"",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   frontend:
     build:
@@ -147,6 +216,18 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+
+  fixture-generator:
+    profiles: ["fixtures"]
+    build:
+      context: .
+      dockerfile: fixtures/nivara-techfab/Dockerfile
+    volumes:
+      - ./fixtures/nivara-techfab:/workspace/fixtures/nivara-techfab
+      - ./backend:/workspace/backend
+    working_dir: /workspace/fixtures/nivara-techfab
+    command: ["sh", "-c", "python scripts/generate_documents.py && python scripts/generate_quality_variants.py && python scripts/validate_fixture.py"]
+    restart: "no"
 
 volumes:
   postgres_data:

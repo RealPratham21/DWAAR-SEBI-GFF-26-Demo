@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Form INC-22 — Registered Office{% endblock %}
+{% block content %}
+<div class="doc-header">
+  <h1>FORM INC-22 — NOTICE OF SITUATION OR CHANGE OF REGISTERED OFFICE</h1>
+  <div class="subtitle">Synthetic filing record for demo extraction testing</div>
+</div>
+<div class="meta-grid">
+  <div class="meta-item"><label>Company Name</label><div class="value">{{ gt.informationTab.identity.legalName }}</div></div>
+  <div class="meta-item"><label>CIN</label><div class="value">{{ gt.informationTab.identity.cin }}</div></div>
+  <div class="meta-item"><label>Form Type</label><div class="value">{{ gt.corporateEvents.registeredOfficeChange.filingForm }}</div></div>
+  <div class="meta-item"><label>SRN</label><div class="value">{{ gt.corporateEvents.registeredOfficeChange.srn }}</div></div>
+  <div class="meta-item"><label>Filing Date</label><div class="value">{{ gt.corporateEvents.registeredOfficeChange.filingDate }}</div></div>
+  <div class="meta-item"><label>Effective Date</label><div class="value">{{ gt.corporateEvents.registeredOfficeChange.effectiveDate }}</div></div>
+</div>
+
+<div class="section-title">Previous Registered Office</div>
+<p>{{ gt.historicalFacts.registeredOffices.original.formattedSingleLine }}</p>
+
+<div class="section-title">Current Registered Office</div>
+<p>{{ gt.canonicalFacts.registeredOffice.formattedSingleLine }}</p>
+
+<table class="data-table">
+  <tr><th>Occupancy type</th><td>{{ labels.occupancyType }}</td></tr>
+  <tr><th>Attachments</th><td>Board resolution dated {{ gt.corporateEvents.registeredOfficeChange.boardResolutionDate }}; address proof; utility/lease evidence (synthetic bundle)</td></tr>
+</table>
+
+<div class="page-break"></div>
+<div class="section-title">Declaration</div>
+<p>
+  The company hereby gives notice of change in the situation of its registered office. The information stated herein is furnished for synthetic demo purposes only.
+</p>
+<div class="signature-block">
+  <div><div class="signature-line">Authorised Signatory (Synthetic)</div></div>
+  <div><div class="signature-line">Date: {{ gt.corporateEvents.registeredOfficeChange.filingDate }}</div></div>
+</div>
+{% endblock %}

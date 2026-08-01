@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Board Resolution — Registered Office Change{% endblock %}
+{% block content %}
+<div class="doc-header">
+  <h1>EXTRACT OF BOARD RESOLUTION</h1>
+  <div class="subtitle">{{ gt.informationTab.identity.legalName }} · CIN {{ gt.informationTab.identity.cin }}</div>
+</div>
+<div class="meta-grid">
+  <div class="meta-item"><label>Board Meeting Date</label><div class="value">{{ gt.corporateEvents.registeredOfficeChange.boardResolutionDate }}</div></div>
+  <div class="meta-item"><label>Event Type</label><div class="value">registered-office-change</div></div>
+  <div class="meta-item"><label>Resolution Reference</label><div class="value">{{ doc.resolutionNumber }}</div></div>
+</div>
+
+<div class="section-title">Background</div>
+<p>
+  The Board noted that the company's registered office was previously situated at
+  {{ gt.historicalFacts.registeredOffices.original.formattedSingleLine }} and that operational requirements necessitate relocation to
+  {{ gt.canonicalFacts.registeredOffice.formattedSingleLine }}.
+</p>
+
+<div class="section-title">Resolved</div>
+<ol>
+  <li>That the registered office of the company be shifted from the previous address to the new address with effect from <strong>{{ gt.corporateEvents.registeredOfficeChange.effectiveDate }}</strong>.</li>
+  <li>That the company secretary and authorised signatories be authorised to file Form INC-22 and related filings with the Registrar of Companies.</li>
+  <li>That certified copies of this resolution be placed on record and shared with professional advisers as required.</li>
+</ol>
+
+<div class="page-break"></div>
+<table class="data-table">
+  <tr><th>Previous registered office</th><td>{{ gt.historicalFacts.registeredOffices.original.formattedSingleLine }}</td></tr>
+  <tr><th>New registered office</th><td>{{ gt.canonicalFacts.registeredOffice.formattedSingleLine }}</td></tr>
+  <tr><th>Effective date</th><td>{{ gt.corporateEvents.registeredOfficeChange.effectiveDate }}</td></tr>
+  <tr><th>Filing form</th><td>{{ gt.corporateEvents.registeredOfficeChange.filingForm }}</td></tr>
+</table>
+
+<div class="signature-block">
+  <div><div class="signature-line">Chairperson (Synthetic Placeholder)</div></div>
+  <div><div class="signature-line">Certified true copy — Company Secretary</div></div>
+</div>
+{% endblock %}

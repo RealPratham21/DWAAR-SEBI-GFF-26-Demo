@@ -11,8 +11,12 @@ class FakeStorage:
     def __init__(self) -> None:
         self.objects: dict[str, dict] = {}
 
-    def put(self, key: str, *, size: int, content_type: str) -> None:
-        self.objects[key] = {"content_length": size, "content_type": content_type}
+    def put(self, key: str, *, size: int, content_type: str, data: bytes | None = None) -> None:
+        self.objects[key] = {
+            "content_length": size,
+            "content_type": content_type,
+            "data": data if data is not None else b"x" * size,
+        }
 
     def generate_upload_url(self, *, storage_key: str, content_type: str, content_length: int):
         return (
@@ -30,10 +34,24 @@ class FakeStorage:
     def get_object_metadata(self, *, storage_key: str) -> dict:
         if storage_key not in self.objects:
             raise Exception("not found")
-        return self.objects[storage_key]
+        obj = self.objects[storage_key]
+        return {
+            "content_length": obj["content_length"],
+            "content_type": obj["content_type"],
+        }
 
     def delete_object(self, *, storage_key: str) -> None:
         self.objects.pop(storage_key, None)
+
+    def download_object(self, *, storage_key: str, destination) -> None:
+        if storage_key not in self.objects:
+            raise Exception("not found")
+        destination.write_bytes(self.objects[storage_key]["data"])
+
+    def get_object_bytes(self, *, storage_key: str) -> bytes:
+        if storage_key not in self.objects:
+            raise Exception("not found")
+        return self.objects[storage_key]["data"]
 
 
 @pytest.fixture
@@ -150,7 +168,7 @@ async def test_upload_finalize_replace_and_history(
     )
     assert finalize.status_code == 200, finalize.text
     final_body = finalize.json()
-    assert final_body["document"]["currentVersion"]["status"] == "uploaded"
+    assert final_body["document"]["currentVersion"]["status"] == "pending_processing"
     assert final_body["notification"]["notificationType"] == "workstream_document"
 
     duplicate = await auth_client.post(

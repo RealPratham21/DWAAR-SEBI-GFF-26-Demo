@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Memorandum of Association{% endblock %}
+{% block content %}
+<div class="doc-header">
+  <h1>MEMORANDUM OF ASSOCIATION</h1>
+  <div class="subtitle">{{ gt.informationTab.identity.legalName }} · CIN {{ gt.informationTab.identity.cin }}</div>
+</div>
+<p><span class="badge">Version date: {{ gt.informationTab.constitutionalRecord.moaVersionDate }}</span></p>
+<p>{{ doc.certificationLabel }}</p>
+
+<div class="section-title">I. Name Clause</div>
+<p>The name of the company is <strong>{{ gt.informationTab.identity.legalName }}</strong>.</p>
+
+<div class="section-title">II. Registered Office / State Clause</div>
+<p>The state in which the registered office of the company is to be situated is <strong>{{ gt.informationTab.identity.incorporationState }}</strong>.</p>
+
+<div class="section-title">III. Objects Clause</div>
+<div class="clause">
+  <span class="clause-number">{{ gt.informationTab.constitutionalRecord.mainObjectClauseNumbers[0] }}</span>
+  <p>{{ gt.informationTab.constitutionalRecord.mainObjectText }}</p>
+</div>
+<p>The objects set out above are subject to applicable law and to such additions, alterations or modifications as may be made from time to time in accordance with the {{ labels.governingAct }}.</p>
+
+<div class="page-break"></div>
+<div class="section-title">IV. Liability Clause</div>
+<p>The liability of the members is limited to the amount unpaid, if any, on the shares held by them.</p>
+
+<div class="section-title">V. Share Capital Clause</div>
+<table class="data-table">
+  <tr><th>Authorised share capital</th><td>INR 5,00,00,000 divided into 50,00,000 equity shares of INR 10 each</td></tr>
+  <tr><th>Issued share capital (as stated)</th><td>INR 1,25,00,000 divided into 12,50,000 equity shares of INR 10 each</td></tr>
+</table>
+
+<div class="section-title">VI. Subscription Table</div>
+<table class="data-table">
+  <tr><th>Subscriber</th><th>Address</th><th>Shares</th></tr>
+  <tr><td>Founder Subscriber A (Synthetic)</td><td>Pune, Maharashtra</td><td>6,25,000</td></tr>
+  <tr><td>Founder Subscriber B (Synthetic)</td><td>Pune, Maharashtra</td><td>6,25,000</td></tr>
+</table>
+
+<div class="page-break"></div>
+<div class="section-title">Annexure A — General Objects (Illustrative)</div>
+<p>The objects ancillary or incidental to the attainment of the main objects include:</p>
+<ul>
+  <li>To acquire, purchase, take on lease or licence any land, buildings, machinery and equipment required for the business.</li>
+  <li>To enter into arrangements for technical, financial or commercial collaboration with persons or entities engaged in similar activities.</li>
+  <li>To apply for, purchase or otherwise acquire patents, licences and intellectual property rights relevant to the business.</li>
+  <li>To establish branches, liaison offices, warehouses and service facilities within India subject to applicable law.</li>
+</ul>
+
+<div class="section-title">Annexure B — Subscription Declarations</div>
+<p>Each subscriber declares that they wish to form a company pursuant to this Memorandum and agrees to take the shares set opposite their name.</p>
+<table class="data-table">
+  <tr><th>Name</th><th>Occupation</th><th>Shares Taken</th></tr>
+  <tr><td>Founder Subscriber A (Synthetic)</td><td>Engineer</td><td>6,25,000</td></tr>
+  <tr><td>Founder Subscriber B (Synthetic)</td><td>Entrepreneur</td><td>6,25,000</td></tr>
+</table>
+<div class="signature-block">
+  <div><div class="signature-line">Director / Subscriber (Synthetic)</div></div>
+  <div><div class="signature-line">Certification date: {{ doc.certificationDate }}</div></div>
+</div>
+{% endblock %}

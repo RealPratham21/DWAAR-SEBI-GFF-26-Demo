@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}PAN Registration Record{% endblock %}
+{% block content %}
+<div class="certificate-box">
+  <div class="certificate-title">PERMANENT ACCOUNT NUMBER — REGISTRATION RECORD</div>
+  <p style="text-align:center;font-size:9pt;">Generic tax registration record — not an official PAN card</p>
+  <div class="meta-grid">
+    <div class="meta-item"><label>Legal Name</label><div class="value">{{ gt.informationTab.identity.legalName }}</div></div>
+    <div class="meta-item"><label>PAN</label><div class="value">{{ gt.informationTab.registrationsMap.pan.number }}</div></div>
+    <div class="meta-item"><label>Entity Type</label><div class="value">Company</div></div>
+    <div class="meta-item"><label>Issue Date</label><div class="value">{{ gt.informationTab.registrationsMap.pan.issueDate }}</div></div>
+    <div class="meta-item"><label>Issuing Authority</label><div class="value">{{ doc.issuingAuthority }}</div></div>
+  </div>
+</div>
+{% endblock %}

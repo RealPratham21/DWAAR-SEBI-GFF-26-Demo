@@ -32,6 +32,17 @@ CURRENT_VERSION_STATUSES: frozenset[str] = frozenset(
         DocumentVersionStatus.PENDING_PROCESSING,
         DocumentVersionStatus.PROCESSING,
         DocumentVersionStatus.PROCESSED,
+        DocumentVersionStatus.PROCESSING_FAILED,
+    },
+)
+
+SUPERSEDABLE_VERSION_STATUSES: frozenset[str] = frozenset(
+    {
+        DocumentVersionStatus.UPLOADED,
+        DocumentVersionStatus.PENDING_PROCESSING,
+        DocumentVersionStatus.PROCESSING,
+        DocumentVersionStatus.PROCESSED,
+        DocumentVersionStatus.PROCESSING_FAILED,
     },
 )
 
@@ -58,6 +69,8 @@ class DocumentErrorCode:
     VERSION_NOT_DISCARDABLE = "DOCUMENT_VERSION_NOT_DISCARDABLE"
     DOCUMENT_ARCHIVED = "DOCUMENT_ARCHIVED"
     FORBIDDEN = "DOCUMENT_FORBIDDEN"
+    PROCESSING_RETRY_NOT_ALLOWED = "DOCUMENT_PROCESSING_RETRY_NOT_ALLOWED"
+    PROCESSING_ACTIVE_RUN = "DOCUMENT_PROCESSING_ACTIVE_RUN_EXISTS"
 
 
 ONBOARDING_SELECTION_HINT = (

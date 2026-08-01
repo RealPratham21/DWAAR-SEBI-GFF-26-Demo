@@ -1,0 +1,32 @@
+{
+  "fixtureDocumentId": "04-board-resolution-office-change",
+  "outputFilename": "04-nivara-board-resolution-office-change.pdf",
+  "requirementKey": "board-resolution-office-change",
+  "templateName": "board-resolution.html",
+  "outputCategory": "clean",
+  "documentTitle": "Board Resolution — Registered Office Change",
+  "documentSpecific": {
+    "meetingDate": "2023-08-07",
+    "resolutionNumber": "BR/2023-08/04",
+    "chairpersonName": "Synthetic Chairperson Placeholder"
+  },
+  "sharedFactsUsed": [
+    "documentReferences.officeChange",
+    "offices.original",
+    "offices.current"
+  ],
+  "overrides": {},
+  "expectedPageCount": 2,
+  "expectedExtractedFacts": [
+    { "factKey": "corporateEvents.registered-office-change.eventType", "expectedValue": "registered-office-change", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "corporateEvents.registered-office-change.boardResolutionDate", "expectedValueRef": "documentReferences.officeChange.boardResolutionDate", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "offices.original.fullAddress", "expectedValueRef": "historicalFacts.offices.original", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "offices.current.fullAddress", "expectedValueRef": "canonicalCurrentFacts.offices.current", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "corporateEvents.registered-office-change.effectiveDate", "expectedValueRef": "documentReferences.officeChange.effectiveDate", "evidencePage": 2, "confidenceCategory": "high" },
+    { "factKey": "corporateEvents.registered-office-change.filingForm", "expectedValueRef": "documentReferences.officeChange.filingForm", "evidencePage": 2, "confidenceCategory": "medium" }
+  ],
+  "expectedNativeText": true,
+  "expectedConflicts": [],
+  "expectedWarnings": [],
+  "mainJuryDemoPack": true
+}

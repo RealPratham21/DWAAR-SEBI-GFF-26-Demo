@@ -1,6 +1,7 @@
 """S3-compatible object storage abstraction."""
 
 from functools import lru_cache
+from pathlib import Path
 
 import boto3
 from botocore.client import BaseClient
@@ -97,6 +98,31 @@ class ObjectStorageService:
             self._internal_client.delete_object(Bucket=self.bucket, Key=storage_key)
         except ClientError as exc:
             raise ObjectStorageError("Unable to delete uploaded object.") from exc
+
+    def download_object(self, *, storage_key: str, destination: Path) -> None:
+        try:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            self._internal_client.download_file(
+                self.bucket,
+                storage_key,
+                str(destination),
+            )
+        except ClientError as exc:
+            error_code = exc.response.get("Error", {}).get("Code")
+            if error_code in {"404", "NoSuchKey", "NotFound"}:
+                raise ObjectStorageError("Object was not found in storage.") from exc
+            raise ObjectStorageError("Unable to download object from storage.") from exc
+
+    def get_object_bytes(self, *, storage_key: str) -> bytes:
+        try:
+            response = self._internal_client.get_object(Bucket=self.bucket, Key=storage_key)
+            body = response["Body"].read()
+            return bytes(body)
+        except ClientError as exc:
+            error_code = exc.response.get("Error", {}).get("Code")
+            if error_code in {"404", "NoSuchKey", "NotFound"}:
+                raise ObjectStorageError("Object was not found in storage.") from exc
+            raise ObjectStorageError("Unable to read object from storage.") from exc
 
 
 @lru_cache

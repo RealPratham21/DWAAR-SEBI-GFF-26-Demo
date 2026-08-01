@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Filing Acknowledgement{% endblock %}
+{% block content %}
+<div class="certificate-box">
+  <div class="certificate-title">FILING ACKNOWLEDGEMENT</div>
+  <p style="text-align:center;">Synthetic receipt — not issued by any government portal</p>
+  <div class="meta-grid">
+    <div class="meta-item"><label>Company</label><div class="value">{{ gt.informationTab.identity.legalName }}</div></div>
+    <div class="meta-item"><label>CIN</label><div class="value">{{ gt.informationTab.identity.cin }}</div></div>
+    <div class="meta-item"><label>Form</label><div class="value">{{ gt.corporateEvents.registeredOfficeChange.filingForm }}</div></div>
+    <div class="meta-item"><label>SRN</label><div class="value">{{ gt.corporateEvents.registeredOfficeChange.srn }}</div></div>
+    <div class="meta-item"><label>Submission Date</label><div class="value">{{ gt.corporateEvents.registeredOfficeChange.filingDate }}</div></div>
+    <div class="meta-item"><label>Status</label><div class="value">{{ doc.acknowledgementStatus }}</div></div>
+    <div class="meta-item"><label>Receipt Reference</label><div class="value">{{ doc.receiptReference }}</div></div>
+  </div>
+  <p>This acknowledgement confirms receipt of the filing referenced above for synthetic demo purposes.</p>
+</div>
+{% endblock %}
