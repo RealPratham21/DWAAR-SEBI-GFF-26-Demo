@@ -59,7 +59,7 @@ async def test_real_minio_upload_finalize_and_download(
         headers=headers,
     )
     assert finalize.status_code == 200, finalize.text
-    assert finalize.json()["document"]["currentVersion"]["status"] == "uploaded"
+    assert finalize.json()["document"]["currentVersion"]["status"] == "pending_processing"
 
     listed = await auth_client.get(
         "/api/v1/workstreams/company-incorporation/documents",

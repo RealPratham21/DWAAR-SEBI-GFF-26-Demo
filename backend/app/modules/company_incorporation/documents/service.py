@@ -11,6 +11,11 @@ from app.models.document import Document
 from app.models.document_version import DocumentVersion
 from app.models.onboarding_application import OnboardingApplication
 from app.models.user import User
+from app.modules.company_incorporation.document_processing.queue import (
+    cancel_active_runs_for_document,
+    cancel_active_runs_for_version,
+    enqueue_processing_run,
+)
 from app.modules.company_incorporation.documents.constants import (
     ALLOWED_CONTENT_TYPES,
     ALLOWED_EXTENSIONS,
@@ -22,6 +27,7 @@ from app.modules.company_incorporation.documents.constants import (
     MAX_FILE_SIZE_BYTES,
     ONBOARDING_SELECTION_HINT,
     SHA256_PATTERN,
+    SUPERSEDABLE_VERSION_STATUSES,
     DocumentErrorCode,
     DocumentVersionStatus,
     build_storage_key,
@@ -431,20 +437,35 @@ def finalize_upload(
         )
 
     now = _now()
-    previous_uploaded = db.scalars(
+    previous_versions = db.scalars(
         select(DocumentVersion).where(
             DocumentVersion.document_id == document.id,
-            DocumentVersion.status == DocumentVersionStatus.UPLOADED,
+            DocumentVersion.id != version.id,
+            DocumentVersion.status.in_(SUPERSEDABLE_VERSION_STATUSES),
         ),
     ).all()
-    for previous in previous_uploaded:
+    for previous in previous_versions:
         previous.status = DocumentVersionStatus.SUPERSEDED
         previous.updated_at = now
+        cancel_active_runs_for_version(
+            db,
+            document_version_id=previous.id,
+            reason="Cancelled because a newer document version was uploaded.",
+        )
+        from app.modules.company_incorporation.structured_extraction.queue import (
+            cancel_structured_runs_for_version,
+        )
 
-    version.status = DocumentVersionStatus.UPLOADED
+        cancel_structured_runs_for_version(
+            db,
+            document_version_id=previous.id,
+            reason="Cancelled because a newer document version was uploaded.",
+        )
+
     version.uploaded_at = now
     version.updated_at = now
     document.updated_at = now
+    enqueue_processing_run(db, document_version=version)
     db.flush()
     db.refresh(document)
     db.refresh(version)
@@ -558,6 +579,20 @@ def archive_document(
     now = _now()
     document.archived_at = now
     document.updated_at = now
+    cancel_active_runs_for_document(
+        db,
+        document_id=document.id,
+        reason="Cancelled because the document was archived.",
+    )
+    from app.modules.company_incorporation.structured_extraction.queue import (
+        cancel_structured_runs_for_document,
+    )
+
+    cancel_structured_runs_for_document(
+        db,
+        document_id=document.id,
+        reason="Cancelled because the document was archived.",
+    )
     db.flush()
     db.refresh(document)
 

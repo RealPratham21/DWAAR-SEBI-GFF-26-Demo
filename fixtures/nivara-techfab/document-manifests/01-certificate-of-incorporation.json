@@ -1,0 +1,39 @@
+{
+  "fixtureDocumentId": "01-certificate-of-incorporation",
+  "outputFilename": "01-nivara-certificate-of-incorporation.pdf",
+  "requirementKey": "original-certificate-of-incorporation",
+  "templateName": "certificate-of-incorporation.html",
+  "outputCategory": "clean",
+  "documentTitle": "Certificate of Incorporation",
+  "documentSpecific": {
+    "issueDate": "2019-06-12",
+    "issuePlace": "Pune, Maharashtra",
+    "certificateNumber": "SYN-COI-2019-328517"
+  },
+  "sharedFactsUsed": [
+    "identity.legalName",
+    "identity.cin",
+    "identity.incorporationDate",
+    "identity.incorporationState",
+    "identity.registrarOfCompanies",
+    "identity.companyClass",
+    "identity.companyCategory",
+    "identity.governingAct"
+  ],
+  "overrides": {},
+  "expectedPageCount": 1,
+  "expectedExtractedFacts": [
+    { "factKey": "identity.legalName", "expectedValueRef": "canonicalCurrentFacts.identity.legalName", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "identity.cin", "expectedValueRef": "canonicalCurrentFacts.identity.cin", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "identity.incorporationDate", "expectedValueRef": "canonicalCurrentFacts.identity.incorporationDate", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "identity.incorporationState", "expectedValueRef": "canonicalCurrentFacts.identity.incorporationState", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "identity.registrarOfCompanies", "expectedValueRef": "canonicalCurrentFacts.identity.registrarOfCompanies", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "identity.companyClass", "expectedValueRef": "canonicalCurrentFacts.identity.companyClass", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "identity.companyCategory", "expectedValueRef": "canonicalCurrentFacts.identity.companyCategory", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "identity.governingAct", "expectedValueRef": "canonicalCurrentFacts.identity.governingAct", "evidencePage": 1, "confidenceCategory": "high" }
+  ],
+  "expectedNativeText": true,
+  "expectedConflicts": [],
+  "expectedWarnings": [],
+  "mainJuryDemoPack": true
+}

@@ -1,10 +1,16 @@
 from fastapi import APIRouter
 
 from app.modules.auth.router import router as auth_router
+from app.modules.company_incorporation.document_processing.router import (
+    router as company_incorporation_document_processing_router,
+)
 from app.modules.company_incorporation.documents.router import (
     router as company_incorporation_documents_router,
 )
 from app.modules.company_incorporation.router import router as company_incorporation_router
+from app.modules.company_incorporation.structured_extraction.router import (
+    router as company_incorporation_structured_extraction_router,
+)
 from app.modules.dashboard.router import router as dashboard_router
 from app.modules.health.router import health_router
 from app.modules.notifications.router import router as notifications_router
@@ -21,6 +27,14 @@ api_v1_router.include_router(
 api_v1_router.include_router(
     company_incorporation_documents_router,
     tags=["company-incorporation-documents"],
+)
+api_v1_router.include_router(
+    company_incorporation_document_processing_router,
+    tags=["company-incorporation-document-processing"],
+)
+api_v1_router.include_router(
+    company_incorporation_structured_extraction_router,
+    tags=["company-incorporation-structured-extraction"],
 )
 api_v1_router.include_router(notifications_router, tags=["notifications"])
 api_v1_router.include_router(sme_onboarding_router, prefix="/onboarding", tags=["onboarding"])

@@ -1,0 +1,53 @@
+{
+  "fixtureDocumentId": "11-gst-registration-old-address",
+  "outputFilename": "11-nivara-gst-registration-old-address.pdf",
+  "requirementKey": "gst-registration-certificates",
+  "templateName": "gst-registration.html",
+  "outputCategory": "conflict",
+  "documentTitle": "GST Registration Certificate — Original (Historical)",
+  "documentSpecific": {
+    "variant": "historical",
+    "tradeName": "Nivara Techfab",
+    "constitutionOfBusiness": "Private Limited Company",
+    "stateJurisdiction": "Maharashtra",
+    "additionalPlacesOfBusiness": "None",
+    "certificateLabel": "Original registration certificate as issued in 2019",
+    "certificateDate": "2019-07-05",
+    "effectiveDate": "2019-07-05"
+  },
+  "sharedFactsUsed": [
+    "registrations.gstin.number",
+    "identity.legalName",
+    "historicalFacts.registrations.gstin.historicalPrincipalAddress",
+    "offices.original"
+  ],
+  "overrides": {
+    "principalAddressKey": "original"
+  },
+  "expectedPageCount": 2,
+  "expectedExtractedFacts": [
+    { "factKey": "registrations.gstin.number", "expectedValueRef": "canonicalCurrentFacts.registrations.gstin.number", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "identity.legalName", "expectedValueRef": "canonicalCurrentFacts.identity.legalName", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "registrations.gstin.addressOnRegistration", "expectedValueRef": "historicalFacts.registrations.gstin.historicalPrincipalAddress", "evidencePage": 2, "confidenceCategory": "high" },
+    { "factKey": "registrations.gstin.registrationDate", "expectedValueRef": "canonicalCurrentFacts.registrations.gstin.registrationDate", "evidencePage": 1, "confidenceCategory": "high" }
+  ],
+  "expectedNativeText": true,
+  "expectedConflicts": [
+    {
+      "issueCategory": "conflicting-value",
+      "comparedField": "offices.current.fullAddress",
+      "documentValueRef": "historicalFacts.registrations.gstin.historicalPrincipalAddress",
+      "informationValueRef": "canonicalCurrentFacts.offices.current",
+      "expectedResolution": "keep_current_bhosari_address",
+      "expectedRationale": "Newer INC-22 filing, filing acknowledgement, office proof and current GST certificate support the current Bhosari address.",
+      "historicalEvidence": true
+    }
+  ],
+  "expectedWarnings": [
+    {
+      "issueCategory": "outdated-registration",
+      "message": "Historical GST principal address predates registered-office change."
+    }
+  ],
+  "mainJuryDemoPack": true
+}

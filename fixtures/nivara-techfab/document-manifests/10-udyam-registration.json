@@ -1,0 +1,33 @@
+{
+  "fixtureDocumentId": "10-udyam-registration",
+  "outputFilename": "10-nivara-udyam-registration.pdf",
+  "requirementKey": "udyam-registration-certificate",
+  "templateName": "udyam-registration.html",
+  "outputCategory": "clean",
+  "documentTitle": "Udyam Registration Record",
+  "documentSpecific": {
+    "manufacturingActivity": "Fabrication of precision metal components",
+    "plantLocationSummary": "Manufacturing unit at current registered office premises",
+    "addressUpdatedDate": "2023-09-05"
+  },
+  "sharedFactsUsed": [
+    "registrations.udyam",
+    "offices.current",
+    "identity.legalName",
+    "documentReferences.udyam.addressUpdatedDate"
+  ],
+  "overrides": {},
+  "expectedPageCount": 2,
+  "expectedExtractedFacts": [
+    { "factKey": "registrations.udyam.number", "expectedValueRef": "canonicalCurrentFacts.registrations.udyam.number", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "identity.legalName", "expectedValueRef": "canonicalCurrentFacts.identity.legalName", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "registrations.udyam.enterpriseType", "expectedValueRef": "canonicalCurrentFacts.registrations.udyam.enterpriseType", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "registrations.udyam.registrationDate", "expectedValueRef": "canonicalCurrentFacts.registrations.udyam.registrationDate", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "registrations.udyam.addressUpdatedDate", "expectedValueRef": "canonicalCurrentFacts.registrations.udyam.addressUpdatedDate", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "registrations.udyam.addressOnRegistration", "expectedValueRef": "canonicalCurrentFacts.offices.current", "evidencePage": 1, "confidenceCategory": "medium" }
+  ],
+  "expectedNativeText": true,
+  "expectedConflicts": [],
+  "expectedWarnings": [],
+  "mainJuryDemoPack": true
+}

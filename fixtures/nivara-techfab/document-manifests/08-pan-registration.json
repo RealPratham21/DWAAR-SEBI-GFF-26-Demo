@@ -1,0 +1,27 @@
+{
+  "fixtureDocumentId": "08-pan-registration",
+  "outputFilename": "08-nivara-pan-registration.pdf",
+  "requirementKey": "pan-certificate",
+  "templateName": "pan-registration.html",
+  "outputCategory": "clean",
+  "documentTitle": "Permanent Account Number Registration Record",
+  "documentSpecific": {
+    "entityType": "Company",
+    "issuingAuthorityLabel": "Generic tax registration authority (synthetic demo wording)"
+  },
+  "sharedFactsUsed": [
+    "registrations.pan",
+    "identity.legalName"
+  ],
+  "overrides": {},
+  "expectedPageCount": 1,
+  "expectedExtractedFacts": [
+    { "factKey": "registrations.pan.number", "expectedValueRef": "canonicalCurrentFacts.registrations.pan.number", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "registrations.pan.legalNameOnRegistration", "expectedValueRef": "canonicalCurrentFacts.identity.legalName", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "registrations.pan.issueDate", "expectedValueRef": "canonicalCurrentFacts.registrations.pan.issueDate", "evidencePage": 1, "confidenceCategory": "high" }
+  ],
+  "expectedNativeText": true,
+  "expectedConflicts": [],
+  "expectedWarnings": [],
+  "mainJuryDemoPack": true
+}

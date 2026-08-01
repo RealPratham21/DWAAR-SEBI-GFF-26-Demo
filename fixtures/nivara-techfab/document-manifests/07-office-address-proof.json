@@ -1,0 +1,31 @@
+{
+  "fixtureDocumentId": "07-office-address-proof",
+  "outputFilename": "07-nivara-office-address-proof.pdf",
+  "requirementKey": "registered-office-address-proof",
+  "templateName": "office-address-proof.html",
+  "outputCategory": "clean",
+  "documentTitle": "Registered Office Address Proof Bundle",
+  "documentSpecific": {
+    "leaseReference": "SYN-LEASE-BHOSARI-2023-14",
+    "ownerName": "Meridian Industrial Estate Owners' Association (Synthetic)",
+    "tenantSignatory": "Authorised Signatory Placeholder"
+  },
+  "sharedFactsUsed": [
+    "documentReferences.officeProof",
+    "offices.current",
+    "identity.legalName"
+  ],
+  "overrides": {},
+  "expectedPageCount": 2,
+  "expectedExtractedFacts": [
+    { "factKey": "offices.current.fullAddress", "expectedValueRef": "canonicalCurrentFacts.offices.current", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "offices.current.occupancyType", "expectedValueRef": "canonicalCurrentFacts.offices.current.occupancyType", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "documentReferences.officeProof.leaseStartDate", "expectedValueRef": "documentReferences.officeProof.leaseStartDate", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "documentReferences.officeProof.leaseEndDate", "expectedValueRef": "documentReferences.officeProof.leaseEndDate", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "identity.legalName", "expectedValueRef": "canonicalCurrentFacts.identity.legalName", "evidencePage": 2, "confidenceCategory": "high" }
+  ],
+  "expectedNativeText": true,
+  "expectedConflicts": [],
+  "expectedWarnings": [],
+  "mainJuryDemoPack": true
+}

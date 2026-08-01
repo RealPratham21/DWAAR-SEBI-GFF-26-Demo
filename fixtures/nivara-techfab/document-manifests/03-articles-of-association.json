@@ -1,0 +1,28 @@
+{
+  "fixtureDocumentId": "03-articles-of-association",
+  "outputFilename": "03-nivara-articles-of-association.pdf",
+  "requirementKey": "current-certified-aoa",
+  "templateName": "articles-of-association.html",
+  "outputCategory": "clean",
+  "documentTitle": "Articles of Association",
+  "documentSpecific": {
+    "certificationDate": "2019-06-12",
+    "certificationLabel": "Certified true copy — synthetic demo record"
+  },
+  "sharedFactsUsed": [
+    "constitutionalRecord.aoaVersionDate",
+    "identity.legalName",
+    "identity.cin"
+  ],
+  "overrides": {},
+  "expectedPageCount": { "min": 4, "max": 6 },
+  "expectedExtractedFacts": [
+    { "factKey": "constitutionalRecord.aoaVersionDate", "expectedValueRef": "canonicalCurrentFacts.constitutionalRecord.aoaVersionDate", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "identity.legalName", "expectedValueRef": "canonicalCurrentFacts.identity.legalName", "evidencePage": 1, "confidenceCategory": "high" },
+    { "factKey": "identity.cin", "expectedValueRef": "canonicalCurrentFacts.identity.cin", "evidencePage": 1, "confidenceCategory": "high" }
+  ],
+  "expectedNativeText": true,
+  "expectedConflicts": [],
+  "expectedWarnings": [],
+  "mainJuryDemoPack": true
+}

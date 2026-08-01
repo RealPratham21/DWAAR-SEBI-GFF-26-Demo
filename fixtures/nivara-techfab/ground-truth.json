@@ -1,0 +1,276 @@
+{
+  "fixtureId": "nivara-techfab-v1",
+  "companyDisplayName": "Nivara Techfab Private Limited",
+  "canonicalCurrentFacts": {
+    "identity.legalName": "Nivara Techfab Private Limited",
+    "identity.shortName": "Nivara Techfab",
+    "identity.cin": "U29309MH2019PTC328517",
+    "identity.incorporationDate": "2019-06-12",
+    "identity.incorporationCity": "Pune",
+    "identity.incorporationState": "Maharashtra",
+    "identity.registrarOfCompanies": "Registrar of Companies, Pune",
+    "identity.companyClass": "private",
+    "identity.companyCategory": "company-limited-by-shares",
+    "identity.companySubCategory": "non-government-company",
+    "identity.companyStatus": "active",
+    "identity.listedStatus": "unlisted",
+    "identity.governingAct": "companies-act-2013",
+    "identity.specialCompanyType": "none",
+    "identity.website": "https://nivara-demo.example",
+    "identity.email": "compliance@nivara-demo.example",
+    "identity.telephone": "+912040000000",
+    "constitutionalRecord.moaVersionDate": "2019-06-12",
+    "constitutionalRecord.aoaVersionDate": "2019-06-12",
+    "constitutionalRecord.moaCertifiedCopyStatus": "available",
+    "constitutionalRecord.aoaCertifiedCopyStatus": "available",
+    "constitutionalRecord.mainObjectClauseNumbers": ["III(A)(1)"],
+    "constitutionalRecord.mainObjectText": "To manufacture, fabricate, assemble, test, process, purchase, sell and otherwise deal in precision metal components, electromechanical assemblies and related products used in industrial machinery, automation systems and engineering applications.",
+    "offices.current.addressLine1": "Unit No. 14, Meridian Industrial Estate",
+    "offices.current.addressLine2": "MIDC Bhosari",
+    "offices.current.city": "Pune",
+    "offices.current.district": "Pune",
+    "offices.current.state": "Maharashtra",
+    "offices.current.pinCode": "411026",
+    "offices.current.country": "India",
+    "offices.current.occupancyType": "leased",
+    "offices.current.effectiveFrom": "2023-08-14",
+    "registrations.pan.number": "AABCN1234Q",
+    "registrations.pan.issueDate": "2019-06-20",
+    "registrations.gstin.number": "27AABCN1234Q1Z9",
+    "registrations.gstin.registrationDate": "2019-07-05",
+    "registrations.gstin.effectiveDate": "2023-08-22",
+    "registrations.gstin.status": "active",
+    "registrations.udyam.number": "UDYAM-MH-19-0048721",
+    "registrations.udyam.registrationDate": "2020-09-18",
+    "registrations.udyam.addressUpdatedDate": "2023-09-05",
+    "registrations.udyam.enterpriseType": "Small"
+  },
+  "historicalFacts": {
+    "offices": {
+      "original": {
+        "addressLine1": "Plot No. 9, Vertex Industrial Park",
+        "addressLine2": "Chakan Industrial Area",
+        "city": "Pune",
+        "district": "Pune",
+        "state": "Maharashtra",
+        "pinCode": "410501",
+        "country": "India",
+        "occupancyType": "leased",
+        "effectiveFrom": "2019-06-12",
+        "effectiveUntil": "2023-08-13"
+      }
+    },
+    "registrations": {
+      "gstin": {
+        "historicalPrincipalAddress": "Plot No. 9, Vertex Industrial Park, Chakan Industrial Area, Pune, Maharashtra, 410501, India"
+      }
+    }
+  },
+  "informationTab": {
+    "identity": {
+      "legalName": "Nivara Techfab Private Limited",
+      "shortName": "Nivara Techfab",
+      "cin": "U29309MH2019PTC328517",
+      "registrationNumber": "",
+      "incorporationDate": "2019-06-12",
+      "incorporationCity": "Pune",
+      "incorporationState": "Maharashtra",
+      "registrarOfCompanies": "Registrar of Companies, Pune",
+      "companyClass": "private",
+      "companyCategory": "company-limited-by-shares",
+      "companySubCategory": "non-government-company",
+      "specialCompanyType": "none",
+      "companyStatus": "active",
+      "listedStatus": "unlisted",
+      "commencementDate": "",
+      "governingAct": "companies-act-2013",
+      "website": "https://nivara-demo.example",
+      "email": "compliance@nivara-demo.example",
+      "telephone": "+912040000000",
+      "issuerContactPersonId": ""
+    },
+    "corporateEvents": [
+      {
+        "id": "evt-original-incorporation",
+        "eventType": "original-incorporation",
+        "eventStatus": "effective",
+        "effectiveDate": "2019-06-12",
+        "previousValue": "",
+        "newValue": "Nivara Techfab Private Limited incorporated in Maharashtra",
+        "description": "Original incorporation of the company under the Companies Act, 2013.",
+        "reason": "",
+        "boardResolutionDate": "",
+        "shareholderResolutionDate": "",
+        "approvalAuthority": "Registrar of Companies, Pune",
+        "filingForm": "",
+        "srn": "",
+        "filingDate": "",
+        "certificateOrOrderDate": "2019-06-12"
+      },
+      {
+        "id": "evt-registered-office-change",
+        "eventType": "registered-office-change",
+        "eventStatus": "effective",
+        "effectiveDate": "2023-08-14",
+        "previousValue": "Plot No. 9, Vertex Industrial Park, Chakan Industrial Area, Pune, Maharashtra, 410501, India",
+        "newValue": "Unit No. 14, Meridian Industrial Estate, MIDC Bhosari, Bhosari, Pune, Maharashtra, 411026, India",
+        "description": "Shift of registered office from Chakan Industrial Area to MIDC Bhosari, Pune.",
+        "reason": "Operational expansion and consolidated manufacturing footprint",
+        "boardResolutionDate": "2023-08-07",
+        "shareholderResolutionDate": "",
+        "approvalAuthority": "Registrar of Companies, Pune",
+        "filingForm": "INC-22",
+        "srn": "R12345678",
+        "filingDate": "2023-08-14",
+        "certificateOrOrderDate": "2023-08-14"
+      }
+    ],
+    "offices": [
+      {
+        "id": "office-previous-registered",
+        "officeType": "previous-registered-office",
+        "addressLine1": "Plot No. 9, Vertex Industrial Park",
+        "addressLine2": "Chakan Industrial Area",
+        "locality": "",
+        "city": "Pune",
+        "district": "Pune",
+        "state": "Maharashtra",
+        "pinCode": "410501",
+        "country": "India",
+        "effectiveFrom": "2019-06-12",
+        "effectiveUntil": "2023-08-13",
+        "occupancyType": "leased"
+      },
+      {
+        "id": "office-current-registered",
+        "officeType": "registered-office",
+        "addressLine1": "Unit No. 14, Meridian Industrial Estate",
+        "addressLine2": "MIDC Bhosari",
+        "locality": "Bhosari",
+        "city": "Pune",
+        "district": "Pune",
+        "state": "Maharashtra",
+        "pinCode": "411026",
+        "country": "India",
+        "effectiveFrom": "2023-08-14",
+        "effectiveUntil": "",
+        "occupancyType": "leased"
+      }
+    ],
+    "constitutionalRecord": {
+      "moaVersionDate": "2019-06-12",
+      "aoaVersionDate": "2019-06-12",
+      "moaCertifiedCopyStatus": "available",
+      "aoaCertifiedCopyStatus": "available",
+      "mainObjectClauseNumbers": ["III(A)(1)"],
+      "mainObjectText": "To manufacture, fabricate, assemble, test, process, purchase, sell and otherwise deal in precision metal components, electromechanical assemblies and related products used in industrial machinery, automation systems and engineering applications.",
+      "latestMoaAmendmentDate": "",
+      "latestAoaAmendmentDate": "",
+      "operationsAlignmentStatus": "",
+      "legalReviewStatus": ""
+    },
+    "constitutionalAmendments": [],
+    "registrations": [
+      {
+        "id": "reg-pan",
+        "registrationType": "pan",
+        "registrationNumber": "AABCN1234Q",
+        "issuingAuthority": "Income Tax Department (synthetic reference)",
+        "legalNameOnRegistration": "Nivara Techfab Private Limited",
+        "addressOnRegistration": "",
+        "issueDate": "2019-06-20",
+        "effectiveDate": "",
+        "expiryDate": "",
+        "currentStatus": "active",
+        "previousRegistrationNumber": "",
+        "updatedAfterNameChange": "not-applicable",
+        "updatedAfterOfficeChange": "not-applicable"
+      },
+      {
+        "id": "reg-gstin",
+        "registrationType": "gstin",
+        "registrationNumber": "27AABCN1234Q1Z9",
+        "issuingAuthority": "GST Network (synthetic reference)",
+        "legalNameOnRegistration": "Nivara Techfab Private Limited",
+        "addressOnRegistration": "Unit No. 14, Meridian Industrial Estate, MIDC Bhosari, Bhosari, Pune, Maharashtra, 411026, India",
+        "issueDate": "2019-07-05",
+        "effectiveDate": "2023-08-22",
+        "expiryDate": "",
+        "currentStatus": "active",
+        "previousRegistrationNumber": "",
+        "updatedAfterNameChange": "not-applicable",
+        "updatedAfterOfficeChange": "yes"
+      },
+      {
+        "id": "reg-udyam",
+        "registrationType": "udyam",
+        "registrationNumber": "UDYAM-MH-19-0048721",
+        "issuingAuthority": "Ministry of MSME (synthetic reference)",
+        "legalNameOnRegistration": "Nivara Techfab Private Limited",
+        "addressOnRegistration": "Unit No. 14, Meridian Industrial Estate, MIDC Bhosari, Bhosari, Pune, Maharashtra, 411026, India",
+        "issueDate": "2020-09-18",
+        "effectiveDate": "2023-09-05",
+        "expiryDate": "",
+        "currentStatus": "active",
+        "previousRegistrationNumber": "",
+        "updatedAfterNameChange": "not-applicable",
+        "updatedAfterOfficeChange": "yes"
+      }
+    ]
+  },
+  "documentReferences": {
+    "officeChange": {
+      "boardResolutionDate": "2023-08-07",
+      "effectiveDate": "2023-08-14",
+      "filingDate": "2023-08-14",
+      "filingForm": "INC-22",
+      "srn": "R12345678"
+    },
+    "officeProof": {
+      "leaseStartDate": "2023-08-01",
+      "leaseEndDate": "2028-07-31"
+    },
+    "gstHistorical": {
+      "certificateDate": "2019-07-05",
+      "asOfLabel": "Original registration — principal place of business as on 2019-07-05"
+    },
+    "issueDates": {
+      "certificateOfIncorporation": "2019-06-12",
+      "moaCertification": "2019-06-12",
+      "aoaCertification": "2019-06-12"
+    },
+    "udyam": {
+      "registrationDate": "2020-09-18",
+      "addressUpdatedDate": "2023-09-05"
+    }
+  },
+  "expectedApprovedFacts": [
+    "identity.legalName",
+    "identity.cin",
+    "identity.incorporationDate",
+    "identity.incorporationState",
+    "identity.registrarOfCompanies",
+    "identity.companyClass",
+    "identity.companyCategory",
+    "identity.governingAct",
+    "constitutionalRecord.moaVersionDate",
+    "constitutionalRecord.aoaVersionDate",
+    "constitutionalRecord.mainObjectText",
+    "offices.current.fullAddress",
+    "registrations.pan.number",
+    "registrations.gstin.number",
+    "registrations.gstin.status",
+    "registrations.udyam.number"
+  ],
+  "displayLabels": {
+    "companyClass": "Private",
+    "companyCategory": "Company limited by shares",
+    "companySubCategory": "Non-government company",
+    "companyStatus": "Active",
+    "listedStatus": "Unlisted",
+    "governingAct": "Companies Act, 2013",
+    "occupancyType": "Leased",
+    "gstStatus": "Active",
+    "udyamEnterpriseType": "Small"
+  }
+}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Certificate of Incorporation{% endblock %}
+{% block content %}
+<div class="certificate-box">
+  <div class="certificate-title">CERTIFICATE OF INCORPORATION</div>
+  <p style="text-align:center;font-size:9pt;color:#4a5568;">Synthetic Demo Corporate Record — Not an official registrar certificate</p>
+  <p>
+    This is to certify that <strong>{{ gt.informationTab.identity.legalName }}</strong>
+    is incorporated under the {{ labels.governingAct }} on
+    <strong>{{ gt.informationTab.identity.incorporationDate }}</strong>
+    in the state of <strong>{{ gt.informationTab.identity.incorporationState }}</strong>.
+  </p>
+  <div class="meta-grid">
+    <div class="meta-item"><label>Corporate Identity Number (CIN)</label><div class="value">{{ gt.informationTab.identity.cin }}</div></div>
+    <div class="meta-item"><label>Company Class</label><div class="value">{{ labels.companyClass }}</div></div>
+    <div class="meta-item"><label>Category</label><div class="value">{{ labels.companyCategory }}</div></div>
+    <div class="meta-item"><label>Sub-category</label><div class="value">{{ labels.companySubCategory }}</div></div>
+    <div class="meta-item"><label>Registrar of Companies</label><div class="value">{{ gt.informationTab.identity.registrarOfCompanies }}</div></div>
+    <div class="meta-item"><label>Certificate Number</label><div class="value">{{ doc.certificateNumber }}</div></div>
+    <div class="meta-item"><label>Date of Issue</label><div class="value">{{ doc.issueDate }}</div></div>
+    <div class="meta-item"><label>Place of Issue</label><div class="value">{{ doc.issuePlace }}</div></div>
+  </div>
+  <p>
+    The company is registered as a {{ labels.companyClass }} company limited by shares and is governed by the
+    {{ labels.governingAct }}.
+  </p>
+  <div class="signature-block">
+    <div>
+      <div class="signature-line">Registrar Authorised Signatory (Synthetic Placeholder)</div>
+    </div>
+    <div>
+      <div class="signature-line">{{ gt.informationTab.identity.registrarOfCompanies }}</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

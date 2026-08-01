@@ -1,0 +1,11 @@
+# Generated fixture artifacts (reproducible — safe to regenerate)
+generated/clean/*
+generated/conflicts/*
+generated/quality-stress/*
+generated/html-preview/*
+!generated/clean/.gitkeep
+!generated/conflicts/.gitkeep
+!generated/quality-stress/.gitkeep
+!generated/html-preview/.gitkeep
+
+fixture-manifest.json

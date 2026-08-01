@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}GST Registration Certificate{% endblock %}
+{% block content %}
+<div class="doc-header">
+  <h1>GST REGISTRATION CERTIFICATE</h1>
+  <div class="subtitle">Synthetic registration record for demo extraction testing</div>
+</div>
+<div class="meta-grid">
+  <div class="meta-item"><label>GSTIN</label><div class="value">{{ gt.informationTab.registrationsMap.gst.number }}</div></div>
+  <div class="meta-item"><label>Legal Name</label><div class="value">{{ gt.informationTab.identity.legalName }}</div></div>
+  <div class="meta-item"><label>Trade Name</label><div class="value">{{ gt.informationTab.identity.shortName }}</div></div>
+  <div class="meta-item"><label>Constitution of Business</label><div class="value">Private Limited Company</div></div>
+  <div class="meta-item"><label>Registration Date</label><div class="value">{{ gt.informationTab.registrationsMap.gst.registrationDate }}</div></div>
+  <div class="meta-item"><label>Certificate Effective Date</label><div class="value">{{ doc.certificateEffectiveDate }}</div></div>
+  <div class="meta-item"><label>Status</label><div class="value">{{ labels.gstStatus }}</div></div>
+  <div class="meta-item"><label>State Jurisdiction</label><div class="value">Maharashtra</div></div>
+</div>
+
+<div class="section-title">Principal Place of Business</div>
+<p><strong>{{ principalAddress.formattedSingleLine }}</strong></p>
+
+<div class="page-break"></div>
+<div class="section-title">Additional Places of Business</div>
+<p>None declared.</p>
+<p>Document as-of date for this certificate variant: <strong>{{ doc.asOfDate }}</strong></p>
+{% endblock %}

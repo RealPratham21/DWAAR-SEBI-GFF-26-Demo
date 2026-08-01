@@ -1,4 +1,5 @@
 .env
+.evidence-overlays/
 .venv/
 __pycache__/
 *.py[cod]

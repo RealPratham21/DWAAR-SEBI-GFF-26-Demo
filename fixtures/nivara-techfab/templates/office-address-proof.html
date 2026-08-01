@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Registered Office Address Proof{% endblock %}
+{% block content %}
+<div class="doc-header">
+  <h1>REGISTERED OFFICE — COMMERCIAL PREMISES EVIDENCE BUNDLE</h1>
+  <div class="subtitle">Lease confirmation and occupant declaration (synthetic)</div>
+</div>
+
+<div class="section-title">Premises Address</div>
+<p><strong>{{ gt.canonicalFacts.registeredOffice.formattedSingleLine }}</strong></p>
+
+<div class="section-title">Lease Confirmation</div>
+<table class="data-table">
+  <tr><th>Occupant / Tenant</th><td>{{ gt.informationTab.identity.legalName }}</td></tr>
+  <tr><th>Occupancy type</th><td>{{ labels.occupancyType }}</td></tr>
+  <tr><th>Lease start date</th><td>{{ gt.documentDates.officeAddressProof.leaseStartDate }}</td></tr>
+  <tr><th>Lease end date</th><td>{{ gt.documentDates.officeAddressProof.leaseEndDate }}</td></tr>
+  <tr><th>Premises owner (synthetic)</th><td>Meridian Industrial Estate Owners' Association (Demo Entity)</td></tr>
+</table>
+
+<div class="page-break"></div>
+<div class="section-title">Owner / No-Objection Confirmation</div>
+<p>
+  We confirm that {{ gt.informationTab.identity.legalName }} occupies the premises described above under a valid lease arrangement and may use the address as its registered office subject to applicable law.
+</p>
+<div class="signature-block">
+  <div><div class="signature-line">Premises Owner Representative (Synthetic)</div></div>
+  <div><div class="signature-line">Authorised Tenant Signatory (Synthetic)</div></div>
+</div>
+{% endblock %}

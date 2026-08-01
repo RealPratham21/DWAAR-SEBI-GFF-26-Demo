@@ -1,0 +1,35 @@
+{
+  "fixtureDocumentId": "12-coi-scanned-variant",
+  "outputFilename": "12-nivara-certificate-of-incorporation-scanned.pdf",
+  "requirementKey": "original-certificate-of-incorporation",
+  "templateName": null,
+  "outputCategory": "quality-stress",
+  "sourceCleanFilename": "01-nivara-certificate-of-incorporation.pdf",
+  "documentTitle": "Certificate of Incorporation — Scanned Variant",
+  "documentSpecific": {
+    "transformation": "rasterized-scan",
+    "seed": 20260731,
+    "dpi": 185
+  },
+  "sharedFactsUsed": [
+    "identity.legalName",
+    "identity.cin",
+    "identity.incorporationDate"
+  ],
+  "overrides": {},
+  "expectedPageCount": 1,
+  "expectedExtractedFacts": [
+    { "factKey": "identity.legalName", "expectedValueRef": "canonicalCurrentFacts.identity.legalName", "evidencePage": 1, "confidenceCategory": "medium" },
+    { "factKey": "identity.cin", "expectedValueRef": "canonicalCurrentFacts.identity.cin", "evidencePage": 1, "confidenceCategory": "medium" },
+    { "factKey": "identity.incorporationDate", "expectedValueRef": "canonicalCurrentFacts.identity.incorporationDate", "evidencePage": 1, "confidenceCategory": "medium" }
+  ],
+  "expectedNativeText": false,
+  "expectedConflicts": [],
+  "expectedWarnings": [
+    {
+      "issueCategory": "quality-warning",
+      "message": "Image-only PDF; OCR required; confidence expected lower than clean COI."
+    }
+  ],
+  "mainJuryDemoPack": false
+}

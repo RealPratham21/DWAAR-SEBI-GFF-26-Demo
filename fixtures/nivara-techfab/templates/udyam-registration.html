@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Udyam Registration Record{% endblock %}
+{% block content %}
+<div class="doc-header">
+  <h1>UDYAM REGISTRATION RECORD</h1>
+  <div class="subtitle">Synthetic MSME registration record</div>
+</div>
+<div class="meta-grid">
+  <div class="meta-item"><label>Udyam Registration Number</label><div class="value">{{ gt.informationTab.registrationsMap.udyam.number }}</div></div>
+  <div class="meta-item"><label>Enterprise Name</label><div class="value">{{ gt.informationTab.identity.legalName }}</div></div>
+  <div class="meta-item"><label>Enterprise Type</label><div class="value">{{ labels.udyamEnterpriseType }}</div></div>
+  <div class="meta-item"><label>Registration Date</label><div class="value">{{ gt.informationTab.registrationsMap.udyam.registrationDate }}</div></div>
+  <div class="meta-item"><label>Address Last Updated</label><div class="value">{{ gt.documentReferences.udyam.addressUpdatedDate }}</div></div>
+  <div class="meta-item"><label>Major Activity</label><div class="value">Manufacturing</div></div>
+  <div class="meta-item"><label>Registered Office</label><div class="value">{{ gt.canonicalFacts.registeredOffice.formattedSingleLine }}</div></div>
+</div>
+<p>
+  Registered office address reflects the update recorded on
+  <strong>{{ gt.documentReferences.udyam.addressUpdatedDate }}</strong>
+  following the company's registered-office change.
+</p>
+
+<div class="page-break"></div>
+<div class="section-title">Plant / Activity Information</div>
+<p>
+  Precision metal components and electromechanical assemblies for industrial machinery and automation systems.
+  Synthetic plant details provided for extraction testing only.
+</p>
+{% endblock %}
