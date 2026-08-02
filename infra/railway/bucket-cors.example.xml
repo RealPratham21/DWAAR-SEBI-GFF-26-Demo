@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Railway Storage Bucket CORS template.
+  Replace AllowedOrigin with the exact production Vercel origin.
+  Do not use *.vercel.app wildcards.
+  Local MinIO CORS remains infra/minio/cors.xml (unchanged).
+-->
+<CORSConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+  <CORSRule>
+    <AllowedOrigin>https://YOUR_APP.vercel.app</AllowedOrigin>
+    <AllowedMethod>GET</AllowedMethod>
+    <AllowedMethod>PUT</AllowedMethod>
+    <AllowedMethod>HEAD</AllowedMethod>
+    <AllowedHeader>Content-Type</AllowedHeader>
+    <AllowedHeader>Content-Length</AllowedHeader>
+    <AllowedHeader>x-amz-content-sha256</AllowedHeader>
+    <AllowedHeader>x-amz-date</AllowedHeader>
+    <AllowedHeader>x-amz-security-token</AllowedHeader>
+    <AllowedHeader>x-amz-checksum-crc32</AllowedHeader>
+    <AllowedHeader>x-amz-sdk-checksum-algorithm</AllowedHeader>
+    <ExposeHeader>ETag</ExposeHeader>
+    <MaxAgeSeconds>3600</MaxAgeSeconds>
+  </CORSRule>
+</CORSConfiguration>

@@ -21,7 +21,7 @@ from app.models.document_processing_run import DocumentProcessingRun
 from app.models.document_version import DocumentVersion
 from app.models.fact_assertion import FactAssertion
 from app.models.fact_evidence_reference import FactEvidenceReference
-from app.models.fact_issue import FactIssue, FactIssueAssertion
+from app.models.fact_issue import FactIssue, FactIssueAssertion, FactIssueResolution
 from app.models.structured_extraction_run import StructuredExtractionRun
 from app.models.user import User
 from app.modules.company_incorporation.document_processing.service import (
@@ -38,6 +38,8 @@ from app.modules.company_incorporation.structured_extraction.constants import (
     DeterministicStatus,
     IssueAssertionRole,
     IssueStatus,
+    QualityCategory,
+    ResolutionDecision,
     ReviewStatus,
     SemanticStatus,
     SourceTemporality,
@@ -227,9 +229,14 @@ def process_structured_run(
                     if not result.document_assessment.matches_expected_document_type:
                         semantic_warnings.append("document_content_mismatch")
                     run.semantic_status = SemanticStatus.COMPLETED
-                    provider_usage = {"latency_ms": provider_latency_ms, "fact_count": len(result.facts)}
+                    provider_usage = {
+                        "latency_ms": provider_latency_ms,
+                        "fact_count": len(result.facts),
+                    }
                 except Exception as exc:  # noqa: BLE001
-                    logger.warning("Semantic extraction failed for run %s: %s", run_id, type(exc).__name__)
+                    logger.warning(
+                        "Semantic extraction failed for run %s: %s", run_id, type(exc).__name__
+                    )
                     run.semantic_status = SemanticStatus.FAILED
                     semantic_warnings.append("semantic_provider_failed")
                     run.error_code = StructuredExtractionErrorCode.PROVIDER_ERROR
@@ -247,6 +254,10 @@ def process_structured_run(
             return
 
         merged, audit_events = merge_candidates(deterministic, semantic_candidates, block_index)
+        merged_keys = {candidate.fact_key for candidate in merged}
+        missing_fact_keys = [
+            fact_key for fact_key in missing_fact_keys if fact_key not in merged_keys
+        ]
         scored: list[tuple[CandidateFact, float, str, dict[str, Any]]] = []
         for candidate in merged:
             score, category, signals = score_candidate(candidate, block_index)
@@ -289,11 +300,19 @@ def process_structured_run(
 
         assertion_rows: list[FactAssertion] = []
         for candidate, score, category, signals in scored:
-            comparison_status, _hint = compare_assertion(
+            comparison_status, hint = compare_assertion(
                 candidate.fact_key,
                 candidate.normalized_value,
                 payload,
+                candidate=candidate,
             )
+            quality_category = category
+            if (
+                comparison_status == ComparisonStatus.POSSIBLE_MATCH
+                and hint
+                and "truncat" in hint.casefold()
+            ):
+                quality_category = QualityCategory.REVIEW_REQUIRED
             temporality = SourceTemporality.CURRENT
             if comparison_status == ComparisonStatus.POSSIBLE_HISTORICAL:
                 temporality = SourceTemporality.HISTORICAL
@@ -313,7 +332,7 @@ def process_structured_run(
                 comparison_status=comparison_status,
                 review_status=ReviewStatus.PENDING,
                 quality_score=score,
-                quality_category=category,
+                quality_category=quality_category,
                 assertion_fingerprint=_assertion_fingerprint(candidate),
                 source_temporality=temporality,
                 quality_signals=signals,
@@ -392,6 +411,14 @@ def process_structured_run(
                     )
                 )
 
+        _dismiss_obsolete_open_issues(
+            db,
+            workspace_id=run.workspace_id,
+            document_version_id=run.document_version_id,
+            assertion_rows=assertion_rows,
+            created_issue_fact_keys={issue.fact_key for issue in created_issues},
+        )
+
         now = _now()
         warnings = sorted(set((run.warnings or []) + semantic_warnings))
         run.warnings = warnings
@@ -427,7 +454,7 @@ def process_structured_run(
                     db,
                     user=user,
                     requirement_name=requirement_key,
-                    structured_run_id=run.id,
+                    document_version_id=run.document_version_id,
                     saved_at=now,
                 )
             for issue in created_issues:
@@ -513,6 +540,97 @@ def _build_semantic_request(
         deterministicCandidates=det_payload,
         pages=pages,
     )
+
+
+def _dismiss_obsolete_open_issues(
+    db: Session,
+    *,
+    workspace_id: uuid.UUID,
+    document_version_id: uuid.UUID,
+    assertion_rows: list[FactAssertion],
+    created_issue_fact_keys: set[str],
+) -> None:
+    """Dismiss prior open false-positive issues for this document version.
+
+    Keeps historical/outdated issues when the new run still creates them.
+    Does not rewrite prior structured-run assertion rows.
+    """
+
+    matched_or_clear = {
+        assertion.fact_key
+        for assertion in assertion_rows
+        if assertion.comparison_status
+        in {
+            ComparisonStatus.MATCHED,
+            ComparisonStatus.NO_INFORMATION,
+            ComparisonStatus.NOT_COMPARED,
+        }
+    }
+    previous_assertion_keys = set(
+        db.scalars(
+            select(FactAssertion.fact_key).where(
+                FactAssertion.workspace_id == workspace_id,
+                FactAssertion.document_version_id == document_version_id,
+                FactAssertion.id.notin_([row.id for row in assertion_rows] or [uuid.uuid4()]),
+            )
+        ).all()
+    )
+    cleared_keys = (matched_or_clear | previous_assertion_keys) - created_issue_fact_keys
+    if not cleared_keys:
+        return
+
+    workspace = db.get(CompanyIncorporationWorkspace, workspace_id)
+    if workspace is None:
+        return
+
+    open_issues = db.scalars(
+        select(FactIssue)
+        .join(FactIssueAssertion, FactIssueAssertion.issue_id == FactIssue.id)
+        .join(FactAssertion, FactAssertion.id == FactIssueAssertion.fact_assertion_id)
+        .where(
+            FactIssue.workspace_id == workspace_id,
+            FactIssue.fact_key.in_(cleared_keys),
+            FactIssue.status.in_(
+                {
+                    IssueStatus.OPEN,
+                    IssueStatus.AWAITING_CLARIFICATION,
+                    IssueStatus.ESCALATED,
+                }
+            ),
+            FactAssertion.document_version_id == document_version_id,
+            FactIssue.issue_type.in_(
+                {
+                    "conflicting_value",
+                    "invalid_identifier",
+                    "low_extraction_quality",
+                    "clarification_required",
+                }
+            ),
+        )
+        .distinct()
+    ).all()
+
+    now = _now()
+    for issue in open_issues:
+        if issue.fact_key in created_issue_fact_keys:
+            continue
+        issue.status = IssueStatus.DISMISSED
+        issue.resolved_at = now
+        issue.updated_at = now
+        db.add(
+            FactIssueResolution(
+                fact_issue_id=issue.id,
+                decision=ResolutionDecision.DISMISS_NON_MATERIAL,
+                selected_assertion_id=None,
+                rationale=(
+                    "Automatically dismissed after a newer structured-extraction run "
+                    "no longer reproduced this discrepancy."
+                ),
+                resolved_by_user_id=workspace.user_id,
+                information_value_snapshot=issue.information_value_snapshot,
+                document_value_snapshot=None,
+            )
+        )
 
 
 def _assertion_fingerprint(candidate: CandidateFact) -> str:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Live Docker validation for Increment 2B structured extraction (Nivara fixtures)."""
+"""Live Docker validation for Increment 2B/3A structured extraction (Nivara fixtures)."""
 
 from __future__ import annotations
 
@@ -46,13 +46,46 @@ DOCUMENTS = [
         "label": "INC-22",
         "path": FIXTURE_ROOT / "clean" / "05-nivara-inc22-registered-office.pdf",
         "requirement_key": "current-registered-office-filing",
-        "expect_facts": ["corporateHistory.officeChange.srn"],
+        "expect_facts": [
+            "corporateHistory.officeChange.srn",
+            "corporateHistory.officeChange.filingForm",
+        ],
+        "expect_filing_form": "INC-22",
+        "expect_address_facts": {
+            "corporateHistory.officeChange.previousAddress": ["chakan"],
+            "corporateHistory.officeChange.newAddress": ["bhosari"],
+        },
+        "forbid_display_values": ["type"],
+        "forbid_address_substrings": [
+            "SYNTHETIC DEMO DOCUMENT",
+            "NOT VALID FOR OFFICIAL USE",
+        ],
+        "forbid_issue_types_for_facts": {
+            "corporateHistory.officeChange.filingForm": ["missing_expected_fact"],
+        },
+    },
+    {
+        "label": "Office address proof",
+        "path": FIXTURE_ROOT / "clean" / "07-nivara-office-address-proof.pdf",
+        "requirement_key": "registered-office-address-proof",
+        "expect_facts": ["offices.currentRegistered.occupancyType"],
+        "forbid_display_values": ["type"],
     },
     {
         "label": "Current GST",
         "path": FIXTURE_ROOT / "clean" / "09-nivara-gst-registration-current.pdf",
         "requirement_key": "gst-registration-certificates",
-        "expect_facts": ["registrations.gstin.registrationNumber"],
+        "expect_facts": [
+            "registrations.gstin.registrationNumber",
+            "registrations.gstin.registrationDate",
+            "registrations.gstin.effectiveDate",
+        ],
+        "expect_gst_dates": {
+            "registrations.gstin.registrationDate": "2019-07-05",
+            "registrations.gstin.effectiveDate": "2023-08-22",
+        },
+        "expect_no_hard_address_conflict": True,
+        "expect_no_gst_date_conflict": True,
         "expect_no_historical_issue": True,
     },
     {
@@ -68,6 +101,7 @@ DOCUMENTS = [
         "path": FIXTURE_ROOT / "quality-stress" / "13-nivara-pan-mobile-photo.jpg",
         "requirement_key": "pan-certificate",
         "expect_facts": ["registrations.pan.registrationNumber"],
+        "expect_pan_truncated_quality_issue": True,
     },
 ]
 
@@ -248,6 +282,172 @@ def evaluate(client: httpx.Client, headers: dict[str, str], doc: dict, version_i
             if not any(status == "matched" for status in statuses):
                 ok = False
                 checks.append(f"{fact_key} not matched ({sorted(statuses)})")
+
+    forbidden_displays = {value.lower() for value in doc.get("forbid_display_values", [])}
+    forbidden_address = [value.lower() for value in doc.get("forbid_address_substrings", [])]
+    for group in groups.values():
+        for assertion in group.get("assertions", []):
+            display = str(assertion.get("displayValue") or "").strip().lower()
+            if display in forbidden_displays:
+                ok = False
+                checks.append(f"forbidden displayValue={display!r} on {assertion.get('factKey')}")
+            if "address" in str(assertion.get("factKey") or "").lower():
+                blob = " ".join(
+                    [
+                        str(assertion.get("displayValue") or ""),
+                        json.dumps(assertion.get("normalizedValue") or {}),
+                    ]
+                ).lower()
+                for fragment in forbidden_address:
+                    if fragment.lower() in blob:
+                        ok = False
+                        checks.append(
+                            f"synthetic/disclaimer text in address fact {assertion.get('factKey')}"
+                        )
+
+    for fact_key, needles in doc.get("expect_address_facts", {}).items():
+        group = groups.get(fact_key)
+        if not group or not group.get("assertions"):
+            ok = False
+            checks.append(f"missing address fact {fact_key}")
+            continue
+        blob = " ".join(
+            json.dumps(assertion.get("normalizedValue") or assertion.get("displayValue") or "")
+            for assertion in group["assertions"]
+        ).lower()
+        for needle in needles:
+            if needle.lower() not in blob:
+                ok = False
+                checks.append(f"{fact_key} missing expected token {needle!r}")
+
+    if doc.get("expect_no_hard_address_conflict"):
+        hard = [
+            issue
+            for issue in open_issues
+            if issue.get("issueType") == "conflicting_value"
+            and "address" in str(issue.get("factKey") or "").lower()
+        ]
+        if hard:
+            ok = False
+            checks.append(f"unexpected hard address conflict(s): {[i.get('id') for i in hard]}")
+
+    # Scanned/OCR company-class junk must not create an active conflict.
+    if "Scanned" in doc["label"] or "COI" in doc["label"]:
+        class_conflicts = [
+            issue
+            for issue in open_issues
+            if issue.get("factKey") == "identity.companyClass"
+            and issue.get("issueType") == "conflicting_value"
+        ]
+        if class_conflicts:
+            detail = client.get(
+                f"{API}/workstreams/company-incorporation/structured-extraction/issues/{class_conflicts[0]['id']}",
+                headers=headers,
+            )
+            if detail.status_code == 200:
+                links = detail.json().get("linkedAssertions", [])
+                displays = [str(link.get("displayValue") or "").lower() for link in links]
+                if any(value in {"ms", "type", "class"} for value in displays):
+                    ok = False
+                    checks.append(f"OCR company-class junk conflict displays={displays}")
+
+    if doc.get("expect_filing_form"):
+        group = groups.get("corporateHistory.officeChange.filingForm")
+        values = {
+            str(assertion.get("normalizedValue") or assertion.get("displayValue") or "")
+            for assertion in (group or {}).get("assertions", [])
+        }
+        if doc["expect_filing_form"] not in values:
+            ok = False
+            checks.append(f"filing form not {doc['expect_filing_form']}: {sorted(values)}")
+
+    for fact_key, expected_iso in doc.get("expect_gst_dates", {}).items():
+        group = groups.get(fact_key)
+        values = {
+            str(
+                assertion.get("normalizedValue")
+                or assertion.get("displayValue")
+                or ""
+            )
+            for assertion in (group or {}).get("assertions", [])
+        }
+        # Keep assertions belonging to this document version when present.
+        versioned = {
+            str(
+                assertion.get("normalizedValue")
+                or assertion.get("displayValue")
+                or ""
+            )
+            for assertion in (group or {}).get("assertions", [])
+            if assertion.get("documentVersionId") == version_id
+        }
+        check_values = versioned or values
+        if expected_iso not in check_values:
+            ok = False
+            checks.append(f"{fact_key} expected {expected_iso}, got {sorted(check_values)}")
+
+    if doc.get("expect_no_gst_date_conflict"):
+        date_conflicts = [
+            issue
+            for issue in open_issues
+            if issue.get("issueType") == "conflicting_value"
+            and issue.get("factKey")
+            in {
+                "registrations.gstin.registrationDate",
+                "registrations.gstin.effectiveDate",
+                "registrations.gstin.amendmentDate",
+                "registrations.gstin.certificateIssueDate",
+            }
+        ]
+        if date_conflicts:
+            ok = False
+            checks.append(
+                f"unexpected GST date conflict(s): "
+                f"{[(i.get('factKey'), i.get('id')) for i in date_conflicts]}"
+            )
+
+    for fact_key, banned_types in doc.get("forbid_issue_types_for_facts", {}).items():
+        bad = [
+            issue
+            for issue in open_issues
+            if issue.get("factKey") == fact_key and issue.get("issueType") in set(banned_types)
+        ]
+        if bad:
+            ok = False
+            checks.append(f"forbidden issues for {fact_key}: {[i.get('issueType') for i in bad]}")
+
+    if doc.get("expect_pan_truncated_quality_issue"):
+        hard_name = [
+            issue
+            for issue in open_issues
+            if issue.get("factKey") == "registrations.pan.legalNameOnRegistration"
+            and issue.get("issueType") == "conflicting_value"
+        ]
+        if hard_name:
+            ok = False
+            checks.append("PAN truncated name still has hard conflicting_value")
+        quality = [
+            issue
+            for issue in open_issues
+            if issue.get("factKey") == "registrations.pan.legalNameOnRegistration"
+            and issue.get("issueType") in {"low_extraction_quality", "clarification_required"}
+        ]
+        name_group = groups.get("registrations.pan.legalNameOnRegistration")
+        if name_group and not quality and not hard_name:
+            # Truncation may already be reflected only as possible_match without an issue
+            # if quality scoring skipped; still require no hard conflict.
+            statuses = {
+                assertion.get("comparisonStatus")
+                for assertion in name_group.get("assertions", [])
+            }
+            if "conflicting" in statuses:
+                ok = False
+                checks.append(f"PAN name comparison still conflicting: {sorted(statuses)}")
+            elif "possible_match" not in statuses and "matched" not in statuses:
+                checks.append(f"PAN name statuses={sorted(statuses)}")
+        elif name_group and quality:
+            checks.append(f"pan_quality_issue={quality[0].get('issueType')}")
+
     if ok:
         checks.append("PASS")
     return {
@@ -263,6 +463,41 @@ def evaluate(client: httpx.Client, headers: dict[str, str], doc: dict, version_i
     }
 
 
+def validate_summaries(client: httpx.Client, headers: dict[str, str]) -> dict:
+    pipeline = client.get(
+        f"{API}/workstreams/company-incorporation/documents/pipeline-summary",
+        headers=headers,
+    )
+    pipeline.raise_for_status()
+    overview = client.get(
+        f"{API}/workstreams/company-incorporation/overview-summary",
+        headers=headers,
+    )
+    overview.raise_for_status()
+    pipe = pipeline.json()
+    ov = overview.json()
+    checks = []
+    ok = True
+    if pipe["aggregation"]["totalCurrentDocuments"] < 1:
+        ok = False
+        checks.append("pipeline summary empty")
+    if pipe["aggregation"]["hasAnyActivePipeline"]:
+        ok = False
+        checks.append("pipeline still active after completion")
+    if ov.get("readyForDisclosureGeneration") is not False:
+        ok = False
+        checks.append("readyForDisclosureGeneration must remain false")
+    if ov.get("disclosures", {}).get("status") != "not_assessed":
+        ok = False
+        checks.append("disclosures must remain not_assessed")
+    if ov.get("professionalReview", {}).get("status") != "not_assessed":
+        ok = False
+        checks.append("professionalReview must remain not_assessed")
+    if ok:
+        checks.append("PASS")
+    return {"ok": ok, "checks": checks, "pipeline": pipe, "overview": ov}
+
+
 def main() -> int:
     missing = [str(doc["path"]) for doc in DOCUMENTS if not doc["path"].exists()]
     if missing:
@@ -275,6 +510,9 @@ def main() -> int:
         return 1
 
     results = []
+    resolution = None
+    summary: dict = {"ok": False, "checks": ["not_run"]}
+    open_after: list = []
     with httpx.Client(timeout=60.0) as client:
         # Prefer full bootstrap from page-ingest script for onboarding completeness.
         sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -321,8 +559,9 @@ def main() -> int:
             if issue.get("issueType") in {"possible_historical_value", "outdated_registration"}
         ]
         resolution = None
-        if historical:
-            issue_id = historical[0]["id"]
+        resolutions = []
+        for item in historical:
+            issue_id = item["id"]
             resolve = client.post(
                 f"{API}/workstreams/company-incorporation/structured-extraction/issues/{issue_id}/resolve",
                 headers=headers,
@@ -331,17 +570,48 @@ def main() -> int:
                     "rationale": "Chakan GST address predates the INC-22 office change; keep Bhosari Information.",
                 },
             )
-            resolution = {
+            entry = {
                 "status_code": resolve.status_code,
                 "body": resolve.json() if resolve.status_code < 500 else resolve.text[:300],
             }
+            resolutions.append(entry)
+            resolution = entry
             print(f"Resolution result: {resolution}")
+        if not resolutions:
+            print("No historical issues to resolve.")
+
+        summary = validate_summaries(client, headers)
+        print(f"Summary endpoints: {'OK' if summary['ok'] else 'FAIL'} checks={summary['checks']}")
+        open_after = client.get(
+            f"{API}/workstreams/company-incorporation/structured-extraction/issues",
+            headers=headers,
+            params={"status": "open"},
+        ).json().get("issues", [])
+        print("Remaining open issues:")
+        for issue in open_after:
+            print(
+                f"  - {issue.get('id')} type={issue.get('issueType')} "
+                f"severity={issue.get('severity')} fact={issue.get('factKey')} "
+                f"title={issue.get('title')}"
+            )
 
     passed = sum(1 for item in results if item["ok"])
+    summary_ok = bool(summary.get("ok"))
     print("=" * 72)
-    print(f"Structured ingest summary: {passed}/{len(results)} passed")
-    print(json.dumps({"results": results, "resolution": resolution}, indent=2))
-    return 0 if passed == len(results) else 1
+    print(f"Structured ingest summary: {passed}/{len(results)} passed; summaries_ok={summary_ok}")
+    print(
+        json.dumps(
+            {
+                "results": results,
+                "resolution": resolution,
+                "summary_ok": summary_ok,
+                "remaining_open_issues": open_after,
+            },
+            indent=2,
+            default=str,
+        )
+    )
+    return 0 if passed == len(results) and summary_ok else 1
 
 
 if __name__ == "__main__":

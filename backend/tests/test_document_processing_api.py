@@ -2,13 +2,13 @@ from pathlib import Path
 
 import fitz
 import pytest
+from app.models.document_processing_run import DocumentProcessingRun
+from app.modules.company_incorporation.document_processing.pipeline import process_run
+from app.modules.company_incorporation.document_processing.queue import claim_next_run
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models.document_processing_run import DocumentProcessingRun
-from app.modules.company_incorporation.document_processing.pipeline import process_run
-from app.modules.company_incorporation.document_processing.queue import claim_next_run
 from tests.test_company_incorporation_documents import (
     SHA256_PLACEHOLDER,
     FakeStorage,

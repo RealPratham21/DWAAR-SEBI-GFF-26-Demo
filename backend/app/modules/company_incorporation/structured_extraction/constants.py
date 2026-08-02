@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-EXTRACTOR_VERSION = "1.1.0"
-FACT_SCHEMA_VERSION = "1.0.0"
-PROMPT_VERSION = "1.0.0"
-COMPARISON_VERSION = "1.1.0"
+EXTRACTOR_VERSION = "1.2.0"
+FACT_SCHEMA_VERSION = "1.1.0"
+PROMPT_VERSION = "1.1.0"
+COMPARISON_VERSION = "1.2.0"
 
 
 class StructuredRunStatus:

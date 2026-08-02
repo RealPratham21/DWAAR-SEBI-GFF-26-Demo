@@ -1,0 +1,182 @@
+# Production-like local smoke stack.
+# Uses the production backend image (no reload, no source bind mounts).
+# Continues to use local PostgreSQL + MinIO. Does not replace compose.yaml.
+
+name: dwaar-production-smoke
+
+services:
+  db:
+    image: postgres:16.8-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dwaar}
+      POSTGRES_USER: ${POSTGRES_USER:-dwaar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dwaar_local}
+    ports:
+      - "5433:5432"
+    volumes:
+      - smoke_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dwaar} -d ${POSTGRES_DB:-dwaar}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  minio:
+    image: minio/minio:RELEASE.2025-01-20T14-49-07Z
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-dwaar_minio}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-dwaar_minio_secret}
+      MINIO_API_CORS_ALLOW_ORIGIN: http://localhost:3000
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    volumes:
+      - smoke_minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  minio-init:
+    image: minio/mc:RELEASE.2025-01-17T23-25-50Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    volumes:
+      - ./infra/minio/cors.xml:/cors.xml:ro
+      - ./infra/minio/init.sh:/init.sh:ro
+    environment:
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-dwaar_minio}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-dwaar_minio_secret}
+      MINIO_BUCKET: ${S3_BUCKET:-dwaar-documents}
+    entrypoint: ["/bin/sh", "/init.sh"]
+    restart: "no"
+
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      APP_ENV: local
+      DEBUG: "false"
+      SERVICE_ROLE: api
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-dwaar}:${POSTGRES_PASSWORD:-dwaar_local}@db:5432/${POSTGRES_DB:-dwaar}
+      JWT_SECRET: local-smoke-jwt-secret-not-for-production-use
+      FRONTEND_ORIGINS: http://localhost:3000
+      S3_ENDPOINT: http://minio:9000
+      S3_PUBLIC_ENDPOINT: http://localhost:9002
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-dwaar_minio}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-dwaar_minio_secret}
+      S3_BUCKET: ${S3_BUCKET:-dwaar-documents}
+      S3_SECURE: "false"
+      S3_ADDRESSING_STYLE: path
+    command: ["uv", "run", "--no-dev", "alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      SERVICE_ROLE: api
+      APP_ENV: local
+      DEBUG: "false"
+      LOG_LEVEL: INFO
+      ENABLE_API_DOCS: "true"
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-dwaar}:${POSTGRES_PASSWORD:-dwaar_local}@db:5432/${POSTGRES_DB:-dwaar}
+      JWT_SECRET: local-smoke-jwt-secret-not-for-production-use
+      FRONTEND_ORIGINS: http://localhost:3000
+      REFRESH_COOKIE_SECURE: "false"
+      REFRESH_COOKIE_SAMESITE: lax
+      S3_ENDPOINT: http://minio:9000
+      S3_PUBLIC_ENDPOINT: http://localhost:9002
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-dwaar_minio}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-dwaar_minio_secret}
+      S3_BUCKET: ${S3_BUCKET:-dwaar-documents}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_SECURE: "false"
+      S3_ADDRESSING_STYLE: path
+      S3_PRESIGNED_EXPIRY_SECONDS: "900"
+      PORT: "8000"
+      STRUCTURED_EXTRACTION_ENABLED: "false"
+    ports:
+      - "8001:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/live', timeout=2)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  document-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      SERVICE_ROLE: worker
+      APP_ENV: local
+      DEBUG: "false"
+      LOG_LEVEL: INFO
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-dwaar}:${POSTGRES_PASSWORD:-dwaar_local}@db:5432/${POSTGRES_DB:-dwaar}
+      S3_ENDPOINT: http://minio:9000
+      S3_PUBLIC_ENDPOINT: http://localhost:9002
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-dwaar_minio}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-dwaar_minio_secret}
+      S3_BUCKET: ${S3_BUCKET:-dwaar-documents}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_SECURE: "false"
+      S3_ADDRESSING_STYLE: path
+      DOC_PROCESSING_POLL_INTERVAL_SECONDS: "2"
+      DOC_PROCESSING_WRITE_HEARTBEAT_FILE: "true"
+      DOC_PROCESSING_HEARTBEAT_PATH: /tmp/document-worker.heartbeat
+      STRUCTURED_EXTRACTION_ENABLED: "false"
+      STRUCTURED_EXTRACTION_PROVIDER: cohere
+      COHERE_API_KEY: ""
+      COHERE_MODEL: command-a-plus-05-2026
+    command:
+      [
+        "uv",
+        "run",
+        "--no-dev",
+        "python",
+        "-m",
+        "app.modules.company_incorporation.document_processing.worker",
+      ]
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      minio-init:
+        condition: service_completed_successfully
+      api:
+        condition: service_healthy
+
+volumes:
+  smoke_postgres_data:
+  smoke_minio_data:

@@ -151,7 +151,9 @@ def recover_stale_runs(db: Session, *, settings: Settings | None = None) -> int:
     return recovered
 
 
-def claim_next_run(db: Session, *, settings: Settings | None = None) -> DocumentProcessingRun | None:
+def claim_next_run(
+    db: Session, *, settings: Settings | None = None
+) -> DocumentProcessingRun | None:
     """Claim one available queued run using SKIP LOCKED."""
     cfg = settings or get_settings()
     now = _now()

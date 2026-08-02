@@ -35,16 +35,22 @@ def build_company_incorporation_documents_route() -> str:
 
 
 def build_company_incorporation_questions_route(*, issue_id: str | None = None) -> str:
-    route = f"/projects/demo/workstreams/{COMPANY_INCORPORATION_SLUG}?tab=questions-conflicts"
+    route = f"/projects/demo/workstreams/{COMPANY_INCORPORATION_SLUG}?tab=questions"
     if issue_id:
         return f"{route}&issueId={issue_id}"
     return route
 
 
-def build_company_incorporation_facts_route(*, structured_run_id: str | None = None) -> str:
-    route = f"/projects/demo/workstreams/{COMPANY_INCORPORATION_SLUG}?tab=facts-evidence"
-    if structured_run_id:
-        return f"{route}&structuredRunId={structured_run_id}"
+def build_company_incorporation_facts_route(
+    *,
+    assertion_id: str | None = None,
+    document_version_id: str | None = None,
+) -> str:
+    route = f"/projects/demo/workstreams/{COMPANY_INCORPORATION_SLUG}?tab=facts"
+    if assertion_id:
+        return f"{route}&assertionId={assertion_id}"
+    if document_version_id:
+        return f"{route}&documentVersionId={document_version_id}"
     return route
 
 

@@ -82,8 +82,8 @@ class FactAssertion(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     requirement_key: Mapped[str] = mapped_column(String(128), nullable=False)
     fact_key: Mapped[str] = mapped_column(String(128), nullable=False)
     value_type: Mapped[str] = mapped_column(String(32), nullable=False)
-    raw_value: Mapped[dict[str, Any] | list[Any] | str | int | float | bool | None] = (
-        mapped_column(JSONB, nullable=False)
+    raw_value: Mapped[dict[str, Any] | list[Any] | str | int | float | bool | None] = mapped_column(
+        JSONB, nullable=False
     )
     normalized_value: Mapped[dict[str, Any] | list[Any] | str | int | float | bool | None] = (
         mapped_column(JSONB, nullable=False)

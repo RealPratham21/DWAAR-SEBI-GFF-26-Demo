@@ -255,7 +255,10 @@ def run_ocr(
         text = " ".join(tokens)
 
     average_confidence = float(sum(confidences) / len(confidences)) if confidences else None
-    if average_confidence is not None and average_confidence < cfg.doc_processing_ocr_low_confidence:
+    if (
+        average_confidence is not None
+        and average_confidence < cfg.doc_processing_ocr_low_confidence
+    ):
         warnings.append(ProcessingWarning.LOW_OCR_CONFIDENCE)
 
     if not text.strip():

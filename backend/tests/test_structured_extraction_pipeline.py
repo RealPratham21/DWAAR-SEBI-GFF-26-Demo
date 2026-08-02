@@ -6,12 +6,7 @@ from pathlib import Path
 
 import fitz
 import pytest
-from httpx import AsyncClient
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
 from app.models.fact_assertion import FactAssertion
-from app.models.fact_issue import FactIssue
 from app.models.structured_extraction_run import StructuredExtractionRun
 from app.modules.company_incorporation.document_processing.pipeline import process_run
 from app.modules.company_incorporation.document_processing.queue import claim_next_run
@@ -21,6 +16,10 @@ from app.modules.company_incorporation.structured_extraction.pipeline import (
 from app.modules.company_incorporation.structured_extraction.queue import (
     claim_next_structured_run,
 )
+from httpx import AsyncClient
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from tests.test_company_incorporation_documents import (
     FakeStorage,
     _register_submit_and_init_workspace,
@@ -168,9 +167,7 @@ async def test_page_processing_enqueues_and_structured_extracts(
     assert run.status in {"completed", "completed_with_warnings"}
     assertions = list(
         db_session.scalars(
-            select(FactAssertion).where(
-                FactAssertion.structured_extraction_run_id == run.id
-            )
+            select(FactAssertion).where(FactAssertion.structured_extraction_run_id == run.id)
         )
     )
     assert assertions

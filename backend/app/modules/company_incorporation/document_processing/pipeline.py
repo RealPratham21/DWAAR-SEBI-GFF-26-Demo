@@ -131,8 +131,10 @@ def process_run(db: Session, run_id: uuid.UUID, *, settings: Settings | None = N
         db.commit()
 
         run, version, document = load_promotion_gate(db, run_id=run_id)
-        if run is None or version is None or not can_promote_run(
-            run=run, version=version, document=document
+        if (
+            run is None
+            or version is None
+            or not can_promote_run(run=run, version=version, document=document)
         ):
             _abort_without_promotion(
                 db,
@@ -155,8 +157,10 @@ def process_run(db: Session, run_id: uuid.UUID, *, settings: Settings | None = N
         run_warnings: list[str] = []
         for page in pages:
             run, version, document = load_promotion_gate(db, run_id=run_id)
-            if run is None or version is None or not can_promote_run(
-                run=run, version=version, document=document
+            if (
+                run is None
+                or version is None
+                or not can_promote_run(run=run, version=version, document=document)
             ):
                 db.commit()
                 _abort_without_promotion(
@@ -189,8 +193,10 @@ def process_run(db: Session, run_id: uuid.UUID, *, settings: Settings | None = N
 
         # Checkpoint before committing successful completion.
         run, version, document = load_promotion_gate(db, run_id=run_id)
-        if run is None or version is None or not can_promote_run(
-            run=run, version=version, document=document
+        if (
+            run is None
+            or version is None
+            or not can_promote_run(run=run, version=version, document=document)
         ):
             db.commit()
             _abort_without_promotion(
@@ -370,9 +376,7 @@ def _fail_run(
     elif code == ProcessingErrorCode.PAGE_LIMIT_EXCEEDED:
         run.warnings = sorted(set((run.warnings or []) + [ProcessingWarning.PAGE_LIMIT_EXCEEDED]))
 
-    should_retry = (
-        automatic_retry and run.attempt_number < settings.doc_processing_max_attempts
-    )
+    should_retry = automatic_retry and run.attempt_number < settings.doc_processing_max_attempts
     if should_retry:
         enqueue_processing_run(db, document_version=version, settings=settings)
         db.commit()

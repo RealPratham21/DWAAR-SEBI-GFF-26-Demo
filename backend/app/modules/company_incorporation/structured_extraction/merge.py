@@ -11,8 +11,14 @@ from app.modules.company_incorporation.structured_extraction.constants import (
 )
 from app.modules.company_incorporation.structured_extraction.normalize import (
     fingerprint_value,
+    is_ignored_document_noise,
+    is_label_fragment_value,
+    is_legal_name_fact,
+    normalize_company_class,
+    normalize_filing_form,
     normalize_identifier,
     normalize_legal_name,
+    normalize_occupancy_type,
 )
 from app.modules.company_incorporation.structured_extraction.registry import get_fact
 from app.modules.company_incorporation.structured_extraction.types import (
@@ -34,6 +40,7 @@ def merge_candidates(
         candidate
         for candidate in semantic
         if _semantic_candidate_is_verified(candidate, block_index, audit_events)
+        and _semantic_value_is_acceptable(candidate, audit_events)
     ]
 
     deterministic_by_key = {candidate.fact_key: candidate for candidate in deterministic}
@@ -75,6 +82,68 @@ def merge_candidates(
             merged[fact_key] = sem
 
     return list(merged.values()), audit_events
+
+
+def _semantic_value_is_acceptable(
+    candidate: CandidateFact,
+    audit_events: list[dict[str, Any]],
+) -> bool:
+    raw_text = str(candidate.display_value or candidate.raw_value or "")
+    if is_ignored_document_noise(raw_text) or is_label_fragment_value(raw_text):
+        audit_events.append(
+            {
+                "event": "semantic_rejected",
+                "fact_key": candidate.fact_key,
+                "reason": "noise_or_label_fragment",
+            }
+        )
+        return False
+    if candidate.fact_key == "corporateHistory.officeChange.filingForm":
+        normalized = normalize_filing_form(candidate.normalized_value or raw_text)
+        if not normalized:
+            audit_events.append(
+                {
+                    "event": "semantic_rejected",
+                    "fact_key": candidate.fact_key,
+                    "reason": "invalid_filing_form",
+                }
+            )
+            return False
+        candidate.normalized_value = normalized
+        candidate.display_value = normalized
+    if candidate.fact_key == "identity.companyClass":
+        if not normalize_company_class(candidate.normalized_value or raw_text):
+            audit_events.append(
+                {
+                    "event": "semantic_rejected",
+                    "fact_key": candidate.fact_key,
+                    "reason": "invalid_company_class",
+                }
+            )
+            return False
+    if candidate.fact_key == "offices.currentRegistered.occupancyType":
+        if not normalize_occupancy_type(candidate.normalized_value or raw_text):
+            audit_events.append(
+                {
+                    "event": "semantic_rejected",
+                    "fact_key": candidate.fact_key,
+                    "reason": "invalid_occupancy_type",
+                }
+            )
+            return False
+    if candidate.value_type == FactValueType.ADDRESS and isinstance(
+        candidate.normalized_value, dict
+    ):
+        if is_ignored_document_noise(candidate.normalized_value.get("fullAddress", "")):
+            audit_events.append(
+                {
+                    "event": "semantic_rejected",
+                    "fact_key": candidate.fact_key,
+                    "reason": "noise_address",
+                }
+            )
+            return False
+    return True
 
 
 def _semantic_candidate_is_verified(
@@ -142,9 +211,12 @@ def _value_needles(candidate: CandidateFact) -> list[str]:
             if component:
                 needles.append(str(component).casefold())
         return needles
-    if value_type == FactValueType.STRING and candidate.fact_key.endswith("legalName"):
+    if value_type == FactValueType.STRING and is_legal_name_fact(candidate.fact_key):
         normalized = normalize_legal_name(candidate.normalized_value)
         return [normalized] if normalized else []
+    if candidate.fact_key == "corporateHistory.officeChange.filingForm":
+        normalized = normalize_filing_form(candidate.normalized_value or candidate.display_value)
+        return [normalized.casefold(), "inc-22", "inc22"] if normalized else []
     text = str(candidate.display_value or candidate.normalized_value or "")
     collapsed = re.sub(r"\s+", " ", text.strip()).casefold()
     if len(collapsed) >= 12:

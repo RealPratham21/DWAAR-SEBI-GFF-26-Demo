@@ -6,6 +6,12 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.user import User
 from app.modules.auth.dependencies import get_current_user
+from app.modules.company_incorporation.documents.pipeline_summary import (
+    get_document_pipeline_summary,
+)
+from app.modules.company_incorporation.documents.pipeline_summary_schemas import (
+    DocumentPipelineSummaryResponse,
+)
 from app.modules.company_incorporation.documents.schemas import (
     ArchiveDocumentResponse,
     DiscardUploadResponse,
@@ -40,6 +46,14 @@ def get_documents(
     response = list_documents(db, current_user)
     db.commit()
     return response
+
+
+@router.get("/pipeline-summary", response_model=DocumentPipelineSummaryResponse)
+def get_pipeline_summary(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> DocumentPipelineSummaryResponse:
+    return get_document_pipeline_summary(db, current_user)
 
 
 @router.post("/uploads/initiate", response_model=InitiateUploadResponse)

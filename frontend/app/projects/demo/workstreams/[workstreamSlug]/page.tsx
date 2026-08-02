@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
 import { CompanyIncorporationWorkstream } from '@/components/company-incorporation/company-incorporation-workstream';
@@ -11,6 +12,9 @@ interface WorkstreamDetailPageProps {
   searchParams: Promise<{
     tab?: string;
     section?: string;
+    assertionId?: string;
+    issueId?: string;
+    documentVersionId?: string;
   }>;
 }
 
@@ -19,7 +23,7 @@ export default async function WorkstreamDetailPage({
   searchParams,
 }: WorkstreamDetailPageProps) {
   const { workstreamSlug } = await params;
-  const { tab, section } = await searchParams;
+  const { tab, section, assertionId, issueId, documentVersionId } = await searchParams;
   const workstream = getWorkstreamBySlug(workstreamSlug);
 
   if (!workstream) {
@@ -39,11 +43,22 @@ export default async function WorkstreamDetailPage({
 
   if (workstream.slug === 'company-incorporation') {
     return (
-      <CompanyIncorporationWorkstream
-        workstream={workstream}
-        initialTab={tab}
-        initialSection={section}
-      />
+      <Suspense
+        fallback={
+          <div className="py-8 text-sm text-muted-foreground" aria-live="polite">
+            Loading Company & Incorporation…
+          </div>
+        }
+      >
+        <CompanyIncorporationWorkstream
+          workstream={workstream}
+          initialTab={tab}
+          initialSection={section}
+          initialAssertionId={assertionId}
+          initialIssueId={issueId}
+          initialDocumentVersionId={documentVersionId}
+        />
+      </Suspense>
     );
   }
 

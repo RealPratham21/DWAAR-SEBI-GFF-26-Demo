@@ -188,9 +188,7 @@ def post_issue_resolve(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> ResolveIssueResponse:
-    selected_id = (
-        uuid.UUID(body.selected_assertion_id) if body.selected_assertion_id else None
-    )
+    selected_id = uuid.UUID(body.selected_assertion_id) if body.selected_assertion_id else None
     response = resolve_issue(
         db,
         current_user,

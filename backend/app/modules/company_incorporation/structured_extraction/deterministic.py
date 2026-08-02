@@ -31,10 +31,12 @@ from app.modules.company_incorporation.structured_extraction.normalize import (
     fingerprint_value,
     is_ignored_document_noise,
     is_label_fragment_value,
+    is_legal_name_fact,
     normalize_address_dict,
     normalize_company_category,
     normalize_company_class,
     normalize_company_sub_category,
+    normalize_filing_form,
     normalize_governing_act,
     normalize_identifier,
     normalize_legal_name,
@@ -62,7 +64,17 @@ _IDENTIFIER_TYPE_TO_FACT_KEY: dict[str, str] = {
     "gstin": "registrations.gstin.registrationNumber",
     "udyam": "registrations.udyam.registrationNumber",
     "srn": "corporateHistory.officeChange.srn",
+    "form": "corporateHistory.officeChange.filingForm",
 }
+
+_GST_DATE_FACT_KEYS = frozenset(
+    {
+        "registrations.gstin.registrationDate",
+        "registrations.gstin.certificateIssueDate",
+        "registrations.gstin.amendmentDate",
+        "registrations.gstin.effectiveDate",
+    }
+)
 
 _LEGAL_NAME_PATTERN = re.compile(
     r"\b([A-Z][A-Za-z0-9&.,'()/\- ]{2,120}?\b(?:Private|Pvt\.?)\s+Limited\b)",
@@ -171,10 +183,33 @@ def _extract_identifiers(
         if not fact_key or fact_key not in expected_fact_keys:
             continue
         definition = get_fact(fact_key)
-        if definition.value_type != FactValueType.IDENTIFIER:
-            continue
         block = _block_for_match(block_views, match.raw)
         evidence = _evidence_for_block(block_index, block, role=EvidenceRole.VALUE)
+
+        if match.identifier_type == "form":
+            if definition.value_type != FactValueType.STRING:
+                continue
+            normalized = normalize_filing_form(match.normalized or match.raw)
+            if not normalized:
+                continue
+            results.append(
+                CandidateFact(
+                    fact_key=fact_key,
+                    value_type=definition.value_type,
+                    raw_value=match.raw,
+                    normalized_value=normalized,
+                    display_value=normalized,
+                    extractor_kind=ExtractorKind.DETERMINISTIC,
+                    validation_status=ValidationStatus.VALID,
+                    evidence=evidence,
+                    support="explicit",
+                    quality_signals={"identifier_type": match.identifier_type},
+                )
+            )
+            continue
+
+        if definition.value_type != FactValueType.IDENTIFIER:
+            continue
         validation_status = ValidationStatus.VALID if match.valid else ValidationStatus.INVALID
         normalized = normalize_identifier(match.normalized, identifier_type=match.identifier_type)
         results.append(
@@ -219,13 +254,18 @@ def _candidate_from_label_pair(
     pair: LabelValueCandidate,
     block_index: PageBlockIndex,
 ) -> CandidateFact | None:
+    if fact_key in _GST_DATE_FACT_KEYS:
+        resolved = _resolve_gst_date_fact_key(pair.label_text)
+        if resolved is None or resolved != fact_key:
+            return None
+
     definition = get_fact(fact_key)
     raw_value = pair.value_text.strip()
     if not raw_value:
         return None
     if is_ignored_document_noise(raw_value) or is_label_fragment_value(raw_value):
         return None
-    if fact_key.endswith("legalName"):
+    if is_legal_name_fact(fact_key):
         raw_value = extract_legal_name_candidate(raw_value)
         if not raw_value or is_ignored_document_noise(raw_value):
             return None
@@ -352,7 +392,9 @@ def _extract_legal_name(
                 # Prefer the full corporate form when available in surrounding text.
                 full = _LEGAL_NAME_PATTERN.search(combined_text[max(0, match.start() - 20) :])
                 if full:
-                    raw_value = extract_legal_name_candidate(full.group(1) if full.lastindex else full.group(0))
+                    raw_value = extract_legal_name_candidate(
+                        full.group(1) if full.lastindex else full.group(0)
+                    )
             normalized = normalize_legal_name(raw_value)
             if not normalized or normalized in seen:
                 continue
@@ -728,9 +770,16 @@ def _normalize_fact_value(
         return address, display_address(address), ValidationStatus.VALID
 
     if value_type == FactValueType.STRING:
-        if fact_key.endswith("legalName"):
+        if is_legal_name_fact(fact_key):
             text = extract_legal_name_candidate(raw_value)
             return normalize_legal_name(text), display_legal_name(text), ValidationStatus.VALID
+        if fact_key == "corporateHistory.officeChange.filingForm":
+            normalized = normalize_filing_form(raw_value)
+            return (
+                normalized,
+                normalized,
+                ValidationStatus.VALID if normalized else ValidationStatus.INVALID,
+            )
         if fact_key == "identity.companyClass":
             normalized = normalize_company_class(raw_value)
             return (
@@ -869,6 +918,27 @@ def _looks_like_legal_name(value: str) -> bool:
     )
 
 
+def _resolve_gst_date_fact_key(label_text: str) -> str | None:
+    """Map GST date labels to a single semantic role using nearby wording."""
+
+    label = re.sub(r"\s+", " ", str(label_text or "").strip().casefold())
+    if not label:
+        return None
+    if "amendment" in label and "effective" in label:
+        return "registrations.gstin.effectiveDate"
+    if "amendment" in label:
+        return "registrations.gstin.amendmentDate"
+    if "certificate" in label and "effective" in label:
+        return "registrations.gstin.effectiveDate"
+    if "certificate" in label and ("issue" in label or "issuance" in label):
+        return "registrations.gstin.certificateIssueDate"
+    if "registration" in label:
+        return "registrations.gstin.registrationDate"
+    if "effective" in label:
+        return "registrations.gstin.effectiveDate"
+    return None
+
+
 def _address_has_material_content(address: dict[str, str]) -> bool:
     if not address:
         return False
@@ -913,10 +983,12 @@ def _select_best_candidates(candidates: list[CandidateFact]) -> list[CandidateFa
 
 def _candidate_rank(candidate: CandidateFact) -> tuple[int, int, int, int]:
     specialty = 0
-    if candidate.fact_key.endswith("legalName"):
+    if is_legal_name_fact(candidate.fact_key):
         specialty = 2 if _looks_like_legal_name(str(candidate.raw_value or "")) else 0
         if "private limited" in str(candidate.normalized_value or ""):
             specialty += 1
+    if candidate.fact_key == "corporateHistory.officeChange.filingForm":
+        specialty = 4 if normalize_filing_form(candidate.normalized_value) == "INC-22" else 1
     if candidate.fact_key in {
         "identity.companyClass",
         "identity.companyCategory",

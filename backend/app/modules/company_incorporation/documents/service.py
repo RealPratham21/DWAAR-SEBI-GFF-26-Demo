@@ -334,8 +334,7 @@ def initiate_upload(
                     status_code=409,
                     code=DocumentErrorCode.DOCUMENT_EXISTS_USE_REPLACE,
                     message=(
-                        "This requirement already has an uploaded document. "
-                        "Use replace instead."
+                        "This requirement already has an uploaded document. Use replace instead."
                     ),
                 )
         document = Document(

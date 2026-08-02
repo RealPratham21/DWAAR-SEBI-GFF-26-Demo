@@ -137,7 +137,15 @@ def _build_prompt(payload: dict[str, Any]) -> str:
         "Return JSON only. Use factKey values from expectedFacts. "
         "Evidence block IDs must come from the supplied pages and must support each value. "
         "If a fact is absent, include it in missingExpectedFacts with reason not_found. "
-        "Do not compare against external records.\n\n"
+        "Do not compare against external records. "
+        "Keep GST date roles separate and never collapse them into one field: "
+        "registrations.gstin.registrationDate is the original date of registration; "
+        "registrations.gstin.certificateIssueDate is only a certificate issue/issuance date; "
+        "registrations.gstin.amendmentDate is the date of amendment; "
+        "registrations.gstin.effectiveDate is the effective date of amendment or certificate "
+        "effective date after amendment. "
+        "For corporateHistory.officeChange.filingForm, extract identifiers such as INC-22, "
+        "Form INC-22, Form No. INC-22, or e-Form INC-22 and normalize to INC-22.\n\n"
         f"INPUT={compact}"
     )
 
