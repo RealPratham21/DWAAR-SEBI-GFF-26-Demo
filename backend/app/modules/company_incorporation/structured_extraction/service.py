@@ -26,6 +26,7 @@ from app.modules.company_incorporation.documents.constants import (
     CURRENT_VERSION_STATUSES,
     DocumentVersionStatus,
 )
+from app.modules.company_incorporation.documents.requirements_config import REQUIREMENT_DEFINITIONS
 from app.modules.company_incorporation.documents.service import (
     _get_owned_version,
     _require_workspace,
@@ -56,6 +57,7 @@ from app.modules.company_incorporation.structured_extraction.schemas import (
     FactGroupResponse,
     FactIssueAssertionLinkResponse,
     FactIssueDetailResponse,
+    FactIssueResolutionHistoryItem,
     FactIssuesListResponse,
     FactIssueSummaryResponse,
     FactsListResponse,
@@ -134,9 +136,13 @@ def _assertion_count(db: Session, run_id: uuid.UUID) -> int:
 
 
 def _open_issue_count(db: Session, workspace_id: uuid.UUID, fact_key: str | None = None) -> int:
-    query = select(func.count()).select_from(FactIssue).where(
-        FactIssue.workspace_id == workspace_id,
-        FactIssue.status.in_(OPEN_ISSUE_STATUSES),
+    query = (
+        select(func.count())
+        .select_from(FactIssue)
+        .where(
+            FactIssue.workspace_id == workspace_id,
+            FactIssue.status.in_(OPEN_ISSUE_STATUSES),
+        )
     )
     if fact_key is not None:
         query = query.where(FactIssue.fact_key == fact_key)
@@ -303,7 +309,10 @@ def _get_owned_assertion(
 def _get_owned_issue(db: Session, workspace_id: uuid.UUID, issue_id: uuid.UUID) -> FactIssue:
     issue = db.scalar(
         select(FactIssue)
-        .options(selectinload(FactIssue.issue_assertions))
+        .options(
+            selectinload(FactIssue.issue_assertions),
+            selectinload(FactIssue.resolutions),
+        )
         .where(
             FactIssue.id == issue_id,
             FactIssue.workspace_id == workspace_id,
@@ -446,9 +455,7 @@ def get_structured_history(
             row.id: row
             for row in db.scalars(
                 select(DocumentProcessingRun).where(
-                    DocumentProcessingRun.id.in_(
-                        {run.document_processing_run_id for run in runs}
-                    )
+                    DocumentProcessingRun.id.in_({run.document_processing_run_id for run in runs})
                 )
             ).all()
         }
@@ -783,9 +790,76 @@ def get_issue_detail(
         assertions_by_id = {
             row.id: row
             for row in db.scalars(
-                select(FactAssertion).where(FactAssertion.id.in_(assertion_ids))
+                select(FactAssertion)
+                .options(selectinload(FactAssertion.evidence_references))
+                .where(FactAssertion.id.in_(assertion_ids))
             ).all()
         }
+
+    version_ids = {row.document_version_id for row in assertions_by_id.values()}
+    versions_by_id: dict[uuid.UUID, DocumentVersion] = {}
+    documents_by_id: dict[uuid.UUID, Document] = {}
+    if version_ids:
+        for version, document in db.execute(
+            select(DocumentVersion, Document)
+            .join(Document, Document.id == DocumentVersion.document_id)
+            .where(DocumentVersion.id.in_(version_ids))
+        ).all():
+            versions_by_id[version.id] = version
+            documents_by_id[document.id] = document
+
+    resolutions = sorted(
+        list(issue.resolutions or []),
+        key=lambda row: row.created_at,
+        reverse=True,
+    )
+    resolver_ids = {row.resolved_by_user_id for row in resolutions if row.resolved_by_user_id}
+    resolvers = (
+        {row.id: row for row in db.scalars(select(User).where(User.id.in_(resolver_ids))).all()}
+        if resolver_ids
+        else {}
+    )
+
+    linked: list[FactIssueAssertionLinkResponse] = []
+    for link in issue.issue_assertions:
+        assertion = assertions_by_id.get(link.fact_assertion_id)
+        if assertion is None:
+            linked.append(
+                FactIssueAssertionLinkResponse(
+                    fact_assertion_id=str(link.fact_assertion_id),
+                    role=link.role,
+                )
+            )
+            continue
+        version = versions_by_id.get(assertion.document_version_id)
+        document = documents_by_id.get(version.document_id) if version else None
+        definition = REQUIREMENT_DEFINITIONS.get(assertion.requirement_key)
+        evidence = list(assertion.evidence_references or [])
+        page_numbers = sorted({item.page_number for item in evidence})
+        methods = sorted({item.extraction_method for item in evidence if item.extraction_method})
+        linked.append(
+            FactIssueAssertionLinkResponse(
+                fact_assertion_id=str(assertion.id),
+                role=link.role,
+                fact_key=assertion.fact_key,
+                display_value=assertion.display_value,
+                normalized_value=assertion.normalized_value,
+                comparison_status=assertion.comparison_status,
+                review_status=assertion.review_status,
+                quality_category=assertion.quality_category,
+                source_temporality=assertion.source_temporality,
+                document_id=str(document.id) if document else None,
+                document_version_id=str(version.id) if version else None,
+                original_filename=version.original_filename if version else None,
+                version_number=version.version_number if version else None,
+                requirement_key=assertion.requirement_key,
+                requirement_label=definition.name if definition else assertion.requirement_key,
+                page_numbers=page_numbers,
+                evidence_summary=[item.quote_snapshot for item in evidence[:5]],
+                extraction_methods=methods,
+                ocr_derived=any(method == "ocr" for method in methods),
+            )
+        )
 
     return FactIssueDetailResponse(
         id=str(issue.id),
@@ -801,21 +875,28 @@ def get_issue_detail(
         suggested_actions=list(issue.suggested_actions or []),
         information_value_snapshot=issue.information_value_snapshot,
         information_normalized_snapshot=issue.information_normalized_snapshot,
-        linked_assertions=[
-            FactIssueAssertionLinkResponse(
-                fact_assertion_id=str(link.fact_assertion_id),
-                role=link.role,
-                display_value=assertions_by_id[link.fact_assertion_id].display_value
-                if link.fact_assertion_id in assertions_by_id
-                else None,
-                comparison_status=assertions_by_id[link.fact_assertion_id].comparison_status
-                if link.fact_assertion_id in assertions_by_id
-                else None,
-                review_status=assertions_by_id[link.fact_assertion_id].review_status
-                if link.fact_assertion_id in assertions_by_id
-                else None,
+        linked_assertions=linked,
+        resolution_history=[
+            FactIssueResolutionHistoryItem(
+                id=str(row.id),
+                decision=row.decision,
+                rationale=row.rationale,
+                selected_assertion_id=(
+                    str(row.selected_assertion_id) if row.selected_assertion_id else None
+                ),
+                resolved_by_user_id=(
+                    str(row.resolved_by_user_id) if row.resolved_by_user_id else None
+                ),
+                resolver_display_name=(
+                    resolvers[row.resolved_by_user_id].full_name
+                    if row.resolved_by_user_id in resolvers
+                    else None
+                ),
+                information_value_snapshot=row.information_value_snapshot,
+                document_value_snapshot=row.document_value_snapshot,
+                created_at=row.created_at,
             )
-            for link in issue.issue_assertions
+            for row in resolutions
         ],
     )
 

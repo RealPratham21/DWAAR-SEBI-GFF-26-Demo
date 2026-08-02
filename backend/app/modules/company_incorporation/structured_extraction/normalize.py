@@ -123,6 +123,54 @@ def normalize_legal_name(value: Any) -> str:
     return _WHITESPACE_RE.sub(" ", text).strip()
 
 
+def is_legal_name_fact(fact_key: str) -> bool:
+    """True for identity.legalName and *.legalNameOnRegistration facts."""
+
+    key = str(fact_key or "")
+    return key.endswith("legalName") or key.endswith("legalNameOnRegistration")
+
+
+_FILING_FORM_RE = re.compile(
+    r"\b(?:e[-\s]?form|form(?:\s+no\.?)?)?\s*(INC[\s-]?22|MGT[\s-]?14|SPICe[\s+]?(?:\+)?)\b",
+    re.IGNORECASE,
+)
+
+
+def normalize_filing_form(value: Any) -> str:
+    """Normalize supported MCA form identifiers to canonical values such as INC-22."""
+
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    match = _FILING_FORM_RE.search(text)
+    raw = match.group(1) if match else text
+    compact = re.sub(r"[\s\-]+", "", raw.upper())
+    if compact.startswith("INC") and "22" in compact:
+        return "INC-22"
+    if compact.startswith("MGT") and "14" in compact:
+        return "MGT-14"
+    if "SPICE" in compact:
+        return "SPICe+"
+    return ""
+
+
+def is_likely_truncated_legal_name(doc_value: Any, info_value: Any) -> bool:
+    """Detect OCR/prefix truncations of a longer Information legal name."""
+
+    doc_norm = normalize_legal_name(doc_value)
+    info_norm = normalize_legal_name(info_value)
+    if not doc_norm or not info_norm or doc_norm == info_norm:
+        return False
+    doc_tokens = [token for token in doc_norm.split() if token]
+    info_tokens = [token for token in info_norm.split() if token]
+    if len(doc_tokens) >= len(info_tokens):
+        return False
+    # Require a strict leading-token prefix so "Navira …" never downgrades.
+    if info_tokens[: len(doc_tokens)] != doc_tokens:
+        return False
+    return True
+
+
 def normalize_identifier(value: Any, *, identifier_type: str | None = None) -> str:
     """Uppercase, strip separators, and apply type-specific canonicalisation."""
 

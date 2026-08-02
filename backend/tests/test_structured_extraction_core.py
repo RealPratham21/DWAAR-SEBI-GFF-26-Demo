@@ -189,7 +189,9 @@ def test_deterministic_coi_extraction() -> None:
     assert by_key["identity.companyClass"].normalized_value == "private"
     assert by_key["identity.companyCategory"].normalized_value == "company-limited-by-shares"
     assert by_key["identity.governingAct"].normalized_value == "companies-act-2013"
-    assert by_key["identity.registrarOfCompanies"].display_value.startswith("Registrar of Companies")
+    assert by_key["identity.registrarOfCompanies"].display_value.startswith(
+        "Registrar of Companies"
+    )
 
 
 def test_merge_agreement_and_disagreement() -> None:

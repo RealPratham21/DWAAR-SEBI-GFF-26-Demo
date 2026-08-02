@@ -30,6 +30,8 @@ def set_refresh_cookie(
     remember_me: bool,
     settings: Settings,
 ) -> None:
+    # Starlette accepts "lax" | "strict" | "none". Cross-site Vercel→Railway needs "none"
+    # with Secure=true (validated in production settings).
     response.set_cookie(
         key=settings.refresh_cookie_name,
         value=refresh_token,
@@ -43,8 +45,12 @@ def set_refresh_cookie(
 
 
 def clear_refresh_cookie(response: Response, *, settings: Settings) -> None:
+    # Match Secure/SameSite used when the cookie was set so browsers clear it reliably.
     response.delete_cookie(
         key=settings.refresh_cookie_name,
         path=settings.refresh_cookie_path,
         domain=settings.refresh_cookie_domain,
+        secure=settings.refresh_cookie_secure,
+        httponly=True,
+        samesite=settings.refresh_cookie_samesite,
     )

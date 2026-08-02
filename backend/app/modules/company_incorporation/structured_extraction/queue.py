@@ -17,6 +17,7 @@ from app.modules.company_incorporation.document_processing.constants import Proc
 from app.modules.company_incorporation.documents.constants import DocumentVersionStatus
 from app.modules.company_incorporation.structured_extraction.constants import (
     ACTIVE_STRUCTURED_RUN_STATUSES,
+    COMPARISON_VERSION,
     EXTRACTOR_VERSION,
     FACT_SCHEMA_VERSION,
     PROMPT_VERSION,
@@ -124,6 +125,7 @@ def enqueue_structured_extraction_run(
         extractor_version=EXTRACTOR_VERSION,
         fact_schema_version=FACT_SCHEMA_VERSION,
         prompt_version=PROMPT_VERSION,
+        comparison_version=COMPARISON_VERSION,
         provider=provider or "",
         model_name=model_name or "",
     )

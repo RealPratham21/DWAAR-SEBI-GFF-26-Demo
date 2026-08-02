@@ -6,7 +6,6 @@ import math
 from dataclasses import dataclass, field
 from typing import Any
 
-
 COORDINATE_SPACE_NORMALIZED = "normalized_canonical_page"
 SOURCE_PDF_POINTS = "pdf_points"
 SOURCE_OCR_IMAGE_PIXELS = "ocr_image_pixels"
@@ -98,7 +97,9 @@ def upright_page_dimensions(width: float, height: float, rotation: float) -> tup
     return float(width), float(height)
 
 
-def _rotate_point_cw(x: float, y: float, width: float, height: float, degrees: int) -> tuple[float, float]:
+def _rotate_point_cw(
+    x: float, y: float, width: float, height: float, degrees: int
+) -> tuple[float, float]:
     rot = degrees % 360
     if rot == 0:
         return x, y
@@ -141,12 +142,16 @@ def pdf_bbox_to_upright(
 def normalize_bbox(bbox: BBox, width: float, height: float) -> BBox:
     width = max(float(width), 1e-9)
     height = max(float(height), 1e-9)
-    return BBox(
-        x0=bbox.x0 / width,
-        y0=bbox.y0 / height,
-        x1=bbox.x1 / width,
-        y1=bbox.y1 / height,
-    ).ordered().clamp01()
+    return (
+        BBox(
+            x0=bbox.x0 / width,
+            y0=bbox.y0 / height,
+            x1=bbox.x1 / width,
+            y1=bbox.y1 / height,
+        )
+        .ordered()
+        .clamp01()
+    )
 
 
 def _inverse_expand_rotate_point(

@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.user import User
 from app.modules.auth.dependencies import get_current_user
+from app.modules.company_incorporation.overview_summary import get_overview_summary
+from app.modules.company_incorporation.overview_summary_schemas import OverviewSummaryResponse
 from app.modules.company_incorporation.schemas import (
     CompanyIncorporationWorkspaceResponse,
     ConstitutionalDocumentsSaveRequest,
@@ -47,6 +49,14 @@ def get_current_workspace(
     response = get_workspace(db, current_user)
     db.commit()
     return response
+
+
+@router.get("/overview-summary", response_model=OverviewSummaryResponse)
+def get_overview_summary_endpoint(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> OverviewSummaryResponse:
+    return get_overview_summary(db, current_user)
 
 
 @router.patch("/sections/legal-identity", response_model=SectionSaveResponse)

@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from collections import Counter
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
@@ -55,7 +55,9 @@ def _pages_for_run(db: Session, run_id: uuid.UUID) -> list[DocumentPage]:
 def _page_count(db: Session, run_id: uuid.UUID) -> int:
     return int(
         db.scalar(
-            select(func.count()).select_from(DocumentPage).where(
+            select(func.count())
+            .select_from(DocumentPage)
+            .where(
                 DocumentPage.processing_run_id == run_id,
             )
         )
@@ -241,9 +243,7 @@ def get_processing_status(
         warnings = sorted(set(warning_values))
 
     cancelled, cancellation_reason = _cancellation_fields(latest_attempt)
-    evidence_ready = bool(
-        display_run is not None and run_is_evidence_ready(display_run, pages)
-    )
+    evidence_ready = bool(display_run is not None and run_is_evidence_ready(display_run, pages))
 
     return ProcessingStatusResponse(
         document_version_id=str(version.id),
@@ -262,9 +262,7 @@ def get_processing_status(
         claimed_at=display_run.claimed_at if display_run else None,
         completed_at=display_run.completed_at if display_run else None,
         page_count=len(pages),
-        schema_v2_page_count=(
-            _schema_v2_page_count(display_run, pages) if display_run else 0
-        ),
+        schema_v2_page_count=(_schema_v2_page_count(display_run, pages) if display_run else 0),
         block_count=_block_count(pages),
         extraction_method_counts=method_counts,
         warnings=warnings,
@@ -416,10 +414,7 @@ def get_page_results(
         offset=effective_offset,
         limit=effective_limit,
         include_content=include_content,
-        pages=[
-            _serialize_page(page, run=run, include_content=include_content)
-            for page in sliced
-        ],
+        pages=[_serialize_page(page, run=run, include_content=include_content) for page in sliced],
     )
 
 

@@ -71,7 +71,9 @@ def order_ocr_word_blocks(blocks: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Prefer Tesseract hierarchy; fall back to vertical-then-horizontal."""
 
     def has_hierarchy(block: dict[str, Any]) -> bool:
-        return all(key in block for key in ("page_num", "block_num", "par_num", "line_num", "word_num"))
+        return all(
+            key in block for key in ("page_num", "block_num", "par_num", "line_num", "word_num")
+        )
 
     if blocks and all(has_hierarchy(block) for block in blocks):
 

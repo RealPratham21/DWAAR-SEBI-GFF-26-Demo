@@ -7,12 +7,6 @@ from pathlib import Path
 
 import fitz
 import pytest
-from httpx import AsyncClient
-from PIL import Image, ImageDraw
-from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
-
 from app.models.company_incorporation_workspace import CompanyIncorporationWorkspace
 from app.models.document import Document
 from app.models.document_page import DocumentPage
@@ -38,6 +32,12 @@ from app.modules.company_incorporation.document_processing.queue import (
     enqueue_processing_run,
 )
 from app.modules.company_incorporation.documents.constants import DocumentVersionStatus
+from httpx import AsyncClient
+from PIL import Image, ImageDraw
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
 from tests.conftest import make_onboarding_application, make_user
 from tests.test_company_incorporation_documents import (
     FakeStorage,

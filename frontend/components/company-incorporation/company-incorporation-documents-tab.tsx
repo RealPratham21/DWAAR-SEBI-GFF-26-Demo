@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { Archive, Download, History, Loader2, Replace, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DocumentPipelineStatus } from '@/components/company-incorporation/document-pipeline-status';
 import { DocumentUploadDialog } from '@/components/company-incorporation/document-upload-dialog';
 import { DocumentVersionHistoryDialog } from '@/components/company-incorporation/document-version-history-dialog';
 import { SessionSaveNotice } from '@/components/company-incorporation/session-save-notice';
@@ -11,6 +12,7 @@ import {
   NeutralStatusBadge,
   RequirementLevelBadge,
 } from '@/components/company-incorporation/tab-shared';
+import type { DocumentPipelineSummaryItem } from '@/lib/company-incorporation/extraction/types';
 import {
   DOCUMENT_SERVICE_NOTICE,
   DOCUMENT_UPLOAD_STATUS_LABELS,
@@ -53,6 +55,11 @@ function UploadedDocumentCard({
   onHistory,
   onDownload,
   busy,
+  pipelineItem,
+  mutationPending,
+  onRetryProcessing,
+  onRetryFacts,
+  highlighted,
 }: {
   document: StoredDocument;
   requirement: DocumentRequirementState;
@@ -61,6 +68,11 @@ function UploadedDocumentCard({
   onHistory: (documentId: string) => void;
   onDownload: (versionId: string) => void;
   busy: boolean;
+  pipelineItem?: DocumentPipelineSummaryItem | null;
+  mutationPending: string | null;
+  onRetryProcessing: (versionId: string) => Promise<void>;
+  onRetryFacts: (versionId: string) => Promise<void>;
+  highlighted: boolean;
 }) {
   const version = document.currentVersion;
   if (!version) {
@@ -81,6 +93,13 @@ function UploadedDocumentCard({
         <dt>Version</dt>
         <dd>{version.versionNumber}</dd>
       </dl>
+      <DocumentPipelineStatus
+        item={pipelineItem}
+        mutationPending={mutationPending}
+        onRetryProcessing={onRetryProcessing}
+        onRetryFacts={onRetryFacts}
+        highlighted={highlighted}
+      />
       <div className="flex flex-wrap gap-2">
         <Button
           type="button"
@@ -135,6 +154,11 @@ function DocumentRequirementRow({
   onHistory,
   onDownload,
   busy,
+  pipelineByVersionId,
+  mutationPending,
+  onRetryProcessing,
+  onRetryFacts,
+  focusedDocumentVersionId,
 }: {
   requirement: DocumentRequirementState;
   onUpload: (requirementKey: string) => void;
@@ -143,6 +167,11 @@ function DocumentRequirementRow({
   onHistory: (documentId: string) => void;
   onDownload: (versionId: string) => void;
   busy: boolean;
+  pipelineByVersionId: Map<string, DocumentPipelineSummaryItem>;
+  mutationPending: string | null;
+  onRetryProcessing: (versionId: string) => Promise<void>;
+  onRetryFacts: (versionId: string) => Promise<void>;
+  focusedDocumentVersionId: string | null;
 }) {
   const hasDocuments = requirement.documents.length > 0;
   const canAddAnother = requirement.allowMultiple || !hasDocuments;
@@ -187,25 +216,54 @@ function DocumentRequirementRow({
 
       {hasDocuments ? (
         <div className="space-y-3">
-          {requirement.documents.map((document) => (
-            <UploadedDocumentCard
-              key={document.id}
-              document={document}
-              requirement={requirement}
-              onReplace={(documentId) => onReplace(requirement.key, documentId)}
-              onArchive={onArchive}
-              onHistory={onHistory}
-              onDownload={onDownload}
-              busy={busy}
-            />
-          ))}
+          {requirement.documents.map((document) => {
+            const versionId = document.currentVersion?.id;
+            return (
+              <UploadedDocumentCard
+                key={document.id}
+                document={document}
+                requirement={requirement}
+                onReplace={(documentId) => onReplace(requirement.key, documentId)}
+                onArchive={onArchive}
+                onHistory={onHistory}
+                onDownload={onDownload}
+                busy={busy}
+                pipelineItem={versionId ? pipelineByVersionId.get(versionId) : null}
+                mutationPending={mutationPending}
+                onRetryProcessing={onRetryProcessing}
+                onRetryFacts={onRetryFacts}
+                highlighted={Boolean(versionId && versionId === focusedDocumentVersionId)}
+              />
+            );
+          })}
         </div>
       ) : null}
     </div>
   );
 }
 
-export function CompanyIncorporationDocumentsTab() {
+interface DocumentsTabPipelineApi {
+  data: { documents: DocumentPipelineSummaryItem[] } | null;
+  loading: boolean;
+  refreshing: boolean;
+  error: string | null;
+  refresh: (opts?: { silent?: boolean }) => Promise<unknown>;
+  retryProcessing: (versionId: string) => Promise<void>;
+  retryFacts: (versionId: string) => Promise<void>;
+  mutationPending: string | null;
+}
+
+interface CompanyIncorporationDocumentsTabProps {
+  pipeline: DocumentsTabPipelineApi;
+  focusedDocumentVersionId?: string | null;
+  onUploadFinalized?: () => void;
+}
+
+export function CompanyIncorporationDocumentsTab({
+  pipeline,
+  focusedDocumentVersionId = null,
+  onUploadFinalized,
+}: CompanyIncorporationDocumentsTabProps) {
   const { prependNotification } = useNotifications();
   const [groups, setGroups] = useState<DocumentRequirementGroupState[]>([]);
   const [storageSummary, setStorageSummary] = useState<string>(DOCUMENT_SERVICE_NOTICE);
@@ -317,6 +375,7 @@ export function CompanyIncorporationDocumentsTab() {
         prependNotification(finalized.notification);
         setSaveNotice(finalized.notification.title);
         await refreshDocuments();
+        onUploadFinalized?.();
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
           await discardPendingUpload(versionId);
@@ -333,7 +392,7 @@ export function CompanyIncorporationDocumentsTab() {
         pendingVersionIdRef.current = null;
       }
     },
-    [discardPendingUpload, prependNotification, refreshDocuments, resetUploadState],
+    [discardPendingUpload, onUploadFinalized, prependNotification, refreshDocuments, resetUploadState],
   );
 
   const handleFileSelected = useCallback(
@@ -434,6 +493,20 @@ export function CompanyIncorporationDocumentsTab() {
     void runUpload(file, target);
   }, [runUpload, selectedFile]);
 
+  const pipelineByVersionId = useMemo(() => {
+    const map = new Map<string, DocumentPipelineSummaryItem>();
+    for (const item of pipeline.data?.documents || []) {
+      map.set(item.documentVersionId, item);
+    }
+    return map;
+  }, [pipeline.data]);
+
+  useEffect(() => {
+    if (!focusedDocumentVersionId) return;
+    const el = document.getElementById(`document-version-${focusedDocumentVersionId}`);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [focusedDocumentVersionId, pipeline.data]);
+
   if (isLoading) {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground py-8">
@@ -464,6 +537,18 @@ export function CompanyIncorporationDocumentsTab() {
         </p>
       ) : null}
 
+      {pipeline.error ? (
+        <p className="text-sm text-destructive border-l-2 border-destructive pl-3" role="alert">
+          {pipeline.error}
+        </p>
+      ) : null}
+
+      {pipeline.refreshing ? (
+        <p className="text-xs text-muted-foreground" aria-live="polite">
+          Refreshing pipeline status…
+        </p>
+      ) : null}
+
       <SectionCard
         title="Document Storage"
         description="Private uploads for Company & Incorporation evidence."
@@ -481,6 +566,11 @@ export function CompanyIncorporationDocumentsTab() {
                 key={requirement.key}
                 requirement={requirement}
                 busy={busy || uploadDialogOpen}
+                pipelineByVersionId={pipelineByVersionId}
+                mutationPending={pipeline.mutationPending}
+                onRetryProcessing={pipeline.retryProcessing}
+                onRetryFacts={pipeline.retryFacts}
+                focusedDocumentVersionId={focusedDocumentVersionId}
                 onUpload={(requirementKey) => openFilePicker({ requirementKey })}
                 onReplace={(requirementKey, documentId) =>
                   openFilePicker({ requirementKey, documentId })

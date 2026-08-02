@@ -9,7 +9,9 @@ import time
 from datetime import UTC, datetime
 from pathlib import Path
 
-from app.core.config import get_settings
+from app.core.config import ConfigurationError, get_settings
+from app.core.logging import configure_logging
+from app.core.startup import validate_runtime_configuration, wait_for_database
 from app.db.session import SessionLocal
 from app.modules.company_incorporation.document_processing.pipeline import process_run
 from app.modules.company_incorporation.document_processing.queue import claim_next_run
@@ -20,10 +22,6 @@ from app.modules.company_incorporation.structured_extraction.queue import (
     claim_next_structured_run,
 )
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s [document-worker] %(message)s",
-)
 logger = logging.getLogger("document-worker")
 
 _shutdown = False
@@ -36,9 +34,12 @@ def _handle_signal(signum: int, _frame) -> None:
 
 
 def _write_heartbeat_file(path: str) -> None:
-    heartbeat_path = Path(path)
-    heartbeat_path.parent.mkdir(parents=True, exist_ok=True)
-    heartbeat_path.write_text(datetime.now(tz=UTC).isoformat(), encoding="utf-8")
+    try:
+        heartbeat_path = Path(path)
+        heartbeat_path.parent.mkdir(parents=True, exist_ok=True)
+        heartbeat_path.write_text(datetime.now(tz=UTC).isoformat(), encoding="utf-8")
+    except OSError as exc:
+        logger.warning("Unable to write worker heartbeat file: %s", type(exc).__name__)
 
 
 def run_forever() -> None:
@@ -53,7 +54,8 @@ def run_forever() -> None:
     )
 
     while not _shutdown:
-        _write_heartbeat_file(settings.doc_processing_heartbeat_path)
+        if settings.doc_processing_write_heartbeat_file:
+            _write_heartbeat_file(settings.doc_processing_heartbeat_path)
         db = SessionLocal()
         try:
             # Prefer page-processing jobs, then structured extraction.
@@ -61,16 +63,18 @@ def run_forever() -> None:
             if run is not None:
                 run_id = run.id
                 db.commit()
-                logger.info("Claimed processing run %s", run_id)
+                logger.info("Claimed processing run_id=%s", run_id)
                 process_run(db, run_id, settings=settings)
+                logger.info("Completed processing run_id=%s", run_id)
                 continue
 
             structured = claim_next_structured_run(db, settings=settings)
             if structured is not None:
                 structured_id = structured.id
                 db.commit()
-                logger.info("Claimed structured-extraction run %s", structured_id)
+                logger.info("Claimed structured-extraction run_id=%s", structured_id)
                 process_structured_run(db, structured_id, settings=settings)
+                logger.info("Completed structured-extraction run_id=%s", structured_id)
                 continue
 
             db.commit()
@@ -86,6 +90,14 @@ def run_forever() -> None:
 
 
 def main() -> int:
+    settings = get_settings()
+    configure_logging(settings.log_level, debug=False)
+    try:
+        validate_runtime_configuration(settings)
+        wait_for_database(settings)
+    except ConfigurationError as exc:
+        logger.error("Worker configuration failed: %s", exc)
+        return 1
     run_forever()
     return 0
 

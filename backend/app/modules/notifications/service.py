@@ -273,10 +273,10 @@ def create_structured_extraction_failed_notification(
     *,
     user: User,
     requirement_name: str,
-    structured_run_id: uuid.UUID,
+    document_version_id: uuid.UUID,
     saved_at: datetime,
 ) -> UserNotification | None:
-    route = build_company_incorporation_facts_route(structured_run_id=str(structured_run_id))
+    route = build_company_incorporation_facts_route(document_version_id=str(document_version_id))
     existing = db.scalar(
         select(UserNotification).where(
             UserNotification.user_id == user.id,
@@ -294,7 +294,7 @@ def create_structured_extraction_failed_notification(
             "You can retry structured extraction later."
         ),
         workstream_slug=COMPANY_INCORPORATION_SLUG,
-        section_id="facts-evidence",
+        section_id="facts",
         target_route=route,
         read_at=None,
         created_at=saved_at,
@@ -313,7 +313,7 @@ def create_structured_issue_notification(
     issue: object,
     saved_at: datetime,
 ) -> UserNotification | None:
-    issue_id = str(getattr(issue, "id"))
+    issue_id = str(issue.id)
     route = build_company_incorporation_questions_route(issue_id=issue_id)
     existing = db.scalar(
         select(UserNotification).where(
@@ -330,7 +330,7 @@ def create_structured_issue_notification(
         title=f"{STRUCTURED_ISSUE_TITLE_PREFIX}: {title}"[:255],
         message=str(getattr(issue, "description", "A document fact needs review.")),
         workstream_slug=COMPANY_INCORPORATION_SLUG,
-        section_id="questions-conflicts",
+        section_id="questions",
         target_route=route,
         read_at=None,
         created_at=saved_at,

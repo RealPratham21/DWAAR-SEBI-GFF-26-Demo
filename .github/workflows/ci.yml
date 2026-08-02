@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16.8-alpine
+        env:
+          POSTGRES_DB: dwaar
+          POSTGRES_USER: dwaar
+          POSTGRES_PASSWORD: dwaar_local
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dwaar -d dwaar"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://dwaar:dwaar_local@localhost:5432/dwaar
+      TEST_DATABASE_URL: postgresql+psycopg://dwaar:dwaar_local@localhost:5432/dwaar
+      APP_ENV: local
+      DEBUG: "true"
+      STRUCTURED_EXTRACTION_ENABLED: "false"
+      COHERE_API_KEY: ""
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          working-directory: backend
+      - name: Install dependencies
+        run: uv sync --locked
+      - name: Ruff lint
+        run: uv run ruff check .
+      - name: Ruff format
+        run: uv run ruff format --check .
+      - name: Alembic single head
+        run: uv run pytest tests/test_alembic_heads.py -q
+      - name: Backend tests
+        run: >
+          uv run pytest -q
+          --ignore=tests/test_company_incorporation_documents_integration.py
+          --ignore=tests/test_document_processing_fixtures.py
+      - name: Alembic upgrade empty database
+        run: |
+          uv run --no-dev alembic upgrade head
+          uv run python -c "from alembic.config import Config; from alembic.script import ScriptDirectory; s=ScriptDirectory.from_config(Config('alembic.ini')); assert len(s.get_heads())==1"
+      - name: Build production image
+        run: docker build -t dwaar-backend:ci -f Dockerfile .
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests
+        run: npm test
+      - name: Production build
+        env:
+          NEXT_PUBLIC_API_BASE_URL: https://api.example.up.railway.app/api/v1
+        run: npm run build
+
+  # Full live Nivara OCR/Cohere pipeline is intentionally excluded from every push.
+  # Run manually before release, or enable via a labelled PR / future scheduled workflow.
+  # See docs/deployment.md and docs/cloud-smoke-checklist.md.

@@ -155,7 +155,9 @@ def _render_page_image(
     return image, float(scale), float(pix.width), float(pix.height)
 
 
-def extract_pdf_pages(path: Path, *, settings: Settings | None = None) -> list[PageExtractionResult]:
+def extract_pdf_pages(
+    path: Path, *, settings: Settings | None = None
+) -> list[PageExtractionResult]:
     cfg = settings or get_settings()
     try:
         document = fitz.open(path)
@@ -305,7 +307,9 @@ def extract_pdf_pages(path: Path, *, settings: Settings | None = None) -> list[P
         document.close()
 
 
-def extract_image_page(path: Path, *, settings: Settings | None = None) -> list[PageExtractionResult]:
+def extract_image_page(
+    path: Path, *, settings: Settings | None = None
+) -> list[PageExtractionResult]:
     cfg = settings or get_settings()
     Image.MAX_IMAGE_PIXELS = cfg.doc_processing_max_image_pixels
     try:

@@ -22,6 +22,7 @@ def compute_input_fingerprint(
     prompt_version: str,
     provider: str | None,
     model_name: str | None,
+    comparison_version: str | None = None,
 ) -> str:
     """Return SHA-256 hex digest of structured extraction inputs."""
 
@@ -43,6 +44,7 @@ def compute_input_fingerprint(
         "extractor_version": extractor_version,
         "fact_schema_version": fact_schema_version,
         "prompt_version": prompt_version,
+        "comparison_version": comparison_version or "",
         "provider": provider or "",
         "model_name": model_name or "",
     }

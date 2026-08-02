@@ -5,10 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from sqlalchemy.orm import Session
-
-from sqlalchemy import select
-
 from app.models.company_incorporation_workspace import CompanyIncorporationWorkspace
 from app.models.document import Document
 from app.models.document_page import DocumentPage
@@ -22,8 +18,12 @@ from app.modules.company_incorporation.document_processing.queue import (
     enqueue_processing_run,
 )
 from app.modules.company_incorporation.documents.constants import DocumentVersionStatus
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from tests.conftest import make_onboarding_application, make_user
 from tests.test_company_incorporation_documents import FakeStorage
+
 
 def _fixture_root() -> Path:
     candidates = [
@@ -111,7 +111,9 @@ def _seed_version(
     return version
 
 
-def _process(db: Session, version: DocumentVersion) -> tuple[DocumentProcessingRun, list[DocumentPage]]:
+def _process(
+    db: Session, version: DocumentVersion
+) -> tuple[DocumentProcessingRun, list[DocumentPage]]:
     run = claim_next_run(db)
     assert run is not None
     db.commit()

@@ -41,9 +41,7 @@ def assess_native_text(
         printable_chars = sum(1 for ch in cleaned if ch.isprintable() or ch in "\n\r\t")
         printable_ratio = printable_chars / character_count
 
-    noise_ratio = (
-        len(_NOISE_RE.findall(cleaned)) / character_count if character_count else 1.0
-    )
+    noise_ratio = len(_NOISE_RE.findall(cleaned)) / character_count if character_count else 1.0
     has_large_image_signal = image_count >= 1 and image_coverage_ratio >= 0.45
 
     if character_count == 0:
