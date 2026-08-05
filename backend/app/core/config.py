@@ -40,6 +40,8 @@ class Settings(BaseSettings):
     )
     trusted_hosts: str = Field(default="", alias="TRUSTED_HOSTS")
     enable_api_docs: bool | None = Field(default=None, alias="ENABLE_API_DOCS")
+    enable_dev_seed: bool = Field(default=False, alias="ENABLE_DEV_SEED")
+    dev_seed_secret: str = Field(default="", alias="DEV_SEED_SECRET")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     app_version: str = "0.1.0"
     database_url: str = Field(

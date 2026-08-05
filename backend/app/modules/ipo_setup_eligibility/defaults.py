@@ -1,0 +1,155 @@
+"""Empty canonical IPO Setup payload (schemaVersion 1) — mirrors frontend I1."""
+
+from __future__ import annotations
+
+from copy import deepcopy
+from typing import Any
+from uuid import uuid4
+
+from app.modules.ipo_setup_eligibility.constants import SCHEMA_VERSION
+
+
+def _empty_financial_year() -> dict[str, Any]:
+    return {
+        "id": str(uuid4()),
+        "financialYearEnding": "",
+        "operatingProfitFromOperations": None,
+        "netWorth": None,
+        "freeCashFlowToEquity": None,
+        "auditedStatus": "",
+        "sourceType": "",
+    }
+
+
+def empty_payload() -> dict[str, Any]:
+    return {
+        "schemaVersion": SCHEMA_VERSION,
+        "ipoDirection": {
+            "preparationStage": "",
+            "targetSmePlatform": "",
+            "eligibilityProfile": "",
+            "proposedOfferType": "",
+            "proposedPricingMethod": "",
+            "targetFilingQuarter": "",
+            "targetFilingFinancialYear": "",
+            "tentativeFilingDate": "",
+            "targetListingPeriod": "",
+            "referencedCompanyClass": "",
+            "publicCompanyConversionStatus": "",
+            "proposedConversionDate": "",
+            "actualConversionDate": "",
+            "newLegalNameAfterConversion": "",
+            "conversionSrnOrReference": "",
+            "freshCertificateOfIncorporationAvailable": "",
+        },
+        "offerStructure": {
+            "amountDisplayUnit": "crore",
+            "faceValuePerEquityShare": None,
+            "existingIssuedEquityShares": None,
+            "existingPaidUpEquityShareCapital": None,
+            "proposedIssuePriceStatus": "",
+            "proposedIssuePrice": None,
+            "proposedFreshIssueShares": None,
+            "proposedFreshIssueAmount": None,
+            "preIpoPlacementBeingConsidered": "",
+            "proposedPreIpoPlacementAmount": None,
+            "proposedOfsShares": None,
+            "proposedOfsAmount": None,
+            "numberOfSellingShareholders": None,
+            "sellerConsentsObtained": "",
+            "employeeReservationPlanned": "",
+            "existingShareholderReservationPlanned": "",
+            "marketMakerReservationStatus": "",
+            "otherReservationNotes": "",
+        },
+        "trackRecordAndFinancialEligibility": {
+            "operatingTrackRecordBasis": "",
+            "trackRecordEntityName": "",
+            "natureOfEntity": "",
+            "sameLineOfBusiness": "",
+            "businessCommencementDate": "",
+            "conversionOrSuccessionDate": "",
+            "relationshipToIssuer": "",
+            "threeCompleteFinancialYearsAvailable": "",
+            "auditedRecordsAvailable": "",
+            "continuityExplanation": "",
+            "financialYears": [
+                _empty_financial_year(),
+                _empty_financial_year(),
+                _empty_financial_year(),
+            ],
+            "latestAuditedFinancialYear": "",
+            "latestFinancialStatementsAvailable": "",
+            "stubPeriodFinancialsAvailable": "",
+            "auditorHasConfirmedEligibilityFigures": "",
+            "modifiedAuditOpinionRelevantToEligibility": "",
+            "modifiedAuditOpinionExplanation": "",
+        },
+        "eligibilityDeclarations": {
+            "admittedIbcAgainstIssuer": "",
+            "admittedIbcAgainstIssuerDetails": [],
+            "admittedIbcAgainstPromotingCompany": "",
+            "admittedIbcAgainstPromotingCompanyDetails": [],
+            "admittedWindingUpPetition": "",
+            "admittedWindingUpPetitionDetails": [],
+            "issuerDebarredFromCapitalMarkets": "",
+            "issuerDebarredFromCapitalMarketsDetails": [],
+            "promoterDirectorSellingShareholderDebarred": "",
+            "promoterDirectorSellingShareholderDebarredDetails": [],
+            "promoterDirectorAssociatedWithDebarredCompany": "",
+            "promoterDirectorAssociatedWithDebarredCompanyDetails": [],
+            "wilfulDefaulterOrFraudulentBorrower": "",
+            "wilfulDefaulterOrFraudulentBorrowerDetails": [],
+            "fugitiveEconomicOffender": "",
+            "fugitiveEconomicOffenderDetails": [],
+            "materialRegulatoryOrDisciplinaryAction": "",
+            "materialRegulatoryOrDisciplinaryActionDetails": [],
+            "seriousCriminalProceedingsInvolvingDirector": "",
+            "seriousCriminalProceedingsInvolvingDirectorDetails": [],
+            "materialFinancialDefaultDuringRelevantPeriod": "",
+            "materialFinancialDefaultDuringRelevantPeriodDetails": [],
+            "materialUnresolvedEligibilityLitigation": "",
+            "materialUnresolvedEligibilityLitigationDetails": [],
+            "proceedsIncludeRelatedPartyLoanRepayment": "",
+            "proceedsIncludeRelatedPartyLoanRepaymentDetails": [],
+        },
+        "processReadiness": {
+            "boardApprovalStatus": "",
+            "boardResolutionDate": "",
+            "boardResolutionReference": "",
+            "shareholderApprovalStatus": "",
+            "shareholderResolutionDate": "",
+            "shareholderResolutionReference": "",
+            "existingSharesFullyDematerialised": "",
+            "isinAllotted": "",
+            "nsdlConnectivityStatus": "",
+            "cdslConnectivityStatus": "",
+            "rtaArrangementsInitiated": "",
+            "leadManagerAppointmentStatus": "",
+            "registrarAppointmentStatus": "",
+            "marketMakerAppointmentStatus": "",
+            "underwriterAppointmentStatus": "",
+            "legalAdviserAppointmentStatus": "",
+            "statutoryAuditorCoordinationStatus": "",
+            "inPrincipleApplicationStatus": "",
+            "inPrincipleApplicationDate": "",
+            "inPrincipleApplicationReference": "",
+            "clarificationsReceived": "",
+            "inPrincipleApprovalReceived": "",
+            "inPrincipleApprovalDate": "",
+            "inPrincipleApprovalReference": "",
+        },
+        "issuerConfirmations": {
+            "offerInputsAreLatestInternalProposal": False,
+            "financialFiguresTraceableToSelectedSource": False,
+            "knownEligibilityConcernsDisclosed": False,
+            "missingAnswersMustNotBeInterpretedAsNegative": False,
+            "proposedOfsIncludesAllIntendedSellingShareholders": False,
+            "assessmentIsPreliminary": False,
+            "professionalAndExchangeConfirmationRemainRequired": False,
+        },
+    }
+
+
+def clone_empty_payload() -> dict[str, Any]:
+    return deepcopy(empty_payload())

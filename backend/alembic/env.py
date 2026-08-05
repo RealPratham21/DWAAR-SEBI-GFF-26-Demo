@@ -7,6 +7,7 @@ from app.models import (  # noqa: F401
     CompanyIncorporationWorkspace,
     Document,
     DocumentVersion,
+    IpoSetupEligibilityWorkspace,
     OnboardingApplication,
     RefreshSession,
     User,

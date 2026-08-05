@@ -11,7 +11,9 @@ DEFAULT_NOTIFICATION_LIMIT = 20
 MAX_NOTIFICATION_LIMIT = 50
 
 WORKSTREAM_SAVE_MESSAGE = "Your Company & Incorporation information was saved successfully."
+IPO_SETUP_SAVE_MESSAGE = "Your IPO Setup & Eligibility information was saved successfully."
 COMPANY_INCORPORATION_SLUG = "company-incorporation"
+IPO_SETUP_SLUG = "ipo-setup-eligibility"
 
 SECTION_SAVE_TITLES: dict[str, str] = {
     "legal-identity": "Legal Identity saved",
@@ -22,10 +24,26 @@ SECTION_SAVE_TITLES: dict[str, str] = {
     "issuer-confirmations": "Issuer Confirmations saved",
 }
 
+IPO_SETUP_SECTION_SAVE_TITLES: dict[str, str] = {
+    "ipo-direction": "IPO Direction saved",
+    "offer-structure": "Proposed Offer Structure saved",
+    "track-record-financial": "Track Record & Financial Eligibility saved",
+    "eligibility-declarations": "Eligibility Declarations saved",
+    "process-readiness": "Process Readiness saved",
+    "issuer-confirmations": "Issuer Confirmations saved",
+}
+
 
 def build_company_incorporation_target_route(section_id: str) -> str:
     return (
         f"/projects/demo/workstreams/{COMPANY_INCORPORATION_SLUG}"
+        f"?tab=information&section={section_id}"
+    )
+
+
+def build_ipo_setup_target_route(section_id: str) -> str:
+    return (
+        f"/projects/demo/workstreams/{IPO_SETUP_SLUG}"
         f"?tab=information&section={section_id}"
     )
 

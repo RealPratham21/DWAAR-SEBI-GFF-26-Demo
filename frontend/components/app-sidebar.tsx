@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -15,9 +15,17 @@ import {
   DownloadCloud,
   HelpCircle,
   ChevronDown,
+  PanelLeftClose,
+  PanelLeft,
   Menu,
   X,
 } from 'lucide-react';
+import {
+  SidebarCollapseProvider,
+  useSidebarCollapse,
+  sidebarCollapseContext,
+} from '@/lib/layout/sidebar-collapse-context';
+import { cn } from '@/lib/utils';
 
 interface NavLink {
   href: string;
@@ -61,7 +69,7 @@ const drwhLinks: NavLink[] = [
   },
   {
     href: '/projects/demo/drhp',
-    label: 'DRHP Preview',
+    label: 'DRHP Draft Workspace',
     icon: <FileText size={20} />,
   },
   {
@@ -84,8 +92,22 @@ const bottomLinks: NavLink[] = [
   },
 ];
 
+/** Mounts a local collapse provider when the demo layout provider is absent (e.g. Help). */
 export function AppSidebar() {
+  const existing = useContext(sidebarCollapseContext);
+  if (!existing) {
+    return (
+      <SidebarCollapseProvider>
+        <AppSidebarInner />
+      </SidebarCollapseProvider>
+    );
+  }
+  return <AppSidebarInner />;
+}
+
+function AppSidebarInner() {
   const pathname = usePathname();
+  const { collapsed, toggleCollapsed } = useSidebarCollapse();
   const [drhpOpen, setDrhpOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -93,107 +115,138 @@ export function AppSidebar() {
 
   return (
     <>
-      {/* Mobile menu button */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-sidebar border-b border-sidebar-border z-40 flex items-center px-4">
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           className="p-2 hover:bg-sidebar-accent rounded-md text-sidebar-foreground"
+          aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
         >
           {mobileOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
-      {/* Sidebar */}
       <aside
-        className={`${
-          mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-        } fixed md:relative transition-transform duration-200 z-30 w-64 h-screen bg-sidebar border-r border-sidebar-border flex flex-col overflow-hidden`}
+        className={cn(
+          mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+          'fixed md:relative md:shrink-0 transition-[transform,width] duration-200 z-30 h-screen bg-sidebar border-r border-sidebar-border flex flex-col overflow-hidden',
+          collapsed ? 'w-64 md:w-16' : 'w-64',
+        )}
       >
-        {/* Logo area */}
-        <div className="h-16 border-b border-sidebar-border flex items-center px-6">
-          <Link href="/projects/demo" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-sidebar-primary flex items-center justify-center">
+        <div
+          className={cn(
+            'h-16 border-b border-sidebar-border flex items-center gap-2',
+            collapsed ? 'md:justify-center md:px-2 px-4' : 'justify-between px-4',
+          )}
+        >
+          <Link
+            href="/projects/demo"
+            className="flex min-w-0 items-center gap-2"
+            title="Dwaar"
+            onClick={() => setMobileOpen(false)}
+          >
+            <div className="w-8 h-8 rounded-md bg-sidebar-primary flex items-center justify-center shrink-0">
               <span className="text-sidebar-primary-foreground font-bold text-sm">D</span>
             </div>
-            <span className="text-sidebar-foreground font-semibold text-sm">Dwaar</span>
+            <span
+              className={cn(
+                'text-sidebar-foreground font-semibold text-sm',
+                collapsed && 'md:hidden',
+              )}
+            >
+              Dwaar
+            </span>
           </Link>
+          {!collapsed ? (
+            <button
+              type="button"
+              onClick={toggleCollapsed}
+              title="Collapse sidebar"
+              aria-label="Collapse sidebar"
+              aria-expanded
+              className="hidden md:inline-flex shrink-0 items-center justify-center rounded-md p-2 text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+            >
+              <PanelLeftClose size={18} />
+            </button>
+          ) : null}
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
-          {/* Main navigation */}
+        <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
           {navLinks.map((link) => (
-            <Link
+            <SidebarNavLink
               key={link.href}
-              href={link.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive(link.href)
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                  : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
-              }`}
-              onClick={() => setMobileOpen(false)}
-            >
-              <span className="flex-shrink-0">{link.icon}</span>
-              <span>{link.label}</span>
-            </Link>
+              link={link}
+              active={isActive(link.href)}
+              collapsed={collapsed}
+              onNavigate={() => setMobileOpen(false)}
+            />
           ))}
 
-          {/* DRHP Preparation section */}
           <div className="pt-4">
             <button
               onClick={() => setDrhpOpen(!drhpOpen)}
-              className="w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-sidebar-foreground hover:bg-sidebar-accent/50 rounded-md transition-colors"
+              title="DRHP Preparation"
+              className={cn(
+                'w-full flex items-center rounded-md transition-colors text-sm font-semibold text-sidebar-foreground hover:bg-sidebar-accent/50',
+                collapsed
+                  ? 'md:justify-center md:px-0 px-3 py-2 justify-between'
+                  : 'justify-between px-3 py-2',
+              )}
             >
-              <span>DRHP Preparation</span>
+              <span className={cn(collapsed && 'md:hidden')}>DRHP Preparation</span>
               <ChevronDown
                 size={16}
-                className={`transition-transform ${drhpOpen ? 'rotate-0' : '-rotate-90'}`}
+                className={cn(
+                  'transition-transform',
+                  drhpOpen ? 'rotate-0' : '-rotate-90',
+                  collapsed && 'md:hidden',
+                )}
               />
+              {collapsed ? (
+                <GitBranch size={20} className="hidden md:block text-sidebar-foreground" />
+              ) : null}
             </button>
 
-            {drhpOpen && (
-              <div className="space-y-1 mt-1">
+            {(drhpOpen || collapsed) && (
+              <div className={cn('space-y-1 mt-1', collapsed && 'md:mt-2')}>
                 {drwhLinks.map((link) => (
-                  <Link
+                  <SidebarNavLink
                     key={link.href}
-                    href={link.href}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
-                      isActive(link.href)
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                        : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
-                    }`}
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <span className="flex-shrink-0">{link.icon}</span>
-                    <span>{link.label}</span>
-                  </Link>
+                    link={link}
+                    active={isActive(link.href)}
+                    collapsed={collapsed}
+                    onNavigate={() => setMobileOpen(false)}
+                  />
                 ))}
               </div>
             )}
           </div>
         </nav>
 
-        {/* Bottom navigation */}
-        <div className="border-t border-sidebar-border p-4 space-y-1">
+        <div className="border-t border-sidebar-border p-2 pb-4 space-y-1 md:pb-6">
           {bottomLinks.map((link) => (
-            <Link
+            <SidebarNavLink
               key={link.href}
-              href={link.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
-                isActive(link.href)
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                  : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
-              }`}
-              onClick={() => setMobileOpen(false)}
-            >
-              <span className="flex-shrink-0">{link.icon}</span>
-              <span>{link.label}</span>
-            </Link>
+              link={link}
+              active={isActive(link.href)}
+              collapsed={collapsed}
+              onNavigate={() => setMobileOpen(false)}
+            />
           ))}
+          {collapsed ? (
+            <button
+              type="button"
+              onClick={toggleCollapsed}
+              title="Expand sidebar"
+              aria-label="Expand sidebar"
+              aria-expanded={false}
+              className="hidden md:flex w-full items-center justify-center rounded-md px-0 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+            >
+              <PanelLeft size={18} />
+            </button>
+          ) : null}
         </div>
       </aside>
 
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-20 md:hidden"
@@ -201,5 +254,35 @@ export function AppSidebar() {
         />
       )}
     </>
+  );
+}
+
+function SidebarNavLink({
+  link,
+  active,
+  collapsed,
+  onNavigate,
+}: {
+  link: NavLink;
+  active: boolean;
+  collapsed: boolean;
+  onNavigate: () => void;
+}) {
+  return (
+    <Link
+      href={link.href}
+      title={link.label}
+      className={cn(
+        'flex items-center gap-3 rounded-md text-sm font-medium transition-colors',
+        collapsed ? 'md:justify-center md:px-0 px-3 py-2' : 'px-3 py-2',
+        active
+          ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+          : 'text-sidebar-foreground hover:bg-sidebar-accent/50',
+      )}
+      onClick={onNavigate}
+    >
+      <span className="flex-shrink-0">{link.icon}</span>
+      <span className={cn(collapsed && 'md:hidden')}>{link.label}</span>
+    </Link>
   );
 }

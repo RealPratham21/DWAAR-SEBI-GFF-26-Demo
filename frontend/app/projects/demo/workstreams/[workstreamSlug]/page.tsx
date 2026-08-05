@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
 import { CompanyIncorporationWorkstream } from '@/components/company-incorporation/company-incorporation-workstream';
+import { IpoSetupEligibilityWorkstream } from '@/components/ipo-setup/ipo-setup-workstream';
 import { getWorkstreamBySlug } from '@/lib/workstreams-config';
 
 interface WorkstreamDetailPageProps {
@@ -57,6 +58,24 @@ export default async function WorkstreamDetailPage({
           initialAssertionId={assertionId}
           initialIssueId={issueId}
           initialDocumentVersionId={documentVersionId}
+        />
+      </Suspense>
+    );
+  }
+
+  if (workstream.slug === 'ipo-setup-eligibility') {
+    return (
+      <Suspense
+        fallback={
+          <div className="py-8 text-sm text-muted-foreground" aria-live="polite">
+            Loading IPO Setup & Eligibility…
+          </div>
+        }
+      >
+        <IpoSetupEligibilityWorkstream
+          workstream={workstream}
+          initialTab={tab}
+          initialSection={section}
         />
       </Suspense>
     );

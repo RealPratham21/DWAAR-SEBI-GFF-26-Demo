@@ -67,10 +67,12 @@ def db_session(engine) -> Generator[Session, None, None]:
     with engine.begin() as connection:
         connection.execute(
             text(
-                "TRUNCATE TABLE fact_issue_resolutions, fact_issue_assertions, fact_issues, "
+                "TRUNCATE TABLE drhp_snapshot_items, drhp_source_snapshots, "
+                "fact_issue_resolutions, fact_issue_assertions, fact_issues, "
                 "fact_assertion_reviews, fact_evidence_references, fact_assertions, "
                 "structured_extraction_runs, document_pages, document_processing_runs, "
                 "document_versions, documents, user_notifications, "
+                "ipo_setup_eligibility_workspaces, "
                 "company_incorporation_workspaces, "
                 "refresh_sessions, onboarding_applications, users RESTART IDENTITY CASCADE"
             )
@@ -132,10 +134,12 @@ def truncate_auth_tables(engine) -> None:
     with engine.begin() as connection:
         connection.execute(
             text(
-                "TRUNCATE TABLE fact_issue_resolutions, fact_issue_assertions, fact_issues, "
+                "TRUNCATE TABLE drhp_snapshot_items, drhp_source_snapshots, "
+                "fact_issue_resolutions, fact_issue_assertions, fact_issues, "
                 "fact_assertion_reviews, fact_evidence_references, fact_assertions, "
                 "structured_extraction_runs, document_pages, document_processing_runs, "
                 "document_versions, documents, user_notifications, "
+                "ipo_setup_eligibility_workspaces, "
                 "company_incorporation_workspaces, "
                 "refresh_sessions, onboarding_applications, users RESTART IDENTITY CASCADE"
             )

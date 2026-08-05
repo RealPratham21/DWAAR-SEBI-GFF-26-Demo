@@ -1,0 +1,66 @@
+"""Add IPO Setup & Eligibility workspaces table.
+
+Revision ID: 009_ipo_setup_eligibility
+Revises: 008_drhp_source_snapshots
+Create Date: 2026-08-05
+"""
+
+from collections.abc import Sequence
+
+import sqlalchemy as sa
+from alembic import op
+from sqlalchemy.dialects import postgresql
+
+revision: str = "009_ipo_setup_eligibility"
+down_revision: str | None = "008_drhp_source_snapshots"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
+
+
+def upgrade() -> None:
+    op.create_table(
+        "ipo_setup_eligibility_workspaces",
+        sa.Column("id", sa.Uuid(), nullable=False),
+        sa.Column("user_id", sa.Uuid(), nullable=False),
+        sa.Column("source_onboarding_application_id", sa.Uuid(), nullable=False),
+        sa.Column(
+            "payload",
+            postgresql.JSONB(astext_type=sa.Text()),
+            nullable=False,
+        ),
+        sa.Column("schema_version", sa.Integer(), server_default=sa.text("1"), nullable=False),
+        sa.Column("version", sa.Integer(), server_default=sa.text("1"), nullable=False),
+        sa.Column("last_saved_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.ForeignKeyConstraint(
+            ["source_onboarding_application_id"],
+            ["onboarding_applications.id"],
+        ),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        "ix_ipo_setup_eligibility_workspaces_user_id",
+        "ipo_setup_eligibility_workspaces",
+        ["user_id"],
+        unique=True,
+    )
+
+
+def downgrade() -> None:
+    op.drop_index(
+        "ix_ipo_setup_eligibility_workspaces_user_id",
+        table_name="ipo_setup_eligibility_workspaces",
+    )
+    op.drop_table("ipo_setup_eligibility_workspaces")

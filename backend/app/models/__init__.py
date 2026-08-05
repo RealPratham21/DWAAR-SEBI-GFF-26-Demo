@@ -5,6 +5,7 @@ from app.models.document import Document
 from app.models.document_page import DocumentPage
 from app.models.document_processing_run import DocumentProcessingRun
 from app.models.document_version import DocumentVersion
+from app.models.drhp_source_snapshot import DrhpSnapshotItem, DrhpSourceSnapshot
 from app.models.enums import (
     ACTIVE_ONBOARDING_STATUSES,
     OnboardingCurrentStep,
@@ -15,6 +16,7 @@ from app.models.fact_assertion import FactAssertion
 from app.models.fact_assertion_review import FactAssertionReview
 from app.models.fact_evidence_reference import FactEvidenceReference
 from app.models.fact_issue import FactIssue, FactIssueAssertion, FactIssueResolution
+from app.models.ipo_setup_eligibility_workspace import IpoSetupEligibilityWorkspace
 from app.models.onboarding_application import OnboardingApplication
 from app.models.refresh_session import RefreshSession
 from app.models.structured_extraction_run import StructuredExtractionRun
@@ -28,12 +30,15 @@ __all__ = [
     "DocumentPage",
     "DocumentProcessingRun",
     "DocumentVersion",
+    "DrhpSnapshotItem",
+    "DrhpSourceSnapshot",
     "FactAssertion",
     "FactAssertionReview",
     "FactEvidenceReference",
     "FactIssue",
     "FactIssueAssertion",
     "FactIssueResolution",
+    "IpoSetupEligibilityWorkspace",
     "OnboardingApplication",
     "OnboardingCurrentStep",
     "OnboardingJourneyType",
