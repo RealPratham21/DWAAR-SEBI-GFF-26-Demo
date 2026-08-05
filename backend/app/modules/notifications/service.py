@@ -13,6 +13,9 @@ from app.modules.notifications.constants import (
     DOCUMENT_ARCHIVE_TITLE,
     DOCUMENT_REPLACE_TITLE,
     DOCUMENT_UPLOAD_TITLE,
+    IPO_SETUP_SAVE_MESSAGE,
+    IPO_SETUP_SECTION_SAVE_TITLES,
+    IPO_SETUP_SLUG,
     MAX_NOTIFICATION_LIMIT,
     SECTION_SAVE_TITLES,
     STRUCTURED_EXTRACTION_FAILED_PREFIX,
@@ -24,6 +27,7 @@ from app.modules.notifications.constants import (
     build_company_incorporation_facts_route,
     build_company_incorporation_questions_route,
     build_company_incorporation_target_route,
+    build_ipo_setup_target_route,
 )
 from app.modules.notifications.schemas import (
     MarkAllReadResponse,
@@ -88,6 +92,36 @@ def create_workstream_save_notification(
         workstream_slug=COMPANY_INCORPORATION_SLUG,
         section_id=section_id,
         target_route=build_company_incorporation_target_route(section_id),
+        read_at=None,
+        created_at=saved_at,
+        updated_at=saved_at,
+    )
+    db.add(notification)
+    db.flush()
+    db.refresh(notification)
+    return notification
+
+
+def create_ipo_setup_save_notification(
+    db: Session,
+    *,
+    user: User,
+    section_id: str,
+    saved_at: datetime,
+) -> UserNotification:
+    title = IPO_SETUP_SECTION_SAVE_TITLES.get(section_id)
+    if title is None:
+        msg = f"Unsupported IPO Setup section: {section_id}"
+        raise ValueError(msg)
+
+    notification = UserNotification(
+        user_id=user.id,
+        notification_type=NotificationType.WORKSTREAM_SAVE,
+        title=title,
+        message=IPO_SETUP_SAVE_MESSAGE,
+        workstream_slug=IPO_SETUP_SLUG,
+        section_id=section_id,
+        target_route=build_ipo_setup_target_route(section_id),
         read_at=None,
         created_at=saved_at,
         updated_at=saved_at,

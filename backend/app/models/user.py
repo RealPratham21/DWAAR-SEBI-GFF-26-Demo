@@ -35,6 +35,11 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         cascade="all, delete-orphan",
         uselist=False,
     )
+    ipo_setup_eligibility_workspace: Mapped["IpoSetupEligibilityWorkspace | None"] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
     notifications: Mapped[list["UserNotification"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
@@ -43,6 +48,7 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
 if TYPE_CHECKING:
     from app.models.company_incorporation_workspace import CompanyIncorporationWorkspace
+    from app.models.ipo_setup_eligibility_workspace import IpoSetupEligibilityWorkspace
     from app.models.onboarding_application import OnboardingApplication
     from app.models.refresh_session import RefreshSession
     from app.models.user_notification import UserNotification

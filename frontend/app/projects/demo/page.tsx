@@ -180,7 +180,7 @@ export default function DashboardPage() {
             href="/projects/demo/drhp"
             className="px-4 py-3 border border-border rounded-md hover:bg-muted transition-colors text-sm font-medium text-foreground flex items-center justify-between"
           >
-            Preview DRHP
+            Open DRHP Draft Workspace
             <ArrowRight size={16} />
           </Link>
           <Link

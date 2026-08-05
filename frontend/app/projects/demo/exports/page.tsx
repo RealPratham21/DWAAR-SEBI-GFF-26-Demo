@@ -23,8 +23,8 @@ const exports: ExportOption[] = [
   },
   {
     id: 'preview',
-    title: 'DRHP Preview',
-    description: 'Formatted DRHP preview as it will appear in SEBI filing',
+    title: 'DRHP Draft PDF',
+    description: 'Generated draft PDF will appear here once chapter generation exists',
     icon: <FileText size={24} />,
     format: 'PDF',
     size: '12.3 MB',
