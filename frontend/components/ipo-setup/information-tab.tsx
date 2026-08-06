@@ -23,7 +23,7 @@ export function IpoSetupInformationTab({
 
   const selectSection = (section: IpoSetupSectionId) => {
     if (section === activeSection) return;
-    if (dirtySections.has(activeSection) && !confirmLeave()) return;
+    if (!confirmLeave(activeSection)) return;
     onSectionChange(section);
   };
 

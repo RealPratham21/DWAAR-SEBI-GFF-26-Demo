@@ -27,6 +27,7 @@ import { createEmptyIpoSetupPayload } from '@/lib/ipo-setup/defaults';
 import { computeOfferFromPayload, type OfferComputations } from '@/lib/ipo-setup/offer-compute';
 import { useNotifications } from '@/lib/notifications/context';
 import type { IpoSetupPayload, IpoSetupSectionId } from '@/lib/schemas/ipo-setup';
+import { isDeepEqual } from '@/lib/workspace/deep-equal';
 import { formatCompanyClass } from '@/lib/workspace/format';
 
 const SECTION_PAYLOAD_KEYS: Record<IpoSetupSectionId, keyof IpoSetupPayload> = {
@@ -37,6 +38,28 @@ const SECTION_PAYLOAD_KEYS: Record<IpoSetupSectionId, keyof IpoSetupPayload> = {
   'process-readiness': 'processReadiness',
   'issuer-confirmations': 'issuerConfirmations',
 };
+
+const SECTION_ENTRIES = Object.entries(SECTION_PAYLOAD_KEYS) as Array<
+  [IpoSetupSectionId, keyof IpoSetupPayload]
+>;
+
+/**
+ * Server state wins for the section just saved and for sections the user has not touched,
+ * while sections still holding edits keep their draft.
+ */
+function mergePersistedPayload(
+  current: IpoSetupPayload,
+  baseline: IpoSetupPayload,
+  persisted: IpoSetupPayload,
+  savedSectionId: IpoSetupSectionId,
+): IpoSetupPayload {
+  const merged: Record<string, unknown> = { ...persisted };
+  for (const [sectionId, key] of SECTION_ENTRIES) {
+    if (sectionId === savedSectionId) continue;
+    if (!isDeepEqual(current[key], baseline[key])) merged[key] = current[key];
+  }
+  return merged as IpoSetupPayload;
+}
 
 function parseNullableNumber(value: string | null | undefined): number | null {
   if (value === null || value === undefined || value === '') return null;
@@ -87,7 +110,8 @@ type IpoSetupContextValue = {
   ) => void;
   saveActiveSection: (sectionId: IpoSetupSectionId) => Promise<boolean>;
   discardSectionDraft: (sectionId: IpoSetupSectionId) => void;
-  confirmLeave: () => boolean;
+  /** Prompts only when there is a real difference. Scoped to one section when an id is given. */
+  confirmLeave: (sectionId?: IpoSetupSectionId) => boolean;
   refreshDerived: () => Promise<void>;
 };
 
@@ -110,10 +134,8 @@ export function IpoSetupProvider({ children }: { children: ReactNode }) {
   const [overview, setOverview] = useState<IpoSetupOverviewSummary | null>(null);
   const [companyReference, setCompanyReference] =
     useState<CompanyReference>(emptyCompanyReference);
-  const [dirtySections, setDirtySections] = useState<Set<IpoSetupSectionId>>(new Set());
-  const [sectionSnapshots, setSectionSnapshots] = useState<
-    Partial<Record<IpoSetupSectionId, unknown>>
-  >({});
+  /** Last state known to be persisted. Every dirty flag is derived from a diff against this. */
+  const [baseline, setBaseline] = useState<IpoSetupPayload>(() => payload);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -139,6 +161,7 @@ export function IpoSetupProvider({ children }: { children: ReactNode }) {
       try {
         const response = await initializeIpoSetupWorkspace();
         if (cancelled) return;
+        setBaseline(response.payload);
         setPayload(response.payload);
         setVersion(response.version);
         setProgress(response.progress);
@@ -163,6 +186,14 @@ export function IpoSetupProvider({ children }: { children: ReactNode }) {
     };
   }, [refreshDerived]);
 
+  const dirtySections = useMemo(() => {
+    const next = new Set<IpoSetupSectionId>();
+    for (const [sectionId, key] of SECTION_ENTRIES) {
+      if (!isDeepEqual(payload[key], baseline[key])) next.add(sectionId);
+    }
+    return next;
+  }, [baseline, payload]);
+
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
       if (dirtySections.size === 0) return;
@@ -182,38 +213,26 @@ export function IpoSetupProvider({ children }: { children: ReactNode }) {
     <K extends keyof IpoSetupPayload>(
       sectionKey: K,
       value: IpoSetupPayload[K],
-      sectionId: IpoSetupSectionId,
+      _sectionId: IpoSetupSectionId,
     ) => {
-      setSectionSnapshots((current) => {
-        if (current[sectionId] !== undefined) return current;
-        return { ...current, [sectionId]: payload[sectionKey] };
+      setPayload((current) => {
+        if (isDeepEqual(current[sectionKey], value)) return current;
+        return { ...current, [sectionKey]: value };
       });
-      setPayload((current) => ({ ...current, [sectionKey]: value }));
-      setDirtySections((current) => new Set(current).add(sectionId));
       setSaveNotice(null);
       setSaveError(null);
     },
-    [payload],
+    [],
   );
 
-  const discardSectionDraft = useCallback((sectionId: IpoSetupSectionId) => {
-    const snapshot = sectionSnapshots[sectionId];
-    const key = SECTION_PAYLOAD_KEYS[sectionId];
-    if (snapshot !== undefined) {
-      setPayload((current) => ({ ...current, [key]: snapshot }));
-    }
-    setDirtySections((current) => {
-      const next = new Set(current);
-      next.delete(sectionId);
-      return next;
-    });
-    setSectionSnapshots((current) => {
-      const next = { ...current };
-      delete next[sectionId];
-      return next;
-    });
-    setSaveError(null);
-  }, [sectionSnapshots]);
+  const discardSectionDraft = useCallback(
+    (sectionId: IpoSetupSectionId) => {
+      const key = SECTION_PAYLOAD_KEYS[sectionId];
+      setPayload((current) => ({ ...current, [key]: baseline[key] }));
+      setSaveError(null);
+    },
+    [baseline],
+  );
 
   const clearSaveNotice = useCallback(() => setSaveNotice(null), []);
   const clearSaveError = useCallback(() => setSaveError(null), []);
@@ -225,20 +244,13 @@ export function IpoSetupProvider({ children }: { children: ReactNode }) {
       setSaveError(null);
       try {
         const response = await saveIpoSetupSection(sectionId, version, payload[key] as never);
-        setPayload(response.payload);
+        setBaseline(response.payload);
+        setPayload((current) =>
+          mergePersistedPayload(current, baseline, response.payload, sectionId),
+        );
         setVersion(response.version);
         setProgress(response.progress);
         setPersistedOffer(offerResponseToComputations(response.offerComputations));
-        setDirtySections((current) => {
-          const next = new Set(current);
-          next.delete(sectionId);
-          return next;
-        });
-        setSectionSnapshots((current) => {
-          const next = { ...current };
-          delete next[sectionId];
-          return next;
-        });
         prependNotification(response.notification);
         setSaveNotice(response.acknowledgement.message);
         await refreshDerived();
@@ -253,14 +265,13 @@ export function IpoSetupProvider({ children }: { children: ReactNode }) {
               offerComputations?: OfferComputationsResponse;
             } | undefined;
             if (details?.payload && details.currentVersion && details.progress) {
+              setBaseline(details.payload);
               setPayload(details.payload);
               setVersion(details.currentVersion);
               setProgress(details.progress);
               if (details.offerComputations) {
                 setPersistedOffer(offerResponseToComputations(details.offerComputations));
               }
-              setDirtySections(new Set());
-              setSectionSnapshots({});
               void refreshDerived();
             }
             setSaveError(
@@ -284,15 +295,17 @@ export function IpoSetupProvider({ children }: { children: ReactNode }) {
         setIsSaving(false);
       }
     },
-    [payload, prependNotification, refreshDerived, version],
+    [baseline, payload, prependNotification, refreshDerived, version],
   );
 
-  const confirmLeave = useCallback(() => {
-    if (dirtySections.size === 0) return true;
-    return window.confirm(
-      'You have unsaved section changes. Leave without saving?',
-    );
-  }, [dirtySections]);
+  const confirmLeave = useCallback(
+    (sectionId?: IpoSetupSectionId) => {
+      const hasChanges = sectionId ? dirtySections.has(sectionId) : dirtySections.size > 0;
+      if (!hasChanges) return true;
+      return window.confirm('You have unsaved section changes. Leave without saving?');
+    },
+    [dirtySections],
+  );
 
   const value = useMemo<IpoSetupContextValue>(
     () => ({

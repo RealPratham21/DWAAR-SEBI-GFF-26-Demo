@@ -1,4 +1,4 @@
-"""IPO Setup & Eligibility workspace service."""
+"""Capital & Ownership workspace service — mirrors IPO Setup & Eligibility persistence."""
 
 from __future__ import annotations
 
@@ -12,35 +12,40 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import AppException
+from app.models.capital_ownership_workspace import CapitalOwnershipWorkspace
 from app.models.company_incorporation_workspace import CompanyIncorporationWorkspace
 from app.models.ipo_setup_eligibility_workspace import IpoSetupEligibilityWorkspace
 from app.models.user import User
-from app.modules.dashboard.service import get_submitted_sme_application
-from app.modules.ipo_setup_eligibility.assessment import assess_ipo_eligibility
-from app.modules.ipo_setup_eligibility.constants import (
+from app.modules.capital_ownership.assessment import assess_capital_ownership
+from app.modules.capital_ownership.compute import (
+    compute_capital_ownership_model,
+    ipo_setup_reference_from_payload,
+)
+from app.modules.capital_ownership.constants import (
     SECTION_IDS,
     SECTION_PAYLOAD_KEYS,
-    IpoSetupErrorCode,
+    CapitalOwnershipErrorCode,
 )
-from app.modules.ipo_setup_eligibility.defaults import clone_empty_payload
-from app.modules.ipo_setup_eligibility.offer_compute import offer_computations_for_api
-from app.modules.ipo_setup_eligibility.overview import build_overview_summary
-from app.modules.ipo_setup_eligibility.progress import calculate_progress
-from app.modules.ipo_setup_eligibility.schemas import (
+from app.modules.capital_ownership.defaults import clone_empty_payload
+from app.modules.capital_ownership.overview import build_overview_summary
+from app.modules.capital_ownership.progress import calculate_progress
+from app.modules.capital_ownership.schemas import (
+    CapitalAssessmentResponse,
+    CapitalOwnershipWorkspaceResponse,
     CompanyReferenceResponse,
-    EligibilityAssessmentResponse,
+    ComputationsResponse,
     InitializeWorkspaceResponse,
-    IpoSetupWorkspaceResponse,
-    OfferComputationsResponse,
+    IpoSetupReferenceResponse,
     OverviewSummaryResponse,
     SectionSaveResponse,
     WorkspaceProgressResponse,
 )
-from app.modules.ipo_setup_eligibility.validation import VALIDATORS, ValidationError
-from app.modules.notifications.constants import IPO_SETUP_SAVE_MESSAGE
+from app.modules.capital_ownership.validation import VALIDATORS, ValidationError
+from app.modules.dashboard.service import get_submitted_sme_application
+from app.modules.notifications.constants import CAPITAL_OWNERSHIP_SAVE_MESSAGE
 from app.modules.notifications.schemas import SaveAcknowledgementResponse
 from app.modules.notifications.service import (
-    create_ipo_setup_save_notification,
+    create_capital_ownership_save_notification,
     to_notification_response,
 )
 
@@ -51,10 +56,10 @@ def _now() -> datetime:
 
 def get_workspace_for_user(
     db: Session, user_id: uuid.UUID
-) -> IpoSetupEligibilityWorkspace | None:
+) -> CapitalOwnershipWorkspace | None:
     return db.scalar(
-        select(IpoSetupEligibilityWorkspace).where(
-            IpoSetupEligibilityWorkspace.user_id == user_id,
+        select(CapitalOwnershipWorkspace).where(
+            CapitalOwnershipWorkspace.user_id == user_id,
         ),
     )
 
@@ -81,51 +86,71 @@ def get_company_reference(db: Session, user_id: uuid.UUID) -> CompanyReferenceRe
     )
 
 
-def _sync_referenced_company_class(
-    payload: dict[str, Any],
-    company_reference: CompanyReferenceResponse,
-) -> dict[str, Any]:
-    """Mirror C&I class into payload display field without making IPO authoritative."""
-    next_payload = deepcopy(payload)
-    direction = dict(next_payload.get("ipoDirection") or {})
-    direction["referencedCompanyClass"] = company_reference.company_class or ""
-    next_payload["ipoDirection"] = direction
-    return next_payload
+def get_ipo_setup_reference(db: Session, user_id: uuid.UUID) -> dict[str, Any]:
+    """Read-only mirror of the IPO Setup & Eligibility payload. Never writes to it."""
+    workspace = db.scalar(
+        select(IpoSetupEligibilityWorkspace).where(
+            IpoSetupEligibilityWorkspace.user_id == user_id,
+        ),
+    )
+    if workspace is None:
+        return ipo_setup_reference_from_payload(None)
+    return ipo_setup_reference_from_payload(workspace.payload)
 
 
 def _build_progress(payload: dict[str, Any]) -> WorkspaceProgressResponse:
     return WorkspaceProgressResponse.model_validate(calculate_progress(payload))
 
 
-def _build_offer(payload: dict[str, Any]) -> OfferComputationsResponse:
-    return OfferComputationsResponse.model_validate(offer_computations_for_api(payload))
+def _build_computations(payload: dict[str, Any], ipo_reference: dict[str, Any]) -> ComputationsResponse:
+    model = compute_capital_ownership_model(payload, ipo_reference)
+    return ComputationsResponse(
+        current_equity_shares=model["totals"]["currentEquityShares"],
+        paid_up_equity_capital_from_classes=model["totals"]["paidUpEquityCapitalFromClasses"],
+        promoter_and_group_percentage=model["capTable"]["groups"]["promoterAndGroupPercentage"],
+        public_percentage=model["capTable"]["groups"]["publicPercentage"],
+        post_issue_shares=model["prePost"]["postIssueShares"],
+        promoter_pre_issue_percentage=model["dilution"]["promoterPreIssuePercentage"],
+        promoter_post_issue_percentage=model["dilution"]["promoterPostIssuePercentage"],
+        promoter_dilution_percentage_points=model["dilution"]["promoterDilutionPercentagePoints"],
+        offer_as_percentage_of_post_issue_capital=model["prePost"][
+            "offerAsPercentageOfPostIssueCapital"
+        ],
+        total_shares_offered_for_sale=model["prePost"]["totalSharesOfferedForSale"],
+        potential_dilution_from_convertibles=model["outstanding"]["potentialDilutionPercentage"],
+        required_contribution_shares=model["lockIn"]["requiredContributionShares"],
+        eligible_contribution_shares=model["lockIn"]["eligibleShares"],
+        contribution_shortfall_shares=model["lockIn"]["shortfallShares"],
+        total_encumbered_shares=model["lockIn"]["totalEncumberedShares"],
+    )
 
 
 def _build_workspace_response(
     db: Session,
-    workspace: IpoSetupEligibilityWorkspace,
-) -> IpoSetupWorkspaceResponse:
+    workspace: CapitalOwnershipWorkspace,
+) -> CapitalOwnershipWorkspaceResponse:
     company_reference = get_company_reference(db, workspace.user_id)
-    payload = _sync_referenced_company_class(workspace.payload, company_reference)
-    return IpoSetupWorkspaceResponse(
+    ipo_reference = get_ipo_setup_reference(db, workspace.user_id)
+    payload = workspace.payload
+    return CapitalOwnershipWorkspaceResponse(
         id=str(workspace.id),
         version=workspace.version,
         schema_version=workspace.schema_version,
         last_saved_at=workspace.last_saved_at,
         payload=payload,
         progress=_build_progress(payload),
-        offer_computations=_build_offer(payload),
+        computations=_build_computations(payload, ipo_reference),
         company_reference=company_reference,
+        ipo_setup_reference=IpoSetupReferenceResponse.model_validate(ipo_reference),
     )
 
 
-def _insert_workspace(db: Session, user: User) -> IpoSetupEligibilityWorkspace | None:
+def _insert_workspace(db: Session, user: User) -> CapitalOwnershipWorkspace | None:
     """Insert the workspace, returning None when a concurrent request won the race."""
     application = get_submitted_sme_application(db, user.id)
-    company_reference = get_company_reference(db, user.id)
-    payload = _sync_referenced_company_class(clone_empty_payload(), company_reference)
+    payload = clone_empty_payload()
     now = _now()
-    workspace = IpoSetupEligibilityWorkspace(
+    workspace = CapitalOwnershipWorkspace(
         user_id=user.id,
         source_onboarding_application_id=application.id,
         payload=payload,
@@ -158,47 +183,52 @@ def initialize_or_get_workspace(db: Session, user: User) -> InitializeWorkspaceR
     if existing is None:
         raise AppException(
             status_code=404,
-            code=IpoSetupErrorCode.WORKSPACE_NOT_FOUND,
-            message="IPO Setup & Eligibility workspace could not be initialized.",
+            code=CapitalOwnershipErrorCode.WORKSPACE_NOT_FOUND,
+            message="Capital & Ownership workspace could not be initialized.",
         )
 
     base = _build_workspace_response(db, existing)
     return InitializeWorkspaceResponse(**base.model_dump(), created=False)
 
 
-def get_workspace(db: Session, user: User) -> IpoSetupWorkspaceResponse:
+def get_workspace(db: Session, user: User) -> CapitalOwnershipWorkspaceResponse:
     workspace = get_workspace_for_user(db, user.id)
     if workspace is None:
         raise AppException(
             status_code=404,
-            code=IpoSetupErrorCode.WORKSPACE_NOT_FOUND,
-            message="IPO Setup & Eligibility workspace has not been initialized.",
+            code=CapitalOwnershipErrorCode.WORKSPACE_NOT_FOUND,
+            message="Capital & Ownership workspace has not been initialized.",
         )
     return _build_workspace_response(db, workspace)
 
 
-def _require_workspace(db: Session, user: User) -> IpoSetupEligibilityWorkspace:
+def _require_workspace(db: Session, user: User) -> CapitalOwnershipWorkspace:
     workspace = get_workspace_for_user(db, user.id)
     if workspace is None:
         raise AppException(
             status_code=404,
-            code=IpoSetupErrorCode.WORKSPACE_NOT_FOUND,
-            message="IPO Setup & Eligibility workspace has not been initialized.",
+            code=CapitalOwnershipErrorCode.WORKSPACE_NOT_FOUND,
+            message="Capital & Ownership workspace has not been initialized.",
         )
     return workspace
 
 
-def _assert_version(workspace: IpoSetupEligibilityWorkspace, expected_version: int) -> None:
+def _assert_version(
+    db: Session, workspace: CapitalOwnershipWorkspace, expected_version: int
+) -> None:
     if workspace.version != expected_version:
+        ipo_reference = get_ipo_setup_reference(db, workspace.user_id)
         raise AppException(
             status_code=409,
-            code=IpoSetupErrorCode.WORKSPACE_VERSION_CONFLICT,
+            code=CapitalOwnershipErrorCode.WORKSPACE_VERSION_CONFLICT,
             message="The workspace was updated elsewhere. Refresh and try again.",
             details={
                 "currentVersion": workspace.version,
                 "payload": workspace.payload,
                 "progress": calculate_progress(workspace.payload),
-                "offerComputations": offer_computations_for_api(workspace.payload),
+                "computations": _build_computations(workspace.payload, ipo_reference).model_dump(
+                    by_alias=True
+                ),
             },
         )
 
@@ -214,8 +244,8 @@ def save_section(
     if section_id not in SECTION_IDS:
         raise AppException(
             status_code=404,
-            code=IpoSetupErrorCode.UNKNOWN_SECTION,
-            message=f"Unknown IPO Setup section: {section_id}",
+            code=CapitalOwnershipErrorCode.UNKNOWN_SECTION,
+            message=f"Unknown Capital & Ownership section: {section_id}",
         )
 
     workspace = _require_workspace(db, user)
@@ -223,10 +253,6 @@ def save_section(
     next_payload = deepcopy(workspace.payload)
 
     section_data = deepcopy(data)
-    if section_id == "ipo-direction":
-        # Never accept client write-back of authoritative C&I class; refresh mirror.
-        company_reference = get_company_reference(db, user.id)
-        section_data["referencedCompanyClass"] = company_reference.company_class or ""
 
     validator = VALIDATORS[section_id]
     try:
@@ -234,24 +260,13 @@ def save_section(
     except ValidationError as exc:
         raise AppException(
             status_code=422,
-            code=IpoSetupErrorCode.VALIDATION_FAILED,
+            code=CapitalOwnershipErrorCode.VALIDATION_FAILED,
             message=f"{section_id} contains invalid values.",
             details={"fieldErrors": exc.field_errors},
         ) from exc
 
-    # Ensure track-record always keeps exactly three rows after validation.
-    if section_id == "track-record-financial":
-        years = section_data.get("financialYears") or []
-        if len(years) != 3:
-            raise AppException(
-                status_code=422,
-                code=IpoSetupErrorCode.VALIDATION_FAILED,
-                message="Track record must include exactly three financial-year rows.",
-                details={"fieldErrors": {"financialYears": "Exactly three financial-year rows are required."}},
-            )
-
     next_payload[payload_key] = section_data
-    _assert_version(workspace, expected_version)
+    _assert_version(db, workspace, expected_version)
 
     now = _now()
     workspace.payload = next_payload
@@ -260,12 +275,13 @@ def save_section(
     db.flush()
     db.refresh(workspace)
 
-    notification = create_ipo_setup_save_notification(
+    notification = create_capital_ownership_save_notification(
         db,
         user=user,
         section_id=section_id,
         saved_at=now,
     )
+    ipo_reference = get_ipo_setup_reference(db, user.id)
     progress = _build_progress(workspace.payload)
     return SectionSaveResponse(
         version=workspace.version,
@@ -274,9 +290,9 @@ def save_section(
         saved_section={payload_key: section_data},
         progress=progress,
         payload=workspace.payload,
-        offer_computations=_build_offer(workspace.payload),
+        computations=_build_computations(workspace.payload, ipo_reference),
         acknowledgement=SaveAcknowledgementResponse(
-            message=IPO_SETUP_SAVE_MESSAGE,
+            message=CAPITAL_OWNERSHIP_SAVE_MESSAGE,
             saved_at=now,
         ),
         notification=to_notification_response(notification),
@@ -286,15 +302,17 @@ def save_section(
 def get_overview(db: Session, user: User) -> OverviewSummaryResponse:
     workspace = _require_workspace(db, user)
     company_reference = get_company_reference(db, user.id)
-    payload = _sync_referenced_company_class(workspace.payload, company_reference)
-    summary = build_overview_summary(payload)
-    summary["companyReference"] = company_reference.model_dump(by_alias=True)
+    ipo_reference = get_ipo_setup_reference(db, user.id)
+    summary = build_overview_summary(
+        workspace.payload,
+        ipo_reference,
+        company_reference.model_dump(by_alias=True),
+    )
     return OverviewSummaryResponse.model_validate(summary)
 
 
-def get_assessment(db: Session, user: User) -> EligibilityAssessmentResponse:
+def get_assessment(db: Session, user: User) -> CapitalAssessmentResponse:
     workspace = _require_workspace(db, user)
-    company_reference = get_company_reference(db, user.id)
-    payload = _sync_referenced_company_class(workspace.payload, company_reference)
-    assessment = assess_ipo_eligibility(payload)
-    return EligibilityAssessmentResponse.model_validate(assessment)
+    ipo_reference = get_ipo_setup_reference(db, user.id)
+    assessment = assess_capital_ownership(workspace.payload, ipo_reference)
+    return CapitalAssessmentResponse.model_validate(assessment)
