@@ -74,6 +74,7 @@ def db_session(engine) -> Generator[Session, None, None]:
                 "document_versions, documents, user_notifications, "
                 "ipo_setup_eligibility_workspaces, "
                 "capital_ownership_workspaces, "
+                "business_operations_workspaces, "
                 "company_incorporation_workspaces, "
                 "refresh_sessions, onboarding_applications, users RESTART IDENTITY CASCADE"
             )
@@ -142,6 +143,7 @@ def truncate_auth_tables(engine) -> None:
                 "document_versions, documents, user_notifications, "
                 "ipo_setup_eligibility_workspaces, "
                 "capital_ownership_workspaces, "
+                "business_operations_workspaces, "
                 "company_incorporation_workspaces, "
                 "refresh_sessions, onboarding_applications, users RESTART IDENTITY CASCADE"
             )

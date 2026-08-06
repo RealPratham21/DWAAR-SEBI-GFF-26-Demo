@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
+import { BusinessOperationsWorkstream } from '@/components/business-operations/business-operations-workstream';
 import { CapitalOwnershipWorkstream } from '@/components/capital-ownership/capital-ownership-workstream';
 import { CompanyIncorporationWorkstream } from '@/components/company-incorporation/company-incorporation-workstream';
 import { IpoSetupEligibilityWorkstream } from '@/components/ipo-setup/ipo-setup-workstream';
@@ -92,6 +93,24 @@ export default async function WorkstreamDetailPage({
         }
       >
         <CapitalOwnershipWorkstream
+          workstream={workstream}
+          initialTab={tab}
+          initialSection={section}
+        />
+      </Suspense>
+    );
+  }
+
+  if (workstream.slug === 'business-operations') {
+    return (
+      <Suspense
+        fallback={
+          <div className="py-8 text-sm text-muted-foreground" aria-live="polite">
+            Loading Business & Operations…
+          </div>
+        }
+      >
+        <BusinessOperationsWorkstream
           workstream={workstream}
           initialTab={tab}
           initialSection={section}

@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from app.modules.company_incorporation.schemas import DashboardCompanyIncorporationProgress
+from app.modules.business_operations.schemas import DashboardBusinessOperationsProgress
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
@@ -130,3 +131,4 @@ class DashboardBootstrapResponse(ApiModel):
     onboarding: BootstrapOnboardingResponse
     workspace: BootstrapWorkspaceResponse
     company_incorporation: DashboardCompanyIncorporationProgress
+    business_operations: DashboardBusinessOperationsProgress

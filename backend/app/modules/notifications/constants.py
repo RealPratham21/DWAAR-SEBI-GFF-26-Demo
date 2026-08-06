@@ -13,9 +13,11 @@ MAX_NOTIFICATION_LIMIT = 50
 WORKSTREAM_SAVE_MESSAGE = "Your Company & Incorporation information was saved successfully."
 IPO_SETUP_SAVE_MESSAGE = "Your IPO Setup & Eligibility information was saved successfully."
 CAPITAL_OWNERSHIP_SAVE_MESSAGE = "Your Capital & Ownership information was saved successfully."
+BUSINESS_OPERATIONS_SAVE_MESSAGE = "Your Business & Operations information was saved successfully."
 COMPANY_INCORPORATION_SLUG = "company-incorporation"
 IPO_SETUP_SLUG = "ipo-setup-eligibility"
 CAPITAL_OWNERSHIP_SLUG = "capital-ownership"
+BUSINESS_OPERATIONS_SLUG = "business-operations"
 
 SECTION_SAVE_TITLES: dict[str, str] = {
     "legal-identity": "Legal Identity saved",
@@ -45,6 +47,23 @@ CAPITAL_OWNERSHIP_SECTION_SAVE_TITLES: dict[str, str] = {
     "outstanding-securities-confirmations": "Outstanding Securities, Transactions & Confirmations saved",
 }
 
+BUSINESS_OPERATIONS_SECTION_SAVE_TITLES: dict[str, str] = {
+    "business-profile-operating-model": "Business Profile & Operating Model saved",
+    "products-services-revenue-mix": "Products, Services & Revenue Mix saved",
+    "customers-sales-distribution-geography": "Customers, Sales, Distribution & Geography saved",
+    "suppliers-procurement-inventory-logistics": (
+        "Suppliers, Procurement, Inventory & Logistics saved"
+    ),
+    "facilities-capacity-operational-process": "Facilities, Capacity & Operational Process saved",
+    "technology-quality-rd-ip": "Technology, Quality, R&D & Intellectual Property saved",
+    "workforce-collaborations-insurance-continuity": (
+        "Workforce, Collaborations, Insurance & Continuity saved"
+    ),
+    "competitive-strengths-strategy-confirmations": (
+        "Competitive Strengths, Strategy, Dependencies & Confirmations saved"
+    ),
+}
+
 
 def build_company_incorporation_target_route(section_id: str) -> str:
     return (
@@ -63,6 +82,13 @@ def build_ipo_setup_target_route(section_id: str) -> str:
 def build_capital_ownership_target_route(section_id: str) -> str:
     return (
         f"/projects/demo/workstreams/{CAPITAL_OWNERSHIP_SLUG}"
+        f"?tab=information&section={section_id}"
+    )
+
+
+def build_business_operations_target_route(section_id: str) -> str:
+    return (
+        f"/projects/demo/workstreams/{BUSINESS_OPERATIONS_SLUG}"
         f"?tab=information&section={section_id}"
     )
 

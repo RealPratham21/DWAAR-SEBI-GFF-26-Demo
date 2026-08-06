@@ -108,6 +108,7 @@ export interface BootstrapWorkspace {
 }
 
 import type { DashboardCompanyIncorporationProgress } from '@/lib/company-incorporation/types';
+import type { DashboardBusinessOperationsProgress } from '@/lib/business-operations/api-types';
 
 export interface DashboardBootstrapResponse {
   user: BootstrapUser;
@@ -120,6 +121,7 @@ export interface DashboardBootstrapResponse {
   onboarding: BootstrapOnboarding;
   workspace: BootstrapWorkspace;
   companyIncorporation: DashboardCompanyIncorporationProgress;
+  businessOperations: DashboardBusinessOperationsProgress;
 }
 
 export interface DashboardBootstrapErrorDetails {
