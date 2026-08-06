@@ -82,5 +82,7 @@ async def test_dashboard_bootstrap_returns_submitted_workspace(auth_client: Asyn
     assert payload["onboarding"]["status"] == "submitted"
     assert payload["companyIncorporation"]["overallStatus"] == "not_started"
     assert payload["companyIncorporation"]["totalSections"] == 6
+    assert payload["businessOperations"]["overallStatus"] == "not_started"
+    assert payload["businessOperations"]["totalSections"] == 8
     assert "submissionConfirmations" not in payload
     assert "draftData" not in payload

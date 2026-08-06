@@ -154,6 +154,9 @@ export default function DashboardPage() {
               companyIncorporationProgress={
                 ws.slug === 'company-incorporation' ? bootstrap.companyIncorporation : undefined
               }
+              businessOperationsProgress={
+                ws.slug === 'business-operations' ? bootstrap.businessOperations : undefined
+              }
             />
           ))}
         </div>

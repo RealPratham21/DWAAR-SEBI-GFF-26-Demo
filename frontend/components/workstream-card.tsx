@@ -2,16 +2,24 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import type { Workstream } from '@/lib/types';
 import type { DashboardCompanyIncorporationProgress } from '@/lib/company-incorporation/types';
+import type { DashboardBusinessOperationsProgress } from '@/lib/business-operations/api-types';
+
+type WorkstreamProgressSummary = {
+  overallStatus: 'not_started' | 'in_progress' | 'complete';
+  sectionsComplete: number;
+  totalSections: number;
+};
 
 interface WorkstreamCardProps {
   workstream: Workstream;
   actionLabel?: 'Start Section' | 'Open Section' | 'Continue' | 'Information complete';
   companyIncorporationProgress?: DashboardCompanyIncorporationProgress;
+  businessOperationsProgress?: DashboardBusinessOperationsProgress;
 }
 
 function resolveActionLabel(
   defaultLabel: WorkstreamCardProps['actionLabel'],
-  progress?: DashboardCompanyIncorporationProgress,
+  progress?: WorkstreamProgressSummary,
 ): string {
   if (!progress) {
     return defaultLabel ?? 'Start Section';
@@ -29,8 +37,10 @@ export function WorkstreamCard({
   workstream,
   actionLabel = 'Start Section',
   companyIncorporationProgress,
+  businessOperationsProgress,
 }: WorkstreamCardProps) {
-  const resolvedActionLabel = resolveActionLabel(actionLabel, companyIncorporationProgress);
+  const progress = companyIncorporationProgress ?? businessOperationsProgress;
+  const resolvedActionLabel = resolveActionLabel(actionLabel, progress);
 
   return (
     <Link href={`/projects/demo/workstreams/${workstream.slug}`} prefetch={false}>
@@ -46,10 +56,10 @@ export function WorkstreamCard({
             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
               {workstream.description}
             </p>
-            {companyIncorporationProgress ? (
+            {progress ? (
               <p className="text-xs text-muted-foreground mt-2">
-                Information: {companyIncorporationProgress.sectionsComplete} of{' '}
-                {companyIncorporationProgress.totalSections} sections complete
+                Information: {progress.sectionsComplete} of {progress.totalSections} sections
+                complete
               </p>
             ) : null}
           </div>

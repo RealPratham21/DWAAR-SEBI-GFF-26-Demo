@@ -8,6 +8,9 @@ from app.core.exceptions import AppException
 from app.models.user import User
 from app.models.user_notification import UserNotification
 from app.modules.notifications.constants import (
+    BUSINESS_OPERATIONS_SAVE_MESSAGE,
+    BUSINESS_OPERATIONS_SECTION_SAVE_TITLES,
+    BUSINESS_OPERATIONS_SLUG,
     CAPITAL_OWNERSHIP_SAVE_MESSAGE,
     CAPITAL_OWNERSHIP_SECTION_SAVE_TITLES,
     CAPITAL_OWNERSHIP_SLUG,
@@ -26,6 +29,7 @@ from app.modules.notifications.constants import (
     WORKSTREAM_SAVE_MESSAGE,
     NotificationErrorCode,
     NotificationType,
+    build_business_operations_target_route,
     build_capital_ownership_target_route,
     build_company_incorporation_documents_route,
     build_company_incorporation_facts_route,
@@ -156,6 +160,36 @@ def create_capital_ownership_save_notification(
         workstream_slug=CAPITAL_OWNERSHIP_SLUG,
         section_id=section_id,
         target_route=build_capital_ownership_target_route(section_id),
+        read_at=None,
+        created_at=saved_at,
+        updated_at=saved_at,
+    )
+    db.add(notification)
+    db.flush()
+    db.refresh(notification)
+    return notification
+
+
+def create_business_operations_save_notification(
+    db: Session,
+    *,
+    user: User,
+    section_id: str,
+    saved_at: datetime,
+) -> UserNotification:
+    title = BUSINESS_OPERATIONS_SECTION_SAVE_TITLES.get(section_id)
+    if title is None:
+        msg = f"Unsupported Business & Operations section: {section_id}"
+        raise ValueError(msg)
+
+    notification = UserNotification(
+        user_id=user.id,
+        notification_type=NotificationType.WORKSTREAM_SAVE,
+        title=title,
+        message=BUSINESS_OPERATIONS_SAVE_MESSAGE,
+        workstream_slug=BUSINESS_OPERATIONS_SLUG,
+        section_id=section_id,
+        target_route=build_business_operations_target_route(section_id),
         read_at=None,
         created_at=saved_at,
         updated_at=saved_at,
