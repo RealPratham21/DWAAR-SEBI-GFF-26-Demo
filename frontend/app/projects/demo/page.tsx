@@ -157,6 +157,9 @@ export default function DashboardPage() {
               businessOperationsProgress={
                 ws.slug === 'business-operations' ? bootstrap.businessOperations : undefined
               }
+              objectsOfIssueProgress={
+                ws.slug === 'objects-of-issue' ? bootstrap.objectsOfIssue : undefined
+              }
             />
           ))}
         </div>

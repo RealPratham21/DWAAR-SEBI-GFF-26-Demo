@@ -14,10 +14,12 @@ WORKSTREAM_SAVE_MESSAGE = "Your Company & Incorporation information was saved su
 IPO_SETUP_SAVE_MESSAGE = "Your IPO Setup & Eligibility information was saved successfully."
 CAPITAL_OWNERSHIP_SAVE_MESSAGE = "Your Capital & Ownership information was saved successfully."
 BUSINESS_OPERATIONS_SAVE_MESSAGE = "Your Business & Operations information was saved successfully."
+OBJECTS_ISSUE_SAVE_MESSAGE = "Your Objects of the Issue information was saved successfully."
 COMPANY_INCORPORATION_SLUG = "company-incorporation"
 IPO_SETUP_SLUG = "ipo-setup-eligibility"
 CAPITAL_OWNERSHIP_SLUG = "capital-ownership"
 BUSINESS_OPERATIONS_SLUG = "business-operations"
+OBJECTS_ISSUE_SLUG = "objects-of-issue"
 
 SECTION_SAVE_TITLES: dict[str, str] = {
     "legal-identity": "Legal Identity saved",
@@ -64,6 +66,22 @@ BUSINESS_OPERATIONS_SECTION_SAVE_TITLES: dict[str, str] = {
     ),
 }
 
+OBJECTS_ISSUE_SECTION_SAVE_TITLES: dict[str, str] = {
+    "proceeds-and-funding-summary": "Proceeds & Funding Summary saved",
+    "objects-register-and-allocation": "Objects Register & Allocation saved",
+    "capital-expenditure-facilities-and-expansion": (
+        "Capital Expenditure, Facilities & Expansion saved"
+    ),
+    "working-capital-and-borrowing-repayment": "Working Capital & Borrowing Repayment saved",
+    "acquisitions-subsidiaries-jvs-and-investments": (
+        "Acquisitions, Subsidiaries, JVs & Investments saved"
+    ),
+    "means-of-finance-and-deployment-schedule": "Means of Finance & Deployment Schedule saved",
+    "expenses-gcp-monitoring-and-confirmations": (
+        "Expenses, GCP, Monitoring & Confirmations saved"
+    ),
+}
+
 
 def build_company_incorporation_target_route(section_id: str) -> str:
     return (
@@ -89,6 +107,13 @@ def build_capital_ownership_target_route(section_id: str) -> str:
 def build_business_operations_target_route(section_id: str) -> str:
     return (
         f"/projects/demo/workstreams/{BUSINESS_OPERATIONS_SLUG}"
+        f"?tab=information&section={section_id}"
+    )
+
+
+def build_objects_issue_target_route(section_id: str) -> str:
+    return (
+        f"/projects/demo/workstreams/{OBJECTS_ISSUE_SLUG}"
         f"?tab=information&section={section_id}"
     )
 

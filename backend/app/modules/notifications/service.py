@@ -23,6 +23,9 @@ from app.modules.notifications.constants import (
     IPO_SETUP_SECTION_SAVE_TITLES,
     IPO_SETUP_SLUG,
     MAX_NOTIFICATION_LIMIT,
+    OBJECTS_ISSUE_SAVE_MESSAGE,
+    OBJECTS_ISSUE_SECTION_SAVE_TITLES,
+    OBJECTS_ISSUE_SLUG,
     SECTION_SAVE_TITLES,
     STRUCTURED_EXTRACTION_FAILED_PREFIX,
     STRUCTURED_ISSUE_TITLE_PREFIX,
@@ -36,6 +39,7 @@ from app.modules.notifications.constants import (
     build_company_incorporation_questions_route,
     build_company_incorporation_target_route,
     build_ipo_setup_target_route,
+    build_objects_issue_target_route,
 )
 from app.modules.notifications.schemas import (
     MarkAllReadResponse,
@@ -190,6 +194,36 @@ def create_business_operations_save_notification(
         workstream_slug=BUSINESS_OPERATIONS_SLUG,
         section_id=section_id,
         target_route=build_business_operations_target_route(section_id),
+        read_at=None,
+        created_at=saved_at,
+        updated_at=saved_at,
+    )
+    db.add(notification)
+    db.flush()
+    db.refresh(notification)
+    return notification
+
+
+def create_objects_issue_save_notification(
+    db: Session,
+    *,
+    user: User,
+    section_id: str,
+    saved_at: datetime,
+) -> UserNotification:
+    title = OBJECTS_ISSUE_SECTION_SAVE_TITLES.get(section_id)
+    if title is None:
+        msg = f"Unsupported Objects of the Issue section: {section_id}"
+        raise ValueError(msg)
+
+    notification = UserNotification(
+        user_id=user.id,
+        notification_type=NotificationType.WORKSTREAM_SAVE,
+        title=title,
+        message=OBJECTS_ISSUE_SAVE_MESSAGE,
+        workstream_slug=OBJECTS_ISSUE_SLUG,
+        section_id=section_id,
+        target_route=build_objects_issue_target_route(section_id),
         read_at=None,
         created_at=saved_at,
         updated_at=saved_at,

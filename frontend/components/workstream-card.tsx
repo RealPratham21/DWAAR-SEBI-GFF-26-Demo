@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import type { Workstream } from '@/lib/types';
 import type { DashboardCompanyIncorporationProgress } from '@/lib/company-incorporation/types';
 import type { DashboardBusinessOperationsProgress } from '@/lib/business-operations/api-types';
+import type { DashboardObjectsIssueProgress } from '@/lib/objects-of-issue/api-types';
 
 type WorkstreamProgressSummary = {
   overallStatus: 'not_started' | 'in_progress' | 'complete';
@@ -15,6 +16,7 @@ interface WorkstreamCardProps {
   actionLabel?: 'Start Section' | 'Open Section' | 'Continue' | 'Information complete';
   companyIncorporationProgress?: DashboardCompanyIncorporationProgress;
   businessOperationsProgress?: DashboardBusinessOperationsProgress;
+  objectsOfIssueProgress?: DashboardObjectsIssueProgress;
 }
 
 function resolveActionLabel(
@@ -38,8 +40,10 @@ export function WorkstreamCard({
   actionLabel = 'Start Section',
   companyIncorporationProgress,
   businessOperationsProgress,
+  objectsOfIssueProgress,
 }: WorkstreamCardProps) {
-  const progress = companyIncorporationProgress ?? businessOperationsProgress;
+  const progress =
+    companyIncorporationProgress ?? businessOperationsProgress ?? objectsOfIssueProgress;
   const resolvedActionLabel = resolveActionLabel(actionLabel, progress);
 
   return (
