@@ -73,11 +73,12 @@ def db_session(engine) -> Generator[Session, None, None]:
                 "structured_extraction_runs, document_pages, document_processing_runs, "
                 "document_versions, documents, user_notifications, "
                 "ipo_setup_eligibility_workspaces, "
+                "capital_ownership_workspaces, "
                 "company_incorporation_workspaces, "
                 "refresh_sessions, onboarding_applications, users RESTART IDENTITY CASCADE"
             )
         )
-    session.close()
+        session.close()
 
 
 def make_user(*, email: str = "user@example.com") -> User:
@@ -140,6 +141,7 @@ def truncate_auth_tables(engine) -> None:
                 "structured_extraction_runs, document_pages, document_processing_runs, "
                 "document_versions, documents, user_notifications, "
                 "ipo_setup_eligibility_workspaces, "
+                "capital_ownership_workspaces, "
                 "company_incorporation_workspaces, "
                 "refresh_sessions, onboarding_applications, users RESTART IDENTITY CASCADE"
             )

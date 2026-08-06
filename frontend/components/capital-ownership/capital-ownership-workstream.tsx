@@ -1,39 +1,50 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { CapitalOwnershipAssessmentTab } from '@/components/capital-ownership/assessment-tab';
+import { CapitalOwnershipInformationTab } from '@/components/capital-ownership/information-tab';
+import { CapitalOwnershipOverviewTab } from '@/components/capital-ownership/overview-tab';
 import { PageHeader } from '@/components/page-header';
-import { IpoSetupAssessmentTab } from '@/components/ipo-setup/assessment-tab';
-import { IpoSetupInformationTab } from '@/components/ipo-setup/information-tab';
-import { IpoSetupOverviewTab } from '@/components/ipo-setup/overview-tab';
-import { IpoSetupProvider, useIpoSetup } from '@/lib/ipo-setup/context';
-import { useIpoSetupUrlState } from '@/lib/ipo-setup/hooks/use-ipo-setup-url-state';
-import { IPO_SETUP_TABS, type IpoSetupTabId } from '@/lib/ipo-setup/options';
+import { CapitalOwnershipProvider, useCapitalOwnership } from '@/lib/capital-ownership/context';
+import { useCapitalOwnershipUrlState } from '@/lib/capital-ownership/hooks/use-capital-ownership-url-state';
+import {
+  CAPITAL_OWNERSHIP_TABS,
+  type CapitalOwnershipTabId,
+} from '@/lib/capital-ownership/options';
+import type { CapitalOwnershipSectionId } from '@/lib/capital-ownership/types';
 import type { Workstream } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
-interface IpoSetupWorkstreamProps {
+interface CapitalOwnershipWorkstreamProps {
   workstream: Workstream;
   initialTab?: string;
   initialSection?: string;
 }
 
-function IpoSetupWorkstreamInner({
+function CapitalOwnershipWorkstreamInner({
   workstream,
   initialTab,
   initialSection,
-}: IpoSetupWorkstreamProps) {
-  const url = useIpoSetupUrlState({ tab: initialTab, section: initialSection });
-  const { confirmLeave, isLoading, loadError } = useIpoSetup();
+}: CapitalOwnershipWorkstreamProps) {
+  const url = useCapitalOwnershipUrlState({ tab: initialTab, section: initialSection });
+  const { confirmLeave, isLoading, loadError } = useCapitalOwnership();
   const mainScrollRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     mainScrollRef.current = document.querySelector('main');
   }, []);
 
-  const handleTabChange = (tabId: IpoSetupTabId) => {
+  const handleTabChange = (tabId: CapitalOwnershipTabId) => {
     if (tabId === url.activeTab) return;
     if (!confirmLeave()) return;
     url.setActiveTab(tabId);
+    mainScrollRef.current?.scrollTo({ top: 0 });
+  };
+
+  const handleContinueToInformation = (section?: CapitalOwnershipSectionId) => {
+    if (!confirmLeave()) return;
+    if (section) url.setActiveSection(section);
+    else url.setActiveTab('information');
     mainScrollRef.current?.scrollTo({ top: 0 });
   };
 
@@ -53,9 +64,9 @@ function IpoSetupWorkstreamInner({
         <div
           className="flex gap-1 overflow-x-auto"
           role="tablist"
-          aria-label="IPO Setup & Eligibility tabs"
+          aria-label="Capital & Ownership tabs"
         >
-          {IPO_SETUP_TABS.map((tab) => (
+          {CAPITAL_OWNERSHIP_TABS.map((tab) => (
             <button
               key={tab.id}
               type="button"
@@ -63,7 +74,7 @@ function IpoSetupWorkstreamInner({
               aria-selected={url.activeTab === tab.id}
               onClick={() => handleTabChange(tab.id)}
               className={cn(
-                'px-4 py-3 border-b-2 whitespace-nowrap font-medium text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 url.activeTab === tab.id
                   ? 'border-accent text-accent'
                   : 'border-transparent text-muted-foreground hover:text-foreground',
@@ -86,35 +97,35 @@ function IpoSetupWorkstreamInner({
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground" aria-live="polite">
-          Loading IPO Setup & Eligibility…
+          Loading Capital & Ownership…
         </p>
       ) : (
         <>
           {url.activeTab === 'overview' ? (
-            <IpoSetupOverviewTab
-              onContinueToInformation={() => handleTabChange('information')}
-              onOpenAssessment={() => handleTabChange('eligibility-assessment')}
+            <CapitalOwnershipOverviewTab
+              onContinueToInformation={handleContinueToInformation}
+              onOpenAssessment={() => handleTabChange('capital-assessment')}
             />
           ) : null}
 
           {url.activeTab === 'information' ? (
-            <IpoSetupInformationTab
+            <CapitalOwnershipInformationTab
               activeSection={url.activeSection}
               onSectionChange={url.setActiveSection}
             />
           ) : null}
 
-          {url.activeTab === 'eligibility-assessment' ? <IpoSetupAssessmentTab /> : null}
+          {url.activeTab === 'capital-assessment' ? <CapitalOwnershipAssessmentTab /> : null}
         </>
       )}
     </div>
   );
 }
 
-export function IpoSetupEligibilityWorkstream(props: IpoSetupWorkstreamProps) {
+export function CapitalOwnershipWorkstream(props: CapitalOwnershipWorkstreamProps) {
   return (
-    <IpoSetupProvider>
-      <IpoSetupWorkstreamInner {...props} />
-    </IpoSetupProvider>
+    <CapitalOwnershipProvider>
+      <CapitalOwnershipWorkstreamInner {...props} />
+    </CapitalOwnershipProvider>
   );
 }
