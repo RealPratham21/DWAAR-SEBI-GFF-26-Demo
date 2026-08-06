@@ -6,6 +6,7 @@ import { BusinessOperationsWorkstream } from '@/components/business-operations/b
 import { CapitalOwnershipWorkstream } from '@/components/capital-ownership/capital-ownership-workstream';
 import { CompanyIncorporationWorkstream } from '@/components/company-incorporation/company-incorporation-workstream';
 import { IpoSetupEligibilityWorkstream } from '@/components/ipo-setup/ipo-setup-workstream';
+import { ObjectsOfIssueWorkstream } from '@/components/objects-of-issue/objects-of-issue-workstream';
 import { getWorkstreamBySlug } from '@/lib/workstreams-config';
 
 interface WorkstreamDetailPageProps {
@@ -115,6 +116,20 @@ export default async function WorkstreamDetailPage({
           initialTab={tab}
           initialSection={section}
         />
+      </Suspense>
+    );
+  }
+
+  if (workstream.slug === 'objects-of-issue') {
+    return (
+      <Suspense
+        fallback={
+          <div className="py-8 text-sm text-muted-foreground" aria-live="polite">
+            Loading Objects of the Issue…
+          </div>
+        }
+      >
+        <ObjectsOfIssueWorkstream workstream={workstream} initialTab={tab} initialSection={section} />
       </Suspense>
     );
   }

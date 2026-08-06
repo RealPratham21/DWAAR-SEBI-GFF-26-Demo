@@ -3,6 +3,7 @@ from typing import Any
 
 from app.core.exceptions import AppException
 from app.models.business_operations_workspace import BusinessOperationsWorkspace
+from app.models.objects_issue_workspace import ObjectsIssueWorkspace
 from app.models.company_incorporation_workspace import CompanyIncorporationWorkspace
 from app.models.enums import OnboardingStatus
 from app.models.onboarding_application import OnboardingApplication
@@ -13,6 +14,8 @@ from app.modules.business_operations.progress import (
     calculate_progress as calculate_business_operations_progress,
 )
 from app.modules.business_operations.schemas import DashboardBusinessOperationsProgress
+from app.modules.objects_issue.progress import calculate_progress as calculate_objects_issue_progress
+from app.modules.objects_issue.schemas import DashboardObjectsIssueProgress
 from app.modules.company_incorporation.progress import calculate_progress
 from app.modules.dashboard.constants import DashboardErrorCode
 from app.modules.dashboard.schemas import (
@@ -133,6 +136,29 @@ def get_dashboard_business_operations_progress(
     }
 
 
+def get_dashboard_objects_issue_progress(
+    db: Session,
+    user_id: uuid.UUID,
+) -> dict[str, Any]:
+    workspace = db.scalar(
+        select(ObjectsIssueWorkspace).where(
+            ObjectsIssueWorkspace.user_id == user_id,
+        ),
+    )
+    if workspace is None:
+        return {
+            "overallStatus": "not_started",
+            "sectionsComplete": 0,
+            "totalSections": 7,
+        }
+    progress = calculate_objects_issue_progress(workspace.payload)
+    return {
+        "overallStatus": progress["overallStatus"],
+        "sectionsComplete": progress["sectionsComplete"],
+        "totalSections": progress["totalSections"],
+    }
+
+
 def build_dashboard_bootstrap(db: Session, user: User) -> DashboardBootstrapResponse:
     application = get_submitted_sme_application(db, user.id)
     draft_data = dict(application.draft_data or {})
@@ -170,6 +196,7 @@ def build_dashboard_bootstrap(db: Session, user: User) -> DashboardBootstrapResp
 
     company_incorporation_progress = get_dashboard_company_incorporation_progress(db, user.id)
     business_operations_progress = get_dashboard_business_operations_progress(db, user.id)
+    objects_issue_progress = get_dashboard_objects_issue_progress(db, user.id)
 
     return DashboardBootstrapResponse(
         user=BootstrapUserResponse(
@@ -265,5 +292,8 @@ def build_dashboard_bootstrap(db: Session, user: User) -> DashboardBootstrapResp
         ),
         business_operations=DashboardBusinessOperationsProgress.model_validate(
             business_operations_progress,
+        ),
+        objects_of_issue=DashboardObjectsIssueProgress.model_validate(
+            objects_issue_progress,
         ),
     )

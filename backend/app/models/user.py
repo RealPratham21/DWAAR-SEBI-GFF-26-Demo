@@ -50,6 +50,11 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         cascade="all, delete-orphan",
         uselist=False,
     )
+    objects_issue_workspace: Mapped["ObjectsIssueWorkspace | None"] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
     notifications: Mapped[list["UserNotification"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
@@ -58,6 +63,7 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
 if TYPE_CHECKING:
     from app.models.business_operations_workspace import BusinessOperationsWorkspace
+    from app.models.objects_issue_workspace import ObjectsIssueWorkspace
     from app.models.capital_ownership_workspace import CapitalOwnershipWorkspace
     from app.models.company_incorporation_workspace import CompanyIncorporationWorkspace
     from app.models.ipo_setup_eligibility_workspace import IpoSetupEligibilityWorkspace
