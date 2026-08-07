@@ -163,6 +163,9 @@ export default function DashboardPage() {
               financialsKpisProgress={
                 ws.slug === 'financials-kpis' ? bootstrap.financialsKpis : undefined
               }
+              managementGovernanceProgress={
+                ws.slug === 'management-governance' ? bootstrap.managementGovernance : undefined
+              }
             />
           ))}
         </div>

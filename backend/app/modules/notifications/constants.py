@@ -16,12 +16,16 @@ CAPITAL_OWNERSHIP_SAVE_MESSAGE = "Your Capital & Ownership information was saved
 BUSINESS_OPERATIONS_SAVE_MESSAGE = "Your Business & Operations information was saved successfully."
 OBJECTS_ISSUE_SAVE_MESSAGE = "Your Objects of the Issue information was saved successfully."
 FINANCIALS_KPIS_SAVE_MESSAGE = "Your Financials & KPIs information was saved successfully."
+MANAGEMENT_GOVERNANCE_SAVE_MESSAGE = (
+    "Your Management & Governance information was saved successfully."
+)
 COMPANY_INCORPORATION_SLUG = "company-incorporation"
 IPO_SETUP_SLUG = "ipo-setup-eligibility"
 CAPITAL_OWNERSHIP_SLUG = "capital-ownership"
 BUSINESS_OPERATIONS_SLUG = "business-operations"
 OBJECTS_ISSUE_SLUG = "objects-of-issue"
 FINANCIALS_KPIS_SLUG = "financials-kpis"
+MANAGEMENT_GOVERNANCE_SLUG = "management-governance"
 
 SECTION_SAVE_TITLES: dict[str, str] = {
     "legal-identity": "Legal Identity saved",
@@ -105,6 +109,29 @@ FINANCIALS_KPIS_SECTION_SAVE_TITLES: dict[str, str] = {
     ),
 }
 
+MANAGEMENT_GOVERNANCE_SECTION_SAVE_TITLES: dict[str, str] = {
+    "board-structure-and-ipo-governance-readiness": (
+        "Board Structure & IPO Governance Readiness saved"
+    ),
+    "directors-profiles-appointments-and-eligibility": (
+        "Directors — Profiles, Appointments & Eligibility saved"
+    ),
+    "kmp-senior-management-and-organisation-structure": (
+        "KMP, Senior Management & Organisation Structure saved"
+    ),
+    "board-committees-and-governance-bodies": "Board Committees & Governance Bodies saved",
+    "remuneration-service-contracts-esops-and-benefits": (
+        "Remuneration, Service Contracts, ESOPs & Benefits saved"
+    ),
+    "interests-conflicts-and-management-relationships": (
+        "Interests, Conflicts & Management Relationships saved"
+    ),
+    "changes-continuity-and-succession": "Changes, Continuity & Succession saved",
+    "governance-policies-rpt-oversight-and-confirmations": (
+        "Governance Policies, RPT Oversight & Confirmations saved"
+    ),
+}
+
 
 def build_company_incorporation_target_route(section_id: str) -> str:
     return (
@@ -144,6 +171,13 @@ def build_objects_issue_target_route(section_id: str) -> str:
 def build_financials_kpis_target_route(section_id: str) -> str:
     return (
         f"/projects/demo/workstreams/{FINANCIALS_KPIS_SLUG}"
+        f"?tab=information&section={section_id}"
+    )
+
+
+def build_management_governance_target_route(section_id: str) -> str:
+    return (
+        f"/projects/demo/workstreams/{MANAGEMENT_GOVERNANCE_SLUG}"
         f"?tab=information&section={section_id}"
     )
 

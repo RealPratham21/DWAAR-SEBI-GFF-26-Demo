@@ -7,6 +7,7 @@ import { CapitalOwnershipWorkstream } from '@/components/capital-ownership/capit
 import { CompanyIncorporationWorkstream } from '@/components/company-incorporation/company-incorporation-workstream';
 import { IpoSetupEligibilityWorkstream } from '@/components/ipo-setup/ipo-setup-workstream';
 import { FinancialsKpisWorkstream } from '@/components/financials-kpis/financials-kpis-workstream';
+import { ManagementGovernanceWorkstream } from '@/components/management-governance/management-governance-workstream';
 import { ObjectsOfIssueWorkstream } from '@/components/objects-of-issue/objects-of-issue-workstream';
 import { getWorkstreamBySlug } from '@/lib/workstreams-config';
 
@@ -131,6 +132,24 @@ export default async function WorkstreamDetailPage({
         }
       >
         <FinancialsKpisWorkstream
+          workstream={workstream}
+          initialTab={tab}
+          initialSection={section}
+        />
+      </Suspense>
+    );
+  }
+
+  if (workstream.slug === 'management-governance') {
+    return (
+      <Suspense
+        fallback={
+          <div className="py-8 text-sm text-muted-foreground" aria-live="polite">
+            Loading Management & Governance…
+          </div>
+        }
+      >
+        <ManagementGovernanceWorkstream
           workstream={workstream}
           initialTab={tab}
           initialSection={section}
