@@ -8,7 +8,7 @@ def test_alembic_migration_reaches_head(engine, database_url: str) -> None:
     with engine.connect() as connection:
         version = connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
 
-    assert version == "017_borrowings_assets"
+    assert version == "018_litigation_approvals"
 
     inspector = inspect(engine)
     tables = set(inspector.get_table_names())
@@ -33,3 +33,4 @@ def test_alembic_migration_reaches_head(engine, database_url: str) -> None:
     assert "management_governance_workspaces" in tables
     assert "industry_market_workspaces" in tables
     assert "group_entities_related_parties_workspaces" in tables
+    assert "litigation_approvals_compliance_workspaces" in tables

@@ -5,6 +5,7 @@ from app.core.exceptions import AppException
 from app.models.business_operations_workspace import BusinessOperationsWorkspace
 from app.models.financials_kpis_workspace import FinancialsKpisWorkspace
 from app.models.borrowings_assets_contracts_workspace import BorrowingsAssetsContractsWorkspace
+from app.models.litigation_approvals_compliance_workspace import LitigationApprovalsComplianceWorkspace
 from app.models.group_entities_related_parties_workspace import GroupEntitiesRelatedPartiesWorkspace
 from app.models.industry_market_workspace import IndustryMarketWorkspace
 from app.models.management_governance_workspace import ManagementGovernanceWorkspace
@@ -25,6 +26,12 @@ from app.modules.financials_kpis.progress import (
 from app.modules.financials_kpis.schemas import DashboardFinancialsKpisProgress
 from app.modules.borrowings_assets_contracts.progress import calculate_borrowings_assets_contracts_progress
 from app.modules.borrowings_assets_contracts.schemas import DashboardBorrowingsAssetsContractsProgress
+from app.modules.litigation_approvals_compliance.progress import (
+    calculate_litigation_approvals_compliance_progress,
+)
+from app.modules.litigation_approvals_compliance.schemas import (
+    DashboardLitigationApprovalsComplianceProgress,
+)
 from app.modules.group_entities_related_parties.progress import calculate_group_entities_progress
 from app.modules.group_entities_related_parties.schemas import DashboardGroupEntitiesProgress
 from app.modules.industry_market.progress import calculate_industry_market_progress
@@ -270,6 +277,29 @@ def get_dashboard_borrowings_assets_contracts_progress(
     }
 
 
+def get_dashboard_litigation_approvals_compliance_progress(
+    db: Session,
+    user_id: uuid.UUID,
+) -> dict[str, Any]:
+    workspace = db.scalar(
+        select(LitigationApprovalsComplianceWorkspace).where(
+            LitigationApprovalsComplianceWorkspace.user_id == user_id,
+        ),
+    )
+    if workspace is None:
+        return {
+            "overallStatus": "not_started",
+            "sectionsComplete": 0,
+            "totalSections": 8,
+        }
+    progress = calculate_litigation_approvals_compliance_progress(workspace.payload)
+    return {
+        "overallStatus": progress["overallStatus"],
+        "sectionsComplete": progress["sectionsComplete"],
+        "totalSections": progress["totalSections"],
+    }
+
+
 def get_dashboard_industry_market_progress(
     db: Session,
     user_id: uuid.UUID,
@@ -336,6 +366,10 @@ def build_dashboard_bootstrap(db: Session, user: User) -> DashboardBootstrapResp
     industry_market_progress = get_dashboard_industry_market_progress(db, user.id)
     group_entities_progress = get_dashboard_group_entities_related_parties_progress(db, user.id)
     borrowings_assets_progress = get_dashboard_borrowings_assets_contracts_progress(db, user.id)
+    litigation_approvals_progress = get_dashboard_litigation_approvals_compliance_progress(
+        db,
+        user.id,
+    )
 
     return DashboardBootstrapResponse(
         user=BootstrapUserResponse(
@@ -449,5 +483,8 @@ def build_dashboard_bootstrap(db: Session, user: User) -> DashboardBootstrapResp
         ),
         borrowings_assets_contracts=DashboardBorrowingsAssetsContractsProgress.model_validate(
             borrowings_assets_progress,
+        ),
+        litigation_approvals_compliance=DashboardLitigationApprovalsComplianceProgress.model_validate(
+            litigation_approvals_progress,
         ),
     )
