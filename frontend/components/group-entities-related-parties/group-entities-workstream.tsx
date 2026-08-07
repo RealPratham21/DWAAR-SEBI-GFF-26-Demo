@@ -39,13 +39,12 @@ function GroupEntitiesWorkstreamInner({
 
   const handleTabChange = (tabId: GroupEntitiesTabId) => {
     if (tabId === url.activeTab) return;
-    if (!confirmLeave()) return;
+    if (url.activeTab === 'information' && !confirmLeave()) return;
     url.setActiveTab(tabId);
     mainScrollRef.current?.scrollTo({ top: 0 });
   };
 
   const handleContinueToInformation = (section?: GroupEntitiesSectionId) => {
-    if (!confirmLeave()) return;
     if (section) url.setActiveSection(section);
     else url.setActiveTab('information');
     mainScrollRef.current?.scrollTo({ top: 0 });

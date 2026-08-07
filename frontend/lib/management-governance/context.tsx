@@ -229,12 +229,13 @@ export function ManagementGovernanceProvider({ children }: { children: ReactNode
   }, [refreshDerived]);
 
   const dirtySections = useMemo(() => {
+    if (isLoading) return new Set<ManagementGovernanceSectionId>();
     const next = new Set<ManagementGovernanceSectionId>();
     for (const [sectionId, sectionKey] of SECTION_ENTRIES) {
       if (!isDeepEqual(payload[sectionKey], baseline[sectionKey])) next.add(sectionId);
     }
     return next;
-  }, [baseline, payload]);
+  }, [baseline, isLoading, payload]);
 
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -284,11 +285,12 @@ export function ManagementGovernanceProvider({ children }: { children: ReactNode
 
   const confirmLeave = useCallback(
     (sectionId?: ManagementGovernanceSectionId) => {
+      if (isLoading) return true;
       const hasChanges = sectionId ? dirtySections.has(sectionId) : dirtySections.size > 0;
       if (!hasChanges) return true;
       return window.confirm('You have unsaved section changes. Leave without saving?');
     },
-    [dirtySections],
+    [dirtySections, isLoading],
   );
 
   const clearSaveNotice = useCallback(() => setSaveNotice(null), []);

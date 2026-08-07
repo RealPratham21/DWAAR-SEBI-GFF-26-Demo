@@ -219,12 +219,13 @@ export function CapitalOwnershipProvider({ children }: { children: ReactNode }) 
   }, [refreshDerived]);
 
   const dirtySections = useMemo(() => {
+    if (isLoading) return new Set<CapitalOwnershipSectionId>();
     const next = new Set<CapitalOwnershipSectionId>();
     for (const [sectionId, sectionKey] of SECTION_ENTRIES) {
       if (!isDeepEqual(payload[sectionKey], baseline[sectionKey])) next.add(sectionId);
     }
     return next;
-  }, [baseline, payload]);
+  }, [baseline, isLoading, payload]);
 
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -341,11 +342,12 @@ export function CapitalOwnershipProvider({ children }: { children: ReactNode }) 
 
   const confirmLeave = useCallback(
     (sectionId?: CapitalOwnershipSectionId) => {
+      if (isLoading) return true;
       const hasChanges = sectionId ? dirtySections.has(sectionId) : dirtySections.size > 0;
       if (!hasChanges) return true;
       return window.confirm('You have unsaved section changes. Leave without saving?');
     },
-    [dirtySections],
+    [dirtySections, isLoading],
   );
 
   const value = useMemo<CapitalOwnershipContextValue>(

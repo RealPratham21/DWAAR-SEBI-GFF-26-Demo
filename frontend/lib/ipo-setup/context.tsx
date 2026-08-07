@@ -187,12 +187,13 @@ export function IpoSetupProvider({ children }: { children: ReactNode }) {
   }, [refreshDerived]);
 
   const dirtySections = useMemo(() => {
+    if (isLoading) return new Set<IpoSetupSectionId>();
     const next = new Set<IpoSetupSectionId>();
     for (const [sectionId, key] of SECTION_ENTRIES) {
       if (!isDeepEqual(payload[key], baseline[key])) next.add(sectionId);
     }
     return next;
-  }, [baseline, payload]);
+  }, [baseline, isLoading, payload]);
 
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -300,11 +301,12 @@ export function IpoSetupProvider({ children }: { children: ReactNode }) {
 
   const confirmLeave = useCallback(
     (sectionId?: IpoSetupSectionId) => {
+      if (isLoading) return true;
       const hasChanges = sectionId ? dirtySections.has(sectionId) : dirtySections.size > 0;
       if (!hasChanges) return true;
       return window.confirm('You have unsaved section changes. Leave without saving?');
     },
-    [dirtySections],
+    [dirtySections, isLoading],
   );
 
   const value = useMemo<IpoSetupContextValue>(

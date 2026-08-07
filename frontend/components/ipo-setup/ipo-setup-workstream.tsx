@@ -32,7 +32,7 @@ function IpoSetupWorkstreamInner({
 
   const handleTabChange = (tabId: IpoSetupTabId) => {
     if (tabId === url.activeTab) return;
-    if (!confirmLeave()) return;
+    if (url.activeTab === 'information' && !confirmLeave()) return;
     url.setActiveTab(tabId);
     mainScrollRef.current?.scrollTo({ top: 0 });
   };

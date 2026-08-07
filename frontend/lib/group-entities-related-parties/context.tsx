@@ -206,12 +206,13 @@ export function GroupEntitiesProvider({ children }: { children: ReactNode }) {
   }, [refreshDerived]);
 
   const dirtySections = useMemo(() => {
+    if (isLoading) return new Set<GroupEntitiesSectionId>();
     const next = new Set<GroupEntitiesSectionId>();
     for (const [sectionId, sectionKey] of SECTION_ENTRIES) {
       if (!isDeepEqual(payload[sectionKey], baseline[sectionKey])) next.add(sectionId);
     }
     return next;
-  }, [baseline, payload]);
+  }, [baseline, isLoading, payload]);
 
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -261,11 +262,12 @@ export function GroupEntitiesProvider({ children }: { children: ReactNode }) {
 
   const confirmLeave = useCallback(
     (sectionId?: GroupEntitiesSectionId) => {
+      if (isLoading) return true;
       const hasChanges = sectionId ? dirtySections.has(sectionId) : dirtySections.size > 0;
       if (!hasChanges) return true;
       return window.confirm('You have unsaved section changes. Leave without saving?');
     },
-    [dirtySections],
+    [dirtySections, isLoading],
   );
 
   const saveActiveSection = useCallback(
