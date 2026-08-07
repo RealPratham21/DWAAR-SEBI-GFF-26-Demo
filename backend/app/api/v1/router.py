@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.modules.auth.router import router as auth_router
 from app.modules.business_operations.router import router as business_operations_router
 from app.modules.financials_kpis.router import router as financials_kpis_router
+from app.modules.borrowings_assets_contracts.router import router as borrowings_assets_contracts_router
 from app.modules.group_entities_related_parties.router import (
     router as group_entities_related_parties_router,
 )
@@ -59,6 +60,10 @@ api_v1_router.include_router(industry_market_router, tags=["industry-market"])
 api_v1_router.include_router(
     group_entities_related_parties_router,
     tags=["group-entities-related-parties"],
+)
+api_v1_router.include_router(
+    borrowings_assets_contracts_router,
+    tags=["borrowings-assets-contracts"],
 )
 api_v1_router.include_router(drhp_router, tags=["drhp"])
 api_v1_router.include_router(notifications_router, tags=["notifications"])
