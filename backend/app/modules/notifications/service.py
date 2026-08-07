@@ -23,6 +23,9 @@ from app.modules.notifications.constants import (
     IPO_SETUP_SECTION_SAVE_TITLES,
     IPO_SETUP_SLUG,
     MAX_NOTIFICATION_LIMIT,
+    FINANCIALS_KPIS_SAVE_MESSAGE,
+    FINANCIALS_KPIS_SECTION_SAVE_TITLES,
+    FINANCIALS_KPIS_SLUG,
     OBJECTS_ISSUE_SAVE_MESSAGE,
     OBJECTS_ISSUE_SECTION_SAVE_TITLES,
     OBJECTS_ISSUE_SLUG,
@@ -38,6 +41,7 @@ from app.modules.notifications.constants import (
     build_company_incorporation_facts_route,
     build_company_incorporation_questions_route,
     build_company_incorporation_target_route,
+    build_financials_kpis_target_route,
     build_ipo_setup_target_route,
     build_objects_issue_target_route,
 )
@@ -224,6 +228,36 @@ def create_objects_issue_save_notification(
         workstream_slug=OBJECTS_ISSUE_SLUG,
         section_id=section_id,
         target_route=build_objects_issue_target_route(section_id),
+        read_at=None,
+        created_at=saved_at,
+        updated_at=saved_at,
+    )
+    db.add(notification)
+    db.flush()
+    db.refresh(notification)
+    return notification
+
+
+def create_financials_kpis_save_notification(
+    db: Session,
+    *,
+    user: User,
+    section_id: str,
+    saved_at: datetime,
+) -> UserNotification:
+    title = FINANCIALS_KPIS_SECTION_SAVE_TITLES.get(section_id)
+    if title is None:
+        msg = f"Unsupported Financials & KPIs section: {section_id}"
+        raise ValueError(msg)
+
+    notification = UserNotification(
+        user_id=user.id,
+        notification_type=NotificationType.WORKSTREAM_SAVE,
+        title=title,
+        message=FINANCIALS_KPIS_SAVE_MESSAGE,
+        workstream_slug=FINANCIALS_KPIS_SLUG,
+        section_id=section_id,
+        target_route=build_financials_kpis_target_route(section_id),
         read_at=None,
         created_at=saved_at,
         updated_at=saved_at,

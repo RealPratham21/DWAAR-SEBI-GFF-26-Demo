@@ -270,16 +270,16 @@ describe('Objects of the Issue workstream UI (O2 API-backed)', () => {
     expect((notes as HTMLTextAreaElement).value).toBe('');
   });
 
-  it('prompts before leaving a dirty section', async () => {
+  it('navigates between sections without prompting when a draft is dirty', async () => {
     const user = userEvent.setup();
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const confirmSpy = vi.spyOn(window, 'confirm');
     await renderLoaded();
 
     await user.type(screen.getByLabelText(/^Notes$/i), 'Changed');
     await user.click(
       within(sectionNav()).getByRole('button', { name: /Objects Register & Allocation/i }),
     );
-    expect(confirmSpy).toHaveBeenCalled();
+    expect(confirmSpy).not.toHaveBeenCalled();
     confirmSpy.mockRestore();
   });
 });

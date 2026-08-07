@@ -6,6 +6,7 @@ import { BusinessOperationsWorkstream } from '@/components/business-operations/b
 import { CapitalOwnershipWorkstream } from '@/components/capital-ownership/capital-ownership-workstream';
 import { CompanyIncorporationWorkstream } from '@/components/company-incorporation/company-incorporation-workstream';
 import { IpoSetupEligibilityWorkstream } from '@/components/ipo-setup/ipo-setup-workstream';
+import { FinancialsKpisWorkstream } from '@/components/financials-kpis/financials-kpis-workstream';
 import { ObjectsOfIssueWorkstream } from '@/components/objects-of-issue/objects-of-issue-workstream';
 import { getWorkstreamBySlug } from '@/lib/workstreams-config';
 
@@ -112,6 +113,24 @@ export default async function WorkstreamDetailPage({
         }
       >
         <BusinessOperationsWorkstream
+          workstream={workstream}
+          initialTab={tab}
+          initialSection={section}
+        />
+      </Suspense>
+    );
+  }
+
+  if (workstream.slug === 'financials-kpis') {
+    return (
+      <Suspense
+        fallback={
+          <div className="py-8 text-sm text-muted-foreground" aria-live="polite">
+            Loading Financials & KPIs…
+          </div>
+        }
+      >
+        <FinancialsKpisWorkstream
           workstream={workstream}
           initialTab={tab}
           initialSection={section}

@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.modules.auth.router import router as auth_router
 from app.modules.business_operations.router import router as business_operations_router
+from app.modules.financials_kpis.router import router as financials_kpis_router
 from app.modules.objects_issue.router import router as objects_issue_router
 from app.modules.capital_ownership.router import router as capital_ownership_router
 from app.modules.company_incorporation.document_processing.router import (
@@ -47,6 +48,7 @@ api_v1_router.include_router(ipo_setup_eligibility_router, tags=["ipo-setup-elig
 api_v1_router.include_router(capital_ownership_router, tags=["capital-ownership"])
 api_v1_router.include_router(business_operations_router, tags=["business-operations"])
 api_v1_router.include_router(objects_issue_router, tags=["objects-issue"])
+api_v1_router.include_router(financials_kpis_router, tags=["financials-kpis"])
 api_v1_router.include_router(drhp_router, tags=["drhp"])
 api_v1_router.include_router(notifications_router, tags=["notifications"])
 api_v1_router.include_router(sme_onboarding_router, prefix="/onboarding", tags=["onboarding"])
