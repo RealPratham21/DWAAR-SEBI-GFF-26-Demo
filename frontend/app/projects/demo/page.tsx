@@ -147,7 +147,7 @@ export default function DashboardPage() {
             : `Company & Incorporation: ${bootstrap.companyIncorporation.sectionsComplete} of ${bootstrap.companyIncorporation.totalSections} Information sections complete.`}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {WORKSTREAMS.slice(0, 8).map((ws) => (
+          {WORKSTREAMS.slice(0, 9).map((ws) => (
             <WorkstreamCard
               key={ws.slug}
               workstream={ws}
@@ -168,6 +168,11 @@ export default function DashboardPage() {
               }
               industryMarketProgress={
                 ws.slug === 'industry-market' ? bootstrap.industryMarket : undefined
+              }
+              groupEntitiesProgress={
+                ws.slug === 'group-entities-related-parties'
+                  ? bootstrap.groupEntitiesRelatedParties
+                  : undefined
               }
             />
           ))}

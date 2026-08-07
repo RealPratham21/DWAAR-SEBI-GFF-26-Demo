@@ -8,6 +8,7 @@ import { CompanyIncorporationWorkstream } from '@/components/company-incorporati
 import { IpoSetupEligibilityWorkstream } from '@/components/ipo-setup/ipo-setup-workstream';
 import { FinancialsKpisWorkstream } from '@/components/financials-kpis/financials-kpis-workstream';
 import { IndustryMarketWorkstream } from '@/components/industry-market/industry-market-workstream';
+import { GroupEntitiesRelatedPartiesWorkstream } from '@/components/group-entities-related-parties/group-entities-workstream';
 import { ManagementGovernanceWorkstream } from '@/components/management-governance/management-governance-workstream';
 import { ObjectsOfIssueWorkstream } from '@/components/objects-of-issue/objects-of-issue-workstream';
 import { getWorkstreamBySlug } from '@/lib/workstreams-config';
@@ -183,6 +184,24 @@ export default async function WorkstreamDetailPage({
         }
       >
         <IndustryMarketWorkstream
+          workstream={workstream}
+          initialTab={tab}
+          initialSection={section}
+        />
+      </Suspense>
+    );
+  }
+
+  if (workstream.slug === 'group-entities-related-parties') {
+    return (
+      <Suspense
+        fallback={
+          <div className="py-8 text-sm text-muted-foreground" aria-live="polite">
+            Loading Group Entities & Related Parties…
+          </div>
+        }
+      >
+        <GroupEntitiesRelatedPartiesWorkstream
           workstream={workstream}
           initialTab={tab}
           initialSection={section}

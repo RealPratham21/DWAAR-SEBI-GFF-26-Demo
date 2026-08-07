@@ -3,6 +3,9 @@ from fastapi import APIRouter
 from app.modules.auth.router import router as auth_router
 from app.modules.business_operations.router import router as business_operations_router
 from app.modules.financials_kpis.router import router as financials_kpis_router
+from app.modules.group_entities_related_parties.router import (
+    router as group_entities_related_parties_router,
+)
 from app.modules.industry_market.router import router as industry_market_router
 from app.modules.management_governance.router import router as management_governance_router
 from app.modules.objects_issue.router import router as objects_issue_router
@@ -53,6 +56,10 @@ api_v1_router.include_router(objects_issue_router, tags=["objects-issue"])
 api_v1_router.include_router(financials_kpis_router, tags=["financials-kpis"])
 api_v1_router.include_router(management_governance_router, tags=["management-governance"])
 api_v1_router.include_router(industry_market_router, tags=["industry-market"])
+api_v1_router.include_router(
+    group_entities_related_parties_router,
+    tags=["group-entities-related-parties"],
+)
 api_v1_router.include_router(drhp_router, tags=["drhp"])
 api_v1_router.include_router(notifications_router, tags=["notifications"])
 api_v1_router.include_router(sme_onboarding_router, prefix="/onboarding", tags=["onboarding"])

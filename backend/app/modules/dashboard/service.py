@@ -4,6 +4,7 @@ from typing import Any
 from app.core.exceptions import AppException
 from app.models.business_operations_workspace import BusinessOperationsWorkspace
 from app.models.financials_kpis_workspace import FinancialsKpisWorkspace
+from app.models.group_entities_related_parties_workspace import GroupEntitiesRelatedPartiesWorkspace
 from app.models.industry_market_workspace import IndustryMarketWorkspace
 from app.models.management_governance_workspace import ManagementGovernanceWorkspace
 from app.models.objects_issue_workspace import ObjectsIssueWorkspace
@@ -21,6 +22,8 @@ from app.modules.financials_kpis.progress import (
     calculate_progress as calculate_financials_kpis_progress,
 )
 from app.modules.financials_kpis.schemas import DashboardFinancialsKpisProgress
+from app.modules.group_entities_related_parties.progress import calculate_group_entities_progress
+from app.modules.group_entities_related_parties.schemas import DashboardGroupEntitiesProgress
 from app.modules.industry_market.progress import calculate_industry_market_progress
 from app.modules.industry_market.schemas import DashboardIndustryMarketProgress
 from app.modules.management_governance.progress import (
@@ -218,6 +221,29 @@ def get_dashboard_management_governance_progress(
     }
 
 
+def get_dashboard_group_entities_related_parties_progress(
+    db: Session,
+    user_id: uuid.UUID,
+) -> dict[str, Any]:
+    workspace = db.scalar(
+        select(GroupEntitiesRelatedPartiesWorkspace).where(
+            GroupEntitiesRelatedPartiesWorkspace.user_id == user_id,
+        ),
+    )
+    if workspace is None:
+        return {
+            "overallStatus": "not_started",
+            "sectionsComplete": 0,
+            "totalSections": 8,
+        }
+    progress = calculate_group_entities_progress(workspace.payload)
+    return {
+        "overallStatus": progress["overallStatus"],
+        "sectionsComplete": progress["sectionsComplete"],
+        "totalSections": progress["totalSections"],
+    }
+
+
 def get_dashboard_industry_market_progress(
     db: Session,
     user_id: uuid.UUID,
@@ -282,6 +308,7 @@ def build_dashboard_bootstrap(db: Session, user: User) -> DashboardBootstrapResp
     financials_kpis_progress = get_dashboard_financials_kpis_progress(db, user.id)
     management_governance_progress = get_dashboard_management_governance_progress(db, user.id)
     industry_market_progress = get_dashboard_industry_market_progress(db, user.id)
+    group_entities_progress = get_dashboard_group_entities_related_parties_progress(db, user.id)
 
     return DashboardBootstrapResponse(
         user=BootstrapUserResponse(
@@ -389,5 +416,8 @@ def build_dashboard_bootstrap(db: Session, user: User) -> DashboardBootstrapResp
         ),
         industry_market=DashboardIndustryMarketProgress.model_validate(
             industry_market_progress,
+        ),
+        group_entities_related_parties=DashboardGroupEntitiesProgress.model_validate(
+            group_entities_progress,
         ),
     )
