@@ -25,6 +25,9 @@ INDUSTRY_MARKET_SAVE_MESSAGE = (
 GROUP_ENTITIES_SAVE_MESSAGE = (
     "Your Group Entities & Related Parties information was saved successfully."
 )
+BORROWINGS_ASSETS_SAVE_MESSAGE = (
+    "Your Borrowings, Assets & Contracts information was saved successfully."
+)
 COMPANY_INCORPORATION_SLUG = "company-incorporation"
 IPO_SETUP_SLUG = "ipo-setup-eligibility"
 CAPITAL_OWNERSHIP_SLUG = "capital-ownership"
@@ -34,6 +37,7 @@ FINANCIALS_KPIS_SLUG = "financials-kpis"
 MANAGEMENT_GOVERNANCE_SLUG = "management-governance"
 INDUSTRY_MARKET_SLUG = "industry-market"
 GROUP_ENTITIES_SLUG = "group-entities-related-parties"
+BORROWINGS_ASSETS_SLUG = "borrowings-assets-contracts"
 
 SECTION_SAVE_TITLES: dict[str, str] = {
     "legal-identity": "Legal Identity saved",
@@ -189,6 +193,31 @@ GROUP_ENTITIES_SECTION_SAVE_TITLES: dict[str, str] = {
     ),
 }
 
+BORROWINGS_ASSETS_SECTION_SAVE_TITLES: dict[str, str] = {
+    "financial-indebtedness-and-facility-master": "Financial Indebtedness & Facility Master saved",
+    "security-charges-guarantees-and-borrowing-powers": (
+        "Security, Charges, Guarantees & Borrowing Powers saved"
+    ),
+    "covenants-defaults-waivers-and-lender-consents": (
+        "Covenants, Defaults, Waivers & Lender Consents saved"
+    ),
+    "immovable-properties-and-occupancy-rights": (
+        "Immovable Properties & Occupancy Rights saved"
+    ),
+    "material-assets-encumbrance-and-insurance-linkage": (
+        "Material Assets, Encumbrance & Insurance Linkage saved"
+    ),
+    "material-business-strategic-and-other-contracts": (
+        "Material Business, Strategic & Other Contracts saved"
+    ),
+    "contract-materiality-expiry-and-inspection-readiness": (
+        "Contract Materiality, Expiry & Inspection Readiness saved"
+    ),
+    "reconciliation-changes-and-issuer-confirmations": (
+        "Reconciliation, Changes & Issuer Confirmations saved"
+    ),
+}
+
 
 def build_company_incorporation_target_route(section_id: str) -> str:
     return (
@@ -249,6 +278,13 @@ def build_industry_market_target_route(section_id: str) -> str:
 def build_group_entities_target_route(section_id: str) -> str:
     return (
         f"/projects/demo/workstreams/{GROUP_ENTITIES_SLUG}"
+        f"?tab=information&section={section_id}"
+    )
+
+
+def build_borrowings_assets_target_route(section_id: str) -> str:
+    return (
+        f"/projects/demo/workstreams/{BORROWINGS_ASSETS_SLUG}"
         f"?tab=information&section={section_id}"
     )
 

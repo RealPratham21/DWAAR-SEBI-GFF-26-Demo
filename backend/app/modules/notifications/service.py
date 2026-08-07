@@ -32,6 +32,9 @@ from app.modules.notifications.constants import (
     GROUP_ENTITIES_SAVE_MESSAGE,
     GROUP_ENTITIES_SECTION_SAVE_TITLES,
     GROUP_ENTITIES_SLUG,
+    BORROWINGS_ASSETS_SAVE_MESSAGE,
+    BORROWINGS_ASSETS_SECTION_SAVE_TITLES,
+    BORROWINGS_ASSETS_SLUG,
     INDUSTRY_MARKET_SAVE_MESSAGE,
     INDUSTRY_MARKET_SECTION_SAVE_TITLES,
     INDUSTRY_MARKET_SLUG,
@@ -53,6 +56,7 @@ from app.modules.notifications.constants import (
     build_financials_kpis_target_route,
     build_management_governance_target_route,
     build_group_entities_target_route,
+    build_borrowings_assets_target_route,
     build_industry_market_target_route,
     build_ipo_setup_target_route,
     build_objects_issue_target_route,
@@ -360,6 +364,36 @@ def create_group_entities_save_notification(
         workstream_slug=GROUP_ENTITIES_SLUG,
         section_id=section_id,
         target_route=build_group_entities_target_route(section_id),
+        read_at=None,
+        created_at=saved_at,
+        updated_at=saved_at,
+    )
+    db.add(notification)
+    db.flush()
+    db.refresh(notification)
+    return notification
+
+
+def create_borrowings_assets_save_notification(
+    db: Session,
+    *,
+    user: User,
+    section_id: str,
+    saved_at: datetime,
+) -> UserNotification:
+    title = BORROWINGS_ASSETS_SECTION_SAVE_TITLES.get(section_id)
+    if title is None:
+        msg = f"Unsupported Borrowings, Assets & Contracts section: {section_id}"
+        raise ValueError(msg)
+
+    notification = UserNotification(
+        user_id=user.id,
+        notification_type=NotificationType.WORKSTREAM_SAVE,
+        title=title,
+        message=BORROWINGS_ASSETS_SAVE_MESSAGE,
+        workstream_slug=BORROWINGS_ASSETS_SLUG,
+        section_id=section_id,
+        target_route=build_borrowings_assets_target_route(section_id),
         read_at=None,
         created_at=saved_at,
         updated_at=saved_at,
