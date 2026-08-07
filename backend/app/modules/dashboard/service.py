@@ -4,6 +4,7 @@ from typing import Any
 from app.core.exceptions import AppException
 from app.models.business_operations_workspace import BusinessOperationsWorkspace
 from app.models.financials_kpis_workspace import FinancialsKpisWorkspace
+from app.models.management_governance_workspace import ManagementGovernanceWorkspace
 from app.models.objects_issue_workspace import ObjectsIssueWorkspace
 from app.models.company_incorporation_workspace import CompanyIncorporationWorkspace
 from app.models.enums import OnboardingStatus
@@ -19,6 +20,10 @@ from app.modules.financials_kpis.progress import (
     calculate_progress as calculate_financials_kpis_progress,
 )
 from app.modules.financials_kpis.schemas import DashboardFinancialsKpisProgress
+from app.modules.management_governance.progress import (
+    calculate_management_governance_progress,
+)
+from app.modules.management_governance.schemas import DashboardManagementGovernanceProgress
 from app.modules.objects_issue.progress import calculate_progress as calculate_objects_issue_progress
 from app.modules.objects_issue.schemas import DashboardObjectsIssueProgress
 from app.modules.company_incorporation.progress import calculate_progress
@@ -187,6 +192,29 @@ def get_dashboard_financials_kpis_progress(
     }
 
 
+def get_dashboard_management_governance_progress(
+    db: Session,
+    user_id: uuid.UUID,
+) -> dict[str, Any]:
+    workspace = db.scalar(
+        select(ManagementGovernanceWorkspace).where(
+            ManagementGovernanceWorkspace.user_id == user_id,
+        ),
+    )
+    if workspace is None:
+        return {
+            "overallStatus": "not_started",
+            "sectionsComplete": 0,
+            "totalSections": 8,
+        }
+    progress = calculate_management_governance_progress(workspace.payload)
+    return {
+        "overallStatus": progress["overallStatus"],
+        "sectionsComplete": progress["sectionsComplete"],
+        "totalSections": progress["totalSections"],
+    }
+
+
 def build_dashboard_bootstrap(db: Session, user: User) -> DashboardBootstrapResponse:
     application = get_submitted_sme_application(db, user.id)
     draft_data = dict(application.draft_data or {})
@@ -226,6 +254,7 @@ def build_dashboard_bootstrap(db: Session, user: User) -> DashboardBootstrapResp
     business_operations_progress = get_dashboard_business_operations_progress(db, user.id)
     objects_issue_progress = get_dashboard_objects_issue_progress(db, user.id)
     financials_kpis_progress = get_dashboard_financials_kpis_progress(db, user.id)
+    management_governance_progress = get_dashboard_management_governance_progress(db, user.id)
 
     return DashboardBootstrapResponse(
         user=BootstrapUserResponse(
@@ -327,5 +356,8 @@ def build_dashboard_bootstrap(db: Session, user: User) -> DashboardBootstrapResp
         ),
         financials_kpis=DashboardFinancialsKpisProgress.model_validate(
             financials_kpis_progress,
+        ),
+        management_governance=DashboardManagementGovernanceProgress.model_validate(
+            management_governance_progress,
         ),
     )
