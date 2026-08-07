@@ -5,6 +5,7 @@ from app.core.exceptions import AppException
 from app.models.business_operations_workspace import BusinessOperationsWorkspace
 from app.models.financials_kpis_workspace import FinancialsKpisWorkspace
 from app.models.borrowings_assets_contracts_workspace import BorrowingsAssetsContractsWorkspace
+from app.models.intermediaries_filing_workspace import IntermediariesFilingWorkspace
 from app.models.litigation_approvals_compliance_workspace import LitigationApprovalsComplianceWorkspace
 from app.models.group_entities_related_parties_workspace import GroupEntitiesRelatedPartiesWorkspace
 from app.models.industry_market_workspace import IndustryMarketWorkspace
@@ -32,6 +33,8 @@ from app.modules.litigation_approvals_compliance.progress import (
 from app.modules.litigation_approvals_compliance.schemas import (
     DashboardLitigationApprovalsComplianceProgress,
 )
+from app.modules.intermediaries_filing.progress import calculate_intermediaries_filing_progress
+from app.modules.intermediaries_filing.schemas import DashboardIntermediariesFilingProgress
 from app.modules.group_entities_related_parties.progress import calculate_group_entities_progress
 from app.modules.group_entities_related_parties.schemas import DashboardGroupEntitiesProgress
 from app.modules.industry_market.progress import calculate_industry_market_progress
@@ -300,6 +303,29 @@ def get_dashboard_litigation_approvals_compliance_progress(
     }
 
 
+def get_dashboard_intermediaries_filing_progress(
+    db: Session,
+    user_id: uuid.UUID,
+) -> dict[str, Any]:
+    workspace = db.scalar(
+        select(IntermediariesFilingWorkspace).where(
+            IntermediariesFilingWorkspace.user_id == user_id,
+        ),
+    )
+    if workspace is None:
+        return {
+            "overallStatus": "not_started",
+            "sectionsComplete": 0,
+            "totalSections": 8,
+        }
+    progress = calculate_intermediaries_filing_progress(workspace.payload)
+    return {
+        "overallStatus": progress["overallStatus"],
+        "sectionsComplete": progress["sectionsComplete"],
+        "totalSections": progress["totalSections"],
+    }
+
+
 def get_dashboard_industry_market_progress(
     db: Session,
     user_id: uuid.UUID,
@@ -370,6 +396,7 @@ def build_dashboard_bootstrap(db: Session, user: User) -> DashboardBootstrapResp
         db,
         user.id,
     )
+    intermediaries_filing_progress = get_dashboard_intermediaries_filing_progress(db, user.id)
 
     return DashboardBootstrapResponse(
         user=BootstrapUserResponse(
@@ -486,5 +513,8 @@ def build_dashboard_bootstrap(db: Session, user: User) -> DashboardBootstrapResp
         ),
         litigation_approvals_compliance=DashboardLitigationApprovalsComplianceProgress.model_validate(
             litigation_approvals_progress,
+        ),
+        intermediaries_filing=DashboardIntermediariesFilingProgress.model_validate(
+            intermediaries_filing_progress,
         ),
     )

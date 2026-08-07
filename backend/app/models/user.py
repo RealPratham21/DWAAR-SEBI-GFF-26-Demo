@@ -91,6 +91,13 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         cascade="all, delete-orphan",
         uselist=False,
     )
+    intermediaries_filing_workspace: Mapped[
+        "IntermediariesFilingWorkspace | None"
+    ] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
     notifications: Mapped[list["UserNotification"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
@@ -101,6 +108,7 @@ if TYPE_CHECKING:
     from app.models.business_operations_workspace import BusinessOperationsWorkspace
     from app.models.financials_kpis_workspace import FinancialsKpisWorkspace
     from app.models.borrowings_assets_contracts_workspace import BorrowingsAssetsContractsWorkspace
+    from app.models.intermediaries_filing_workspace import IntermediariesFilingWorkspace
     from app.models.litigation_approvals_compliance_workspace import (
         LitigationApprovalsComplianceWorkspace,
     )

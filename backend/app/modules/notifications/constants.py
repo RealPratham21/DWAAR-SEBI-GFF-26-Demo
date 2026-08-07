@@ -31,6 +31,9 @@ BORROWINGS_ASSETS_SAVE_MESSAGE = (
 LAC_SAVE_MESSAGE = (
     "Your Litigation, Approvals & Compliance information was saved successfully."
 )
+IF_SAVE_MESSAGE = (
+    "Your Intermediaries & Filing information was saved successfully."
+)
 COMPANY_INCORPORATION_SLUG = "company-incorporation"
 IPO_SETUP_SLUG = "ipo-setup-eligibility"
 CAPITAL_OWNERSHIP_SLUG = "capital-ownership"
@@ -42,6 +45,7 @@ INDUSTRY_MARKET_SLUG = "industry-market"
 GROUP_ENTITIES_SLUG = "group-entities-related-parties"
 BORROWINGS_ASSETS_SLUG = "borrowings-assets-contracts"
 LAC_SLUG = "litigation-approvals-compliance"
+IF_SLUG = "intermediaries-filing"
 
 SECTION_SAVE_TITLES: dict[str, str] = {
     "legal-identity": "Legal Identity saved",
@@ -247,6 +251,27 @@ LAC_SECTION_SAVE_TITLES: dict[str, str] = {
     ),
 }
 
+IF_SECTION_SAVE_TITLES: dict[str, str] = {
+    "issue-team-and-intermediary-master": "Issue Team & Intermediary Master saved",
+    "issue-configuration-and-filing-snapshot": "Issue Configuration & Filing Snapshot saved",
+    "filing-and-regulatory-milestone-tracker": "Filing & Regulatory Milestone Tracker saved",
+    "due-diligence-certificates-consents-and-signoffs": (
+        "Due Diligence, Certificates, Consents & Sign-offs saved"
+    ),
+    "depositories-banking-asba-upi-and-issue-infrastructure": (
+        "Depositories, Banking, ASBA/UPI & Issue Infrastructure saved"
+    ),
+    "underwriting-market-making-and-distribution-arrangements": (
+        "Underwriting, Market Making & Distribution Arrangements saved"
+    ),
+    "issue-programme-allotment-listing-and-post-issue-execution": (
+        "Issue Programme, Allotment, Listing & Post-Issue Execution saved"
+    ),
+    "final-offer-document-advertisements-material-documents-and-filing-readiness": (
+        "Final Offer Document, Advertisements & Filing Readiness saved"
+    ),
+}
+
 
 def build_company_incorporation_target_route(section_id: str) -> str:
     return (
@@ -321,6 +346,13 @@ def build_borrowings_assets_target_route(section_id: str) -> str:
 def build_litigation_approvals_target_route(section_id: str) -> str:
     return (
         f"/projects/demo/workstreams/{LAC_SLUG}"
+        f"?tab=information&section={section_id}"
+    )
+
+
+def build_intermediaries_filing_target_route(section_id: str) -> str:
+    return (
+        f"/projects/demo/workstreams/{IF_SLUG}"
         f"?tab=information&section={section_id}"
     )
 
