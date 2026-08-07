@@ -112,6 +112,7 @@ import type { DashboardBusinessOperationsProgress } from '@/lib/business-operati
 import type { DashboardObjectsIssueProgress } from '@/lib/objects-of-issue/api-types';
 import type { DashboardFinancialsKpisProgress } from '@/lib/financials-kpis/api-types';
 import type { DashboardIndustryMarketProgress } from '@/lib/industry-market/api-types';
+import type { DashboardGroupEntitiesProgress } from '@/lib/group-entities-related-parties/api-types';
 import type { DashboardManagementGovernanceProgress } from '@/lib/management-governance/api-types';
 
 export interface DashboardBootstrapResponse {
@@ -130,6 +131,7 @@ export interface DashboardBootstrapResponse {
   financialsKpis: DashboardFinancialsKpisProgress;
   managementGovernance: DashboardManagementGovernanceProgress;
   industryMarket: DashboardIndustryMarketProgress;
+  groupEntitiesRelatedParties: DashboardGroupEntitiesProgress;
 }
 
 export interface DashboardBootstrapErrorDetails {

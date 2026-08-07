@@ -22,6 +22,9 @@ MANAGEMENT_GOVERNANCE_SAVE_MESSAGE = (
 INDUSTRY_MARKET_SAVE_MESSAGE = (
     "Your Industry & Market information was saved successfully."
 )
+GROUP_ENTITIES_SAVE_MESSAGE = (
+    "Your Group Entities & Related Parties information was saved successfully."
+)
 COMPANY_INCORPORATION_SLUG = "company-incorporation"
 IPO_SETUP_SLUG = "ipo-setup-eligibility"
 CAPITAL_OWNERSHIP_SLUG = "capital-ownership"
@@ -30,6 +33,7 @@ OBJECTS_ISSUE_SLUG = "objects-of-issue"
 FINANCIALS_KPIS_SLUG = "financials-kpis"
 MANAGEMENT_GOVERNANCE_SLUG = "management-governance"
 INDUSTRY_MARKET_SLUG = "industry-market"
+GROUP_ENTITIES_SLUG = "group-entities-related-parties"
 
 SECTION_SAVE_TITLES: dict[str, str] = {
     "legal-identity": "Legal Identity saved",
@@ -160,6 +164,31 @@ INDUSTRY_MARKET_SECTION_SAVE_TITLES: dict[str, str] = {
     ),
 }
 
+GROUP_ENTITIES_SECTION_SAVE_TITLES: dict[str, str] = {
+    "group-structure-and-entity-master": "Group Structure & Entity Master saved",
+    "ownership-control-and-relationship-mapping": (
+        "Ownership, Control & Relationship Mapping saved"
+    ),
+    "group-company-and-materiality-classification": (
+        "Group Company & Materiality Classification saved"
+    ),
+    "related-party-universe-and-classification": (
+        "Related Party Universe & Classification saved"
+    ),
+    "related-party-transactions-balances-and-commitments": (
+        "Related Party Transactions, Balances & Commitments saved"
+    ),
+    "common-pursuits-dependencies-and-conflicts": (
+        "Common Pursuits, Dependencies & Conflicts saved"
+    ),
+    "group-entity-financial-regulatory-and-litigation-readiness": (
+        "Group Entity Financial, Regulatory & Litigation Readiness saved"
+    ),
+    "changes-rpt-readiness-and-confirmations": (
+        "Changes, RPT Readiness & Confirmations saved"
+    ),
+}
+
 
 def build_company_incorporation_target_route(section_id: str) -> str:
     return (
@@ -213,6 +242,13 @@ def build_management_governance_target_route(section_id: str) -> str:
 def build_industry_market_target_route(section_id: str) -> str:
     return (
         f"/projects/demo/workstreams/{INDUSTRY_MARKET_SLUG}"
+        f"?tab=information&section={section_id}"
+    )
+
+
+def build_group_entities_target_route(section_id: str) -> str:
+    return (
+        f"/projects/demo/workstreams/{GROUP_ENTITIES_SLUG}"
         f"?tab=information&section={section_id}"
     )
 

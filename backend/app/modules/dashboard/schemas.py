@@ -4,6 +4,7 @@ from app.modules.company_incorporation.schemas import DashboardCompanyIncorporat
 from app.modules.business_operations.schemas import DashboardBusinessOperationsProgress
 from app.modules.objects_issue.schemas import DashboardObjectsIssueProgress
 from app.modules.financials_kpis.schemas import DashboardFinancialsKpisProgress
+from app.modules.group_entities_related_parties.schemas import DashboardGroupEntitiesProgress
 from app.modules.industry_market.schemas import DashboardIndustryMarketProgress
 from app.modules.management_governance.schemas import DashboardManagementGovernanceProgress
 from pydantic import BaseModel, ConfigDict
@@ -140,3 +141,4 @@ class DashboardBootstrapResponse(ApiModel):
     financials_kpis: DashboardFinancialsKpisProgress
     management_governance: DashboardManagementGovernanceProgress
     industry_market: DashboardIndustryMarketProgress
+    group_entities_related_parties: DashboardGroupEntitiesProgress

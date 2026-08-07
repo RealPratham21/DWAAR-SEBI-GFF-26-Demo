@@ -2,6 +2,7 @@
 
 from app.models.business_operations_workspace import BusinessOperationsWorkspace
 from app.models.financials_kpis_workspace import FinancialsKpisWorkspace
+from app.models.group_entities_related_parties_workspace import GroupEntitiesRelatedPartiesWorkspace
 from app.models.industry_market_workspace import IndustryMarketWorkspace
 from app.models.management_governance_workspace import ManagementGovernanceWorkspace
 from app.models.objects_issue_workspace import ObjectsIssueWorkspace
@@ -33,6 +34,7 @@ __all__ = [
     "ACTIVE_ONBOARDING_STATUSES",
     "BusinessOperationsWorkspace",
     "FinancialsKpisWorkspace",
+    "GroupEntitiesRelatedPartiesWorkspace",
     "IndustryMarketWorkspace",
     "ManagementGovernanceWorkspace",
     "ObjectsIssueWorkspace",

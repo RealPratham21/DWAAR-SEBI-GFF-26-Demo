@@ -6,6 +6,7 @@ import type { DashboardBusinessOperationsProgress } from '@/lib/business-operati
 import type { DashboardObjectsIssueProgress } from '@/lib/objects-of-issue/api-types';
 import type { DashboardFinancialsKpisProgress } from '@/lib/financials-kpis/api-types';
 import type { DashboardIndustryMarketProgress } from '@/lib/industry-market/api-types';
+import type { DashboardGroupEntitiesProgress } from '@/lib/group-entities-related-parties/api-types';
 import type { DashboardManagementGovernanceProgress } from '@/lib/management-governance/api-types';
 
 type WorkstreamProgressSummary = {
@@ -23,6 +24,7 @@ interface WorkstreamCardProps {
   financialsKpisProgress?: DashboardFinancialsKpisProgress;
   managementGovernanceProgress?: DashboardManagementGovernanceProgress;
   industryMarketProgress?: DashboardIndustryMarketProgress;
+  groupEntitiesProgress?: DashboardGroupEntitiesProgress;
 }
 
 function resolveActionLabel(
@@ -50,6 +52,7 @@ export function WorkstreamCard({
   financialsKpisProgress,
   managementGovernanceProgress,
   industryMarketProgress,
+  groupEntitiesProgress,
 }: WorkstreamCardProps) {
   const progress =
     companyIncorporationProgress ??
@@ -57,7 +60,8 @@ export function WorkstreamCard({
     objectsOfIssueProgress ??
     financialsKpisProgress ??
     managementGovernanceProgress ??
-    industryMarketProgress;
+    industryMarketProgress ??
+    groupEntitiesProgress;
   const resolvedActionLabel = resolveActionLabel(actionLabel, progress);
 
   return (
