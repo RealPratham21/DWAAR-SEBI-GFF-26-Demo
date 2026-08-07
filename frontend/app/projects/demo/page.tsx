@@ -160,6 +160,9 @@ export default function DashboardPage() {
               objectsOfIssueProgress={
                 ws.slug === 'objects-of-issue' ? bootstrap.objectsOfIssue : undefined
               }
+              financialsKpisProgress={
+                ws.slug === 'financials-kpis' ? bootstrap.financialsKpis : undefined
+              }
             />
           ))}
         </div>

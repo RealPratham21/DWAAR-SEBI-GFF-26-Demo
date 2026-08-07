@@ -119,7 +119,6 @@ type ObjectsOfIssueContextValue = {
   ) => void;
   saveActiveSection: (sectionId: ObjectsOfIssueSectionId) => Promise<boolean>;
   discardSectionDraft: (sectionId: ObjectsOfIssueSectionId) => void;
-  confirmLeave: (sectionId?: ObjectsOfIssueSectionId) => boolean;
   refreshDerived: () => Promise<void>;
 };
 
@@ -226,16 +225,6 @@ export function ObjectsOfIssueProvider({ children }: { children: ReactNode }) {
     return next;
   }, [baseline, payload]);
 
-  useEffect(() => {
-    const onBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (dirtySections.size === 0) return;
-      event.preventDefault();
-      event.returnValue = '';
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [dirtySections]);
-
   const liveProgress = useMemo(() => calculateObjectsOfIssueProgress(payload), [payload]);
   const displayProgress = dirtySections.size > 0 ? liveProgress : progress;
 
@@ -338,15 +327,6 @@ export function ObjectsOfIssueProvider({ children }: { children: ReactNode }) {
     [baseline, payload, prependNotification, refreshDerived, version],
   );
 
-  const confirmLeave = useCallback(
-    (sectionId?: ObjectsOfIssueSectionId) => {
-      const hasChanges = sectionId ? dirtySections.has(sectionId) : dirtySections.size > 0;
-      if (!hasChanges) return true;
-      return window.confirm('You have unsaved section changes. Leave without saving?');
-    },
-    [dirtySections],
-  );
-
   const value = useMemo<ObjectsOfIssueContextValue>(
     () => ({
       payload,
@@ -371,7 +351,6 @@ export function ObjectsOfIssueProvider({ children }: { children: ReactNode }) {
       updateSection,
       saveActiveSection,
       discardSectionDraft,
-      confirmLeave,
       refreshDerived,
     }),
     [
@@ -379,7 +358,6 @@ export function ObjectsOfIssueProvider({ children }: { children: ReactNode }) {
       clearSaveError,
       clearSaveNotice,
       computations,
-      confirmLeave,
       derivedError,
       dirtySections,
       discardSectionDraft,

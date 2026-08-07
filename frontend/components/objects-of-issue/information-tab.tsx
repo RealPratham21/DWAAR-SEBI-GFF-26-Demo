@@ -19,14 +19,13 @@ export function ObjectsOfIssueInformationTab({
   activeSection: ObjectsOfIssueSectionId;
   onSectionChange: (section: ObjectsOfIssueSectionId) => void;
 }) {
-  const { progress, dirtySections, confirmLeave } = useObjectsOfIssue();
+  const { progress, dirtySections } = useObjectsOfIssue();
   const meta = OBJECTS_OF_ISSUE_INFORMATION_SECTIONS.find(
     (section) => section.id === activeSection,
   );
 
   const selectSection = (section: ObjectsOfIssueSectionId) => {
     if (section === activeSection) return;
-    if (!confirmLeave(activeSection)) return;
     onSectionChange(section);
   };
 

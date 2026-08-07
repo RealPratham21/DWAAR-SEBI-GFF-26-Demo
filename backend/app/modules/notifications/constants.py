@@ -15,11 +15,13 @@ IPO_SETUP_SAVE_MESSAGE = "Your IPO Setup & Eligibility information was saved suc
 CAPITAL_OWNERSHIP_SAVE_MESSAGE = "Your Capital & Ownership information was saved successfully."
 BUSINESS_OPERATIONS_SAVE_MESSAGE = "Your Business & Operations information was saved successfully."
 OBJECTS_ISSUE_SAVE_MESSAGE = "Your Objects of the Issue information was saved successfully."
+FINANCIALS_KPIS_SAVE_MESSAGE = "Your Financials & KPIs information was saved successfully."
 COMPANY_INCORPORATION_SLUG = "company-incorporation"
 IPO_SETUP_SLUG = "ipo-setup-eligibility"
 CAPITAL_OWNERSHIP_SLUG = "capital-ownership"
 BUSINESS_OPERATIONS_SLUG = "business-operations"
 OBJECTS_ISSUE_SLUG = "objects-of-issue"
+FINANCIALS_KPIS_SLUG = "financials-kpis"
 
 SECTION_SAVE_TITLES: dict[str, str] = {
     "legal-identity": "Legal Identity saved",
@@ -82,6 +84,27 @@ OBJECTS_ISSUE_SECTION_SAVE_TITLES: dict[str, str] = {
     ),
 }
 
+FINANCIALS_KPIS_SECTION_SAVE_TITLES: dict[str, str] = {
+    "reporting-scope-periods-and-auditor-readiness": (
+        "Reporting Scope, Periods & Auditor Readiness saved"
+    ),
+    "restated-statement-of-profit-and-loss": "Restated Statement of Profit & Loss saved",
+    "assets-liabilities-equity-and-cash-flows": "Assets, Liabilities, Equity & Cash Flows saved",
+    "restatement-adjustments-policies-and-auditor-matters": (
+        "Restatement Adjustments, Policies & Auditor Matters saved"
+    ),
+    "other-financial-information": "Other Financial Information saved",
+    "ratios-capitalisation-and-issue-price-metrics": (
+        "Ratios, Capitalisation & Issue-Price Metrics saved"
+    ),
+    "kpi-selection-governance-and-peer-comparison": (
+        "KPI Selection, Governance & Peer Comparison saved"
+    ),
+    "mda-trends-material-developments-and-confirmations": (
+        "MD&A, Trends, Material Developments & Confirmations saved"
+    ),
+}
+
 
 def build_company_incorporation_target_route(section_id: str) -> str:
     return (
@@ -114,6 +137,13 @@ def build_business_operations_target_route(section_id: str) -> str:
 def build_objects_issue_target_route(section_id: str) -> str:
     return (
         f"/projects/demo/workstreams/{OBJECTS_ISSUE_SLUG}"
+        f"?tab=information&section={section_id}"
+    )
+
+
+def build_financials_kpis_target_route(section_id: str) -> str:
+    return (
+        f"/projects/demo/workstreams/{FINANCIALS_KPIS_SLUG}"
         f"?tab=information&section={section_id}"
     )
 

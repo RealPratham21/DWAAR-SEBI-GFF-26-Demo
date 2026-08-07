@@ -24,7 +24,7 @@ function ObjectsOfIssueWorkstreamInner({
   initialSection,
 }: ObjectsOfIssueWorkstreamProps) {
   const url = useObjectsOfIssueUrlState({ tab: initialTab, section: initialSection });
-  const { confirmLeave, isLoading, loadError } = useObjectsOfIssue();
+  const { isLoading, loadError } = useObjectsOfIssue();
   const mainScrollRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -33,13 +33,11 @@ function ObjectsOfIssueWorkstreamInner({
 
   const handleTabChange = (tabId: ObjectsOfIssueTabId) => {
     if (tabId === url.activeTab) return;
-    if (!confirmLeave()) return;
     url.setActiveTab(tabId);
     mainScrollRef.current?.scrollTo({ top: 0 });
   };
 
   const handleContinueToInformation = (section?: ObjectsOfIssueSectionId) => {
-    if (!confirmLeave()) return;
     if (section) url.setActiveSection(section);
     else url.setActiveTab('information');
     mainScrollRef.current?.scrollTo({ top: 0 });
