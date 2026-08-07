@@ -28,6 +28,9 @@ GROUP_ENTITIES_SAVE_MESSAGE = (
 BORROWINGS_ASSETS_SAVE_MESSAGE = (
     "Your Borrowings, Assets & Contracts information was saved successfully."
 )
+LAC_SAVE_MESSAGE = (
+    "Your Litigation, Approvals & Compliance information was saved successfully."
+)
 COMPANY_INCORPORATION_SLUG = "company-incorporation"
 IPO_SETUP_SLUG = "ipo-setup-eligibility"
 CAPITAL_OWNERSHIP_SLUG = "capital-ownership"
@@ -38,6 +41,7 @@ MANAGEMENT_GOVERNANCE_SLUG = "management-governance"
 INDUSTRY_MARKET_SLUG = "industry-market"
 GROUP_ENTITIES_SLUG = "group-entities-related-parties"
 BORROWINGS_ASSETS_SLUG = "borrowings-assets-contracts"
+LAC_SLUG = "litigation-approvals-compliance"
 
 SECTION_SAVE_TITLES: dict[str, str] = {
     "legal-identity": "Legal Identity saved",
@@ -218,6 +222,31 @@ BORROWINGS_ASSETS_SECTION_SAVE_TITLES: dict[str, str] = {
     ),
 }
 
+LAC_SECTION_SAVE_TITLES: dict[str, str] = {
+    "legal-universe-materiality-policy-and-party-mapping": (
+        "Legal Universe, Materiality Policy & Party Mapping saved"
+    ),
+    "litigation-and-proceedings-master": "Litigation & Proceedings Master saved",
+    "criminal-regulatory-tax-and-enforcement-readiness": (
+        "Criminal, Regulatory, Tax & Enforcement Readiness saved"
+    ),
+    "government-regulatory-and-business-approvals-master": (
+        "Government, Regulatory & Business Approvals Master saved"
+    ),
+    "approval-conditions-facility-compliance-and-renewal-readiness": (
+        "Approval Conditions, Facility Compliance & Renewal Readiness saved"
+    ),
+    "corporate-statutory-and-operational-compliance-exceptions": (
+        "Corporate, Statutory & Operational Compliance Exceptions saved"
+    ),
+    "material-creditors-penalties-and-material-developments": (
+        "Material Creditors, Penalties & Material Developments saved"
+    ),
+    "reconciliation-remediation-and-issuer-confirmations": (
+        "Reconciliation, Remediation & Issuer Confirmations saved"
+    ),
+}
+
 
 def build_company_incorporation_target_route(section_id: str) -> str:
     return (
@@ -285,6 +314,13 @@ def build_group_entities_target_route(section_id: str) -> str:
 def build_borrowings_assets_target_route(section_id: str) -> str:
     return (
         f"/projects/demo/workstreams/{BORROWINGS_ASSETS_SLUG}"
+        f"?tab=information&section={section_id}"
+    )
+
+
+def build_litigation_approvals_target_route(section_id: str) -> str:
+    return (
+        f"/projects/demo/workstreams/{LAC_SLUG}"
         f"?tab=information&section={section_id}"
     )
 

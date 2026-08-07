@@ -35,6 +35,9 @@ from app.modules.notifications.constants import (
     BORROWINGS_ASSETS_SAVE_MESSAGE,
     BORROWINGS_ASSETS_SECTION_SAVE_TITLES,
     BORROWINGS_ASSETS_SLUG,
+    LAC_SAVE_MESSAGE,
+    LAC_SECTION_SAVE_TITLES,
+    LAC_SLUG,
     INDUSTRY_MARKET_SAVE_MESSAGE,
     INDUSTRY_MARKET_SECTION_SAVE_TITLES,
     INDUSTRY_MARKET_SLUG,
@@ -57,6 +60,7 @@ from app.modules.notifications.constants import (
     build_management_governance_target_route,
     build_group_entities_target_route,
     build_borrowings_assets_target_route,
+    build_litigation_approvals_target_route,
     build_industry_market_target_route,
     build_ipo_setup_target_route,
     build_objects_issue_target_route,
@@ -394,6 +398,36 @@ def create_borrowings_assets_save_notification(
         workstream_slug=BORROWINGS_ASSETS_SLUG,
         section_id=section_id,
         target_route=build_borrowings_assets_target_route(section_id),
+        read_at=None,
+        created_at=saved_at,
+        updated_at=saved_at,
+    )
+    db.add(notification)
+    db.flush()
+    db.refresh(notification)
+    return notification
+
+
+def create_litigation_approvals_save_notification(
+    db: Session,
+    *,
+    user: User,
+    section_id: str,
+    saved_at: datetime,
+) -> UserNotification:
+    title = LAC_SECTION_SAVE_TITLES.get(section_id)
+    if title is None:
+        msg = f"Unsupported Litigation, Approvals & Compliance section: {section_id}"
+        raise ValueError(msg)
+
+    notification = UserNotification(
+        user_id=user.id,
+        notification_type=NotificationType.WORKSTREAM_SAVE,
+        title=title,
+        message=LAC_SAVE_MESSAGE,
+        workstream_slug=LAC_SLUG,
+        section_id=section_id,
+        target_route=build_litigation_approvals_target_route(section_id),
         read_at=None,
         created_at=saved_at,
         updated_at=saved_at,
