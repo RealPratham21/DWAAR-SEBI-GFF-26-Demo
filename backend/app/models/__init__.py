@@ -1,6 +1,7 @@
 """Central model import module for Alembic autogenerate and application startup."""
 
 from app.models.borrowings_assets_contracts_workspace import BorrowingsAssetsContractsWorkspace
+from app.models.intermediaries_filing_workspace import IntermediariesFilingWorkspace
 from app.models.litigation_approvals_compliance_workspace import LitigationApprovalsComplianceWorkspace
 from app.models.business_operations_workspace import BusinessOperationsWorkspace
 from app.models.financials_kpis_workspace import FinancialsKpisWorkspace
@@ -35,6 +36,7 @@ from app.models.user_notification import UserNotification
 __all__ = [
     "ACTIVE_ONBOARDING_STATUSES",
     "BorrowingsAssetsContractsWorkspace",
+    "IntermediariesFilingWorkspace",
     "LitigationApprovalsComplianceWorkspace",
     "BusinessOperationsWorkspace",
     "FinancialsKpisWorkspace",

@@ -11,6 +11,7 @@ import { IndustryMarketWorkstream } from '@/components/industry-market/industry-
 import { GroupEntitiesRelatedPartiesWorkstream } from '@/components/group-entities-related-parties/group-entities-workstream';
 import { BorrowingsAssetsContractsWorkstream } from '@/components/borrowings-assets-contracts/borrowings-assets-contracts-workstream';
 import { LitigationApprovalsComplianceWorkstream } from '@/components/litigation-approvals-compliance/litigation-approvals-compliance-workstream';
+import { IntermediariesFilingWorkstream } from '@/components/intermediaries-filing/intermediaries-filing-workstream';
 import { ManagementGovernanceWorkstream } from '@/components/management-governance/management-governance-workstream';
 import { ObjectsOfIssueWorkstream } from '@/components/objects-of-issue/objects-of-issue-workstream';
 import { getWorkstreamBySlug } from '@/lib/workstreams-config';
@@ -240,6 +241,24 @@ export default async function WorkstreamDetailPage({
         }
       >
         <LitigationApprovalsComplianceWorkstream
+          workstream={workstream}
+          initialTab={tab}
+          initialSection={section}
+        />
+      </Suspense>
+    );
+  }
+
+  if (workstream.slug === 'intermediaries-filing') {
+    return (
+      <Suspense
+        fallback={
+          <div className="py-8 text-sm text-muted-foreground" aria-live="polite">
+            Loading Intermediaries & Filing…
+          </div>
+        }
+      >
+        <IntermediariesFilingWorkstream
           workstream={workstream}
           initialTab={tab}
           initialSection={section}

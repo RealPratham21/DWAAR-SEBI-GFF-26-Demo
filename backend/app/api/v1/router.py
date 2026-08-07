@@ -7,6 +7,7 @@ from app.modules.borrowings_assets_contracts.router import router as borrowings_
 from app.modules.litigation_approvals_compliance.router import (
     router as litigation_approvals_compliance_router,
 )
+from app.modules.intermediaries_filing.router import router as intermediaries_filing_router
 from app.modules.group_entities_related_parties.router import (
     router as group_entities_related_parties_router,
 )
@@ -71,6 +72,10 @@ api_v1_router.include_router(
 api_v1_router.include_router(
     litigation_approvals_compliance_router,
     tags=["litigation-approvals-compliance"],
+)
+api_v1_router.include_router(
+    intermediaries_filing_router,
+    tags=["intermediaries-filing"],
 )
 api_v1_router.include_router(drhp_router, tags=["drhp"])
 api_v1_router.include_router(notifications_router, tags=["notifications"])

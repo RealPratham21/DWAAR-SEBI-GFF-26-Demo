@@ -114,6 +114,7 @@ import type { DashboardFinancialsKpisProgress } from '@/lib/financials-kpis/api-
 import type { DashboardIndustryMarketProgress } from '@/lib/industry-market/api-types';
 import type { DashboardGroupEntitiesProgress } from '@/lib/group-entities-related-parties/api-types';
 import type { DashboardBorrowingsAssetsContractsProgress } from '@/lib/borrowings-assets-contracts/api-types';
+import type { DashboardIntermediariesFilingProgress } from '@/lib/intermediaries-filing/api-types';
 import type { DashboardLitigationApprovalsComplianceProgress } from '@/lib/litigation-approvals-compliance/api-types';
 import type { DashboardManagementGovernanceProgress } from '@/lib/management-governance/api-types';
 
@@ -136,6 +137,7 @@ export interface DashboardBootstrapResponse {
   groupEntitiesRelatedParties: DashboardGroupEntitiesProgress;
   borrowingsAssetsContracts: DashboardBorrowingsAssetsContractsProgress;
   litigationApprovalsCompliance: DashboardLitigationApprovalsComplianceProgress;
+  intermediariesFiling: DashboardIntermediariesFilingProgress;
 }
 
 export interface DashboardBootstrapErrorDetails {
