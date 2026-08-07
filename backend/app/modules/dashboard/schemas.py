@@ -4,6 +4,7 @@ from app.modules.company_incorporation.schemas import DashboardCompanyIncorporat
 from app.modules.business_operations.schemas import DashboardBusinessOperationsProgress
 from app.modules.objects_issue.schemas import DashboardObjectsIssueProgress
 from app.modules.financials_kpis.schemas import DashboardFinancialsKpisProgress
+from app.modules.industry_market.schemas import DashboardIndustryMarketProgress
 from app.modules.management_governance.schemas import DashboardManagementGovernanceProgress
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
@@ -138,3 +139,4 @@ class DashboardBootstrapResponse(ApiModel):
     objects_of_issue: DashboardObjectsIssueProgress
     financials_kpis: DashboardFinancialsKpisProgress
     management_governance: DashboardManagementGovernanceProgress
+    industry_market: DashboardIndustryMarketProgress

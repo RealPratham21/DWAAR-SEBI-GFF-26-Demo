@@ -19,6 +19,9 @@ FINANCIALS_KPIS_SAVE_MESSAGE = "Your Financials & KPIs information was saved suc
 MANAGEMENT_GOVERNANCE_SAVE_MESSAGE = (
     "Your Management & Governance information was saved successfully."
 )
+INDUSTRY_MARKET_SAVE_MESSAGE = (
+    "Your Industry & Market information was saved successfully."
+)
 COMPANY_INCORPORATION_SLUG = "company-incorporation"
 IPO_SETUP_SLUG = "ipo-setup-eligibility"
 CAPITAL_OWNERSHIP_SLUG = "capital-ownership"
@@ -26,6 +29,7 @@ BUSINESS_OPERATIONS_SLUG = "business-operations"
 OBJECTS_ISSUE_SLUG = "objects-of-issue"
 FINANCIALS_KPIS_SLUG = "financials-kpis"
 MANAGEMENT_GOVERNANCE_SLUG = "management-governance"
+INDUSTRY_MARKET_SLUG = "industry-market"
 
 SECTION_SAVE_TITLES: dict[str, str] = {
     "legal-identity": "Legal Identity saved",
@@ -133,6 +137,30 @@ MANAGEMENT_GOVERNANCE_SECTION_SAVE_TITLES: dict[str, str] = {
 }
 
 
+INDUSTRY_MARKET_SECTION_SAVE_TITLES: dict[str, str] = {
+    "industry-scope-and-company-market-mapping": (
+        "Industry Scope & Company-to-Market Mapping saved"
+    ),
+    "research-sources-and-industry-report-governance": (
+        "Research Sources & Industry Report Governance saved"
+    ),
+    "macroeconomic-and-industry-context": "Macroeconomic & Industry Context saved",
+    "market-size-segmentation-and-growth": "Market Size, Segmentation & Growth saved",
+    "demand-drivers-end-markets-trends-and-policy": (
+        "Demand Drivers, End Markets, Trends & Policy saved"
+    ),
+    "value-chain-supply-structure-and-entry-barriers": (
+        "Value Chain, Supply Structure & Entry Barriers saved"
+    ),
+    "competition-market-share-and-issuer-positioning": (
+        "Competition, Market Share & Issuer Positioning saved"
+    ),
+    "outlook-industry-risks-and-confirmations": (
+        "Outlook, Industry Risks & Confirmations saved"
+    ),
+}
+
+
 def build_company_incorporation_target_route(section_id: str) -> str:
     return (
         f"/projects/demo/workstreams/{COMPANY_INCORPORATION_SLUG}"
@@ -178,6 +206,13 @@ def build_financials_kpis_target_route(section_id: str) -> str:
 def build_management_governance_target_route(section_id: str) -> str:
     return (
         f"/projects/demo/workstreams/{MANAGEMENT_GOVERNANCE_SLUG}"
+        f"?tab=information&section={section_id}"
+    )
+
+
+def build_industry_market_target_route(section_id: str) -> str:
+    return (
+        f"/projects/demo/workstreams/{INDUSTRY_MARKET_SLUG}"
         f"?tab=information&section={section_id}"
     )
 
