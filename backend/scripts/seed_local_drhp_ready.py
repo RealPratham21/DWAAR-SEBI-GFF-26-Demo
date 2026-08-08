@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """Create Nivara account + fill all DRHP Preparation workstreams locally.
 
-Credentials: backend/scripts/seed_local_drhp_targets.py (gitignored)
+Credentials: backend/scripts/seed_local_drhp_targets.py (gitignored; copy from
+seed_local_drhp_targets.example.py). Uses host port 5433 — Docker Compose maps
+5433 -> db:5432 so host scripts do not clash with a native Postgres on 5432.
+
+Prerequisites:
+  docker compose up -d db migrate   # DB healthy + migrations applied
 
 Usage (from backend/):
 

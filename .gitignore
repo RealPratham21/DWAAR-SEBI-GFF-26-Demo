@@ -1,4 +1,8 @@
 .env
 .env.local
 .env.*.local
+backend/scripts/wipe_prod_targets.py
+backend/scripts/seed_prod_account_targets.py
+backend/scripts/seed_prod_drhp_targets.py
+backend/scripts/seed_local_drhp_targets.py
 backend/.evidence-overlays/

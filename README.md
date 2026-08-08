@@ -186,7 +186,7 @@ After startup:
 | Backend | http://localhost:8000 |
 | Swagger | http://localhost:8000/docs |
 | ReDoc | http://localhost:8000/redoc |
-| PostgreSQL | localhost:5432 |
+| PostgreSQL (host) | localhost:5433 |
 
 ### Useful Docker commands
 

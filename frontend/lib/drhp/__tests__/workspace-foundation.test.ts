@@ -19,9 +19,10 @@ import type { DrhpBlock } from '@/lib/drhp/types';
 describe('DRHP chapter registry', () => {
   it('includes stable keys for major chapters', () => {
     expect(isDrhpChapterKey('company-history-incorporation')).toBe(true);
-    expect(isDrhpChapterKey('risk-factors')).toBe(true);
+    expect(isDrhpChapterKey('company-history-promoters-structure')).toBe(true);
+    expect(isDrhpChapterKey('summary-of-drhp')).toBe(true);
     expect(isDrhpChapterKey('not-a-chapter')).toBe(false);
-    expect(DRHP_CHAPTER_DEFINITIONS.length).toBeGreaterThanOrEqual(15);
+    expect(DRHP_CHAPTER_DEFINITIONS.length).toBe(18);
   });
 
   it('builds empty chapters as Not generated without fake sections', () => {
@@ -29,14 +30,16 @@ describe('DRHP chapter registry', () => {
     expect(chapters.every((chapter) => chapter.status === 'not_generated')).toBe(true);
     expect(chapters.every((chapter) => chapter.sections.length === 0)).toBe(true);
     expect(
-      chapters.find((chapter) => chapter.key === 'company-history-incorporation')?.workstreamSlug,
+      chapters.find((chapter) => chapter.key === 'company-history-promoters-structure')?.workstreamSlug,
     ).toBe('company-incorporation');
   });
 
   it('labels G1 readiness statuses', () => {
     expect(chapterStatusLabel('not_connected')).toBe('Not connected');
     expect(chapterStatusLabel('ready_with_gaps')).toBe('Ready with gaps');
+    expect(chapterStatusLabel('ready_with_placeholders')).toBe('Ready with placeholders');
     expect(chapterStatusLabel('ready_to_generate')).toBe('Ready to generate');
+    expect(chapterStatusLabel('depends_on_generated')).toBe('Depends on generated chapters');
     expect(chapterStatusLabel('blocked')).toBe('Blocked');
   });
 });
@@ -61,6 +64,20 @@ describe('DRHP display status mapping', () => {
       mapDrhpDisplayStatus({
         supported: true,
         connectionStatus: 'connected',
+        generationStatus: 'ready_with_placeholders',
+      }),
+    ).toBe('ready_with_placeholders');
+    expect(
+      mapDrhpDisplayStatus({
+        supported: true,
+        connectionStatus: 'connected',
+        generationStatus: 'depends_on_generated_chapters',
+      }),
+    ).toBe('depends_on_generated');
+    expect(
+      mapDrhpDisplayStatus({
+        supported: true,
+        connectionStatus: 'connected',
         generationStatus: 'blocked',
       }),
     ).toBe('blocked');
@@ -79,7 +96,7 @@ describe('DRHP URL state helpers', () => {
     const params = new URLSearchParams(
       'chapter=company-history-incorporation&inspector=copilot&blockId=block-1',
     );
-    expect(readDrhpChapterKey(params)).toBe('company-history-incorporation');
+    expect(readDrhpChapterKey(params)).toBe('company-history-promoters-structure');
     expect(readDrhpInspectorTab(params)).toBe('copilot');
     expect(readDrhpBlockId(params)).toBe('block-1');
   });

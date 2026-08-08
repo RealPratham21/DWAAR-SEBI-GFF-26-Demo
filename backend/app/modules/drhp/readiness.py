@@ -125,6 +125,32 @@ def evaluate_chapter_readiness(
             workstream_links=list(definition.workstream_links),
         )
 
+    if not definition.requirements and definition.source_adapter == SourceAdapterKey.NONE:
+        return ChapterReadiness(
+            chapter_key=definition.key,
+            title=definition.title,
+            supported=True,
+            source_adapter=definition.source_adapter,
+            connection_status=ConnectionStatus.NOT_CONNECTED,
+            generation_status=GenerationStatus.BLOCKED,
+            can_generate=False,
+            registry_version=REGISTRY_VERSION,
+            source_hash="",
+            requirement_total=0,
+            satisfied_count=0,
+            missing_count=0,
+            unknown_applicability_count=0,
+            blocking_count=0,
+            gap_count=0,
+            warning_count=0,
+            requirements=[],
+            warnings=[
+                "Legacy G1 requirements do not apply; readiness is evaluated via generation source bundles."
+            ],
+            workstream_links=list(definition.workstream_links),
+            company_incorporation_workspace_id=workspace_id,
+        )
+
     requirement_rows: list[RequirementReadiness] = []
     for requirement in definition.requirements:
         applicability, coverage, selected = select_source_for_requirement(

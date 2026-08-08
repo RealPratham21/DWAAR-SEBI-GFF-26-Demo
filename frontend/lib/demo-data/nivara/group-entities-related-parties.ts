@@ -25,6 +25,52 @@ const NIVARA_ENTITY_FINANCIAL_READINESS_ID = 'nivara-entity-financial-readiness-
 export function createNivaraGroupEntitiesPayload(): GroupEntitiesRelatedPartiesPayload {
   const base = createEmptyGroupEntitiesRelatedPartiesPayload();
 
+  const issuerEntity = {
+    ...createEmptyEntityRecord(),
+    id: NIVARA_IDS.issuerEntity,
+    entityType: 'indian-company',
+    identity: {
+      legalName: NIVARA_ISSUER.legalName,
+      formerName: '',
+      displayName: NIVARA_ISSUER.shortName,
+    },
+    registration: {
+      cin: NIVARA_ISSUER.cin,
+      llpin: '',
+      registrationNumber: '',
+      otherIdentifier: '',
+      countryOfIncorporation: 'India',
+      state: NIVARA_ISSUER.incorporationState,
+      incorporationDate: NIVARA_ISSUER.incorporationDate,
+      registeredOffice: `${NIVARA_ISSUER.registeredOfficeLine1}, ${NIVARA_ISSUER.registeredOfficeCity}, ${NIVARA_ISSUER.registeredOfficeState}`,
+      corporateOffice: '',
+      website: NIVARA_ISSUER.website,
+      financialYearEnd: 'March 31',
+    },
+    status: 'active',
+    listing: {
+      listedStatus: 'unlisted',
+      exchange: '',
+      securityTypeListed: '',
+      listingDate: '',
+      delistedStatus: '',
+      delistingDate: '',
+    },
+    businessProfile: {
+      principalBusiness: 'Manufacture of precision metal components for automotive OEMs',
+      otherBusinesses: '',
+      industry: 'Auto components',
+      productsServices: 'Precision machined components',
+      geographies: 'India',
+      operationalStatus: 'Operational',
+      relationshipRelevantFrom: NIVARA_ISSUER.incorporationDate,
+      relationshipRelevantUntil: '',
+      notes: 'Issuer entity in group structure.',
+    },
+    classificationBadges: ['parent'],
+    currentlyActive: true,
+  };
+
   const subsidiaryEntity = {
     ...createEmptyEntityRecord(),
     id: NIVARA_IDS.groupEntity001,
@@ -74,7 +120,7 @@ export function createNivaraGroupEntitiesPayload(): GroupEntitiesRelatedPartiesP
   const ownershipRelationship = {
     ...createEmptyOwnershipRelationshipRecord(),
     id: NIVARA_OWNERSHIP_RELATIONSHIP_ID,
-    parentPartyEntityId: NIVARA_ISSUER.cin,
+    parentPartyEntityId: NIVARA_IDS.issuerEntity,
     investeeEntityId: NIVARA_IDS.groupEntity001,
     relationshipType: 'subsidiary',
     equityOwnershipPercent: '100',
@@ -217,7 +263,7 @@ export function createNivaraGroupEntitiesPayload(): GroupEntitiesRelatedPartiesP
         otherCommonControlEntitiesExist: 'no',
         historicalEntitiesRelevant: 'no',
       },
-      entities: [subsidiaryEntity],
+      entities: [issuerEntity, subsidiaryEntity],
     },
     ownershipControlAndRelationshipMapping: {
       ...base.ownershipControlAndRelationshipMapping,

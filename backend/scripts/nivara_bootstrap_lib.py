@@ -6,13 +6,14 @@ import importlib
 import json
 import os
 import sys
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import clear_settings_cache, get_settings
@@ -69,6 +70,74 @@ WORKSTREAM_SECTION_ORDER_OVERRIDES: dict[str, tuple[str, ...]] = {
 }
 
 
+_LOCAL_DB_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
+
+
+def bootstrap_database_url(url: str) -> str:
+    """Normalise bootstrap URLs and apply local Docker Postgres defaults."""
+    normalized = normalize_database_url(url.strip())
+    parsed = urlparse(normalized)
+    if parsed.hostname not in _LOCAL_DB_HOSTS:
+        return normalized
+
+    query = parse_qs(parsed.query, keep_blank_values=True)
+    if "sslmode" not in query:
+        query["sslmode"] = ["disable"]
+
+    # Prefer IPv4 loopback — on Windows, "localhost" can hit ::1 / wslrelay first.
+    host = "127.0.0.1" if parsed.hostname == "localhost" else parsed.hostname or "127.0.0.1"
+    port_suffix = f":{parsed.port}" if parsed.port else ""
+    netloc = parsed.netloc
+    if parsed.username:
+        password = f":{parsed.password}" if parsed.password else ""
+        netloc = f"{parsed.username}{password}@{host}{port_suffix}"
+    else:
+        netloc = f"{host}{port_suffix}"
+
+    return urlunparse(
+        (
+            parsed.scheme,
+            netloc,
+            parsed.path,
+            parsed.params,
+            urlencode(query, doseq=True),
+            parsed.fragment,
+        ),
+    )
+
+
+def wait_for_database(database_url: str, *, attempts: int = 30, pause_seconds: float = 1.0) -> None:
+    """Block until Postgres accepts connections (handles Docker restarts / WAL recovery)."""
+    engine = create_engine(database_url, pool_pre_ping=True)
+    last_error: Exception | None = None
+    try:
+        for attempt in range(1, attempts + 1):
+            try:
+                with engine.connect() as conn:
+                    conn.execute(text("SELECT 1"))
+                if attempt > 1:
+                    print(f"  database ready after {attempt} attempt(s)")
+                return
+            except Exception as exc:
+                last_error = exc
+                if attempt < attempts:
+                    time.sleep(pause_seconds)
+        host = database_host(database_url)
+        print(
+            f"Failed: could not connect to Postgres at {host} after {attempts} attempts.",
+            file=sys.stderr,
+        )
+        print(
+            "  Ensure Docker Postgres is running: docker compose up -d db migrate",
+            file=sys.stderr,
+        )
+        if last_error is not None:
+            print(f"  last_error={last_error}", file=sys.stderr)
+        raise SystemExit(1) from last_error
+    finally:
+        engine.dispose()
+
+
 @dataclass(frozen=True)
 class SeedTargets:
     database_url: str
@@ -109,7 +178,7 @@ def parse_seed_targets(raw: Any) -> SeedTargets:
         raise SystemExit(1)
 
     return SeedTargets(
-        database_url=database_url,
+        database_url=bootstrap_database_url(database_url),
         jwt_secret=jwt_secret,
         email=email,
         password=password,
@@ -125,14 +194,15 @@ def database_host(database_url: str) -> str:
 
 
 def configure_runtime(targets: SeedTargets) -> None:
-    os.environ["DATABASE_URL"] = normalize_database_url(targets.database_url)
+    os.environ["DATABASE_URL"] = targets.database_url
     os.environ["JWT_SECRET"] = targets.jwt_secret
     clear_settings_cache()
 
 
 def open_session(targets: SeedTargets) -> tuple[Session, Any]:
     configure_runtime(targets)
-    engine = create_engine(normalize_database_url(targets.database_url), pool_pre_ping=True)
+    wait_for_database(targets.database_url)
+    engine = create_engine(targets.database_url, pool_pre_ping=True)
     session_factory = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
     return session_factory(), engine
 

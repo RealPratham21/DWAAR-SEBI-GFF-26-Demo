@@ -152,3 +152,113 @@ class SourceSnapshotResponse(ApiModel):
     created_at: datetime
     created: bool = False
     items: list[SnapshotItemResponse] = Field(default_factory=list)
+
+
+class GenerationSnapshotSummaryResponse(ApiModel):
+    id: UUID
+    snapshot_version: int
+    registry_version: str
+    snapshot_schema_version: str
+    aggregate_source_hash: str
+    readiness_summary: dict[str, Any]
+    created_at: datetime
+    created: bool = True
+
+
+class GenerationSnapshotDetailResponse(GenerationSnapshotSummaryResponse):
+    source_workstream_versions: dict[str, Any] = Field(default_factory=dict)
+    canonical_context: dict[str, Any] = Field(default_factory=dict)
+    source_registry: dict[str, Any] = Field(default_factory=dict)
+
+
+class ChapterSourceBundleResponse(ApiModel):
+    snapshot_id: str
+    chapter_key: str
+    chapter_title: str
+    global_context: dict[str, Any] = Field(default_factory=dict)
+    deterministic_facts: list[dict[str, Any]] = Field(default_factory=list)
+    narrative_facts: list[dict[str, Any]] = Field(default_factory=list)
+    structured_tables: list[dict[str, Any]] = Field(default_factory=list)
+    entities: list[dict[str, Any]] = Field(default_factory=list)
+    calculations: list[dict[str, Any]] = Field(default_factory=list)
+    risk_candidates: list[dict[str, Any]] = Field(default_factory=list)
+    source_refs: list[dict[str, Any]] = Field(default_factory=list)
+    evidence_refs: list[dict[str, Any]] = Field(default_factory=list)
+    allowed_placeholders: list[dict[str, Any]] = Field(default_factory=list)
+    unresolved_required_inputs: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    conflicts: list[dict[str, Any]] = Field(default_factory=list)
+    readiness: dict[str, Any] = Field(default_factory=dict)
+    dependency_chapters: list[str] = Field(default_factory=list)
+    generation_phase: str = ""
+
+
+class SnapshotStalenessResponse(ApiModel):
+    snapshot_id: UUID
+    is_stale: bool
+    stale_workstreams: list[dict[str, Any]] = Field(default_factory=list)
+    affected_chapters: list[str] = Field(default_factory=list)
+
+
+class GenerateDrhpRequest(ApiModel):
+    snapshot_id: UUID | None = None
+    create_snapshot: bool = True
+
+
+class GenerateDrhpResponse(ApiModel):
+    document_id: UUID
+    document_version_id: UUID
+    version_number: int
+    snapshot_id: UUID
+    status: str
+    total_chapters: int
+
+
+class ChapterGenerationStatusItem(ApiModel):
+    chapter_key: str
+    title: str
+    status: str
+    generation_mode: str = ""
+    warnings: list[str] = Field(default_factory=list)
+    error_message: str | None = None
+
+
+class DocumentGenerationStatusResponse(ApiModel):
+    document_id: UUID
+    document_version_id: UUID
+    version_number: int
+    snapshot_id: UUID
+    status: str
+    generation_started_at: datetime | None = None
+    completed_at: datetime | None = None
+    total_chapters: int
+    completed_chapters: int
+    warning_chapters: int
+    failed_chapters: int
+    blocked_chapters: int
+    chapters: list[ChapterGenerationStatusItem] = Field(default_factory=list)
+    is_stale: bool = False
+    stale_workstream_count: int = 0
+
+
+class GeneratedChapterResponse(ApiModel):
+    chapter_key: str
+    title: str
+    status: str
+    ast: dict[str, Any] | None = None
+    source_refs_summary: list[dict[str, Any]] = Field(default_factory=list)
+    evidence_refs_summary: list[dict[str, Any]] = Field(default_factory=list)
+    generation_warnings: list[str] = Field(default_factory=list)
+    validation_warnings: list[str] = Field(default_factory=list)
+    model: str = ""
+    prompt_version: str = ""
+
+
+class DrhpDocumentSummaryResponse(ApiModel):
+    document_id: UUID
+    latest_version_id: UUID | None = None
+    latest_version_number: int | None = None
+    latest_status: str | None = None
+    snapshot_id: UUID | None = None
+    created_at: datetime | None = None
+

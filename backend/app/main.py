@@ -44,6 +44,9 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         settings.app_env,
         settings.service_role,
     )
+    from app.modules.drhp.generation.runner import resume_incomplete_generations
+
+    resume_incomplete_generations()
     yield
     logger.info("Shutting down %s", settings.app_name)
 

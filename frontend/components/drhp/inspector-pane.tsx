@@ -4,16 +4,27 @@ import { FileText, MessageSquare } from 'lucide-react';
 import { CopilotPanel } from '@/components/drhp/copilot-panel';
 import { EvidencePanel } from '@/components/drhp/evidence-panel';
 import type { DrhpChapterReadinessResponse } from '@/lib/api/drhp';
-import type { DrhpChapter, DrhpInspectorTab } from '@/lib/drhp/types';
+import type { DrhpChapter, DrhpBlock, DrhpInspectorTab } from '@/lib/drhp/types';
 import { cn } from '@/lib/utils';
 
 type InspectorPaneProps = {
   chapter: DrhpChapter;
   selectedBlockId: string | null;
+  selectedBlock?: DrhpBlock | null;
   activeTab: DrhpInspectorTab;
   onTabChange: (tab: DrhpInspectorTab) => void;
   readiness?: DrhpChapterReadinessResponse | null;
   readinessLoading?: boolean;
+  generationStatus?: import('@/lib/api/drhp').DocumentGenerationStatus | null;
+  documentVersionId?: string | null;
+  generatedChapterMeta?: {
+    blockCount: number;
+    sourceRefCount: number;
+    placeholderCount: number;
+    supportStates: Record<string, number>;
+    warnings: string[];
+  } | null;
+  hasGeneratedBlocks?: boolean;
 };
 
 const TABS: Array<{ id: DrhpInspectorTab; label: string; icon: typeof FileText }> = [
@@ -24,10 +35,15 @@ const TABS: Array<{ id: DrhpInspectorTab; label: string; icon: typeof FileText }
 export function InspectorPane({
   chapter,
   selectedBlockId,
+  selectedBlock = null,
   activeTab,
   onTabChange,
   readiness = null,
   readinessLoading = false,
+  generationStatus = null,
+  documentVersionId = null,
+  generatedChapterMeta = null,
+  hasGeneratedBlocks = false,
 }: InspectorPaneProps) {
   return (
     <aside
@@ -61,8 +77,13 @@ export function InspectorPane({
           <EvidencePanel
             chapter={chapter}
             selectedBlockId={selectedBlockId}
+            selectedBlock={selectedBlock}
             readiness={readiness}
             readinessLoading={readinessLoading}
+            generationStatus={generationStatus}
+            documentVersionId={documentVersionId}
+            generatedChapterMeta={generatedChapterMeta}
+            hasGeneratedBlocks={hasGeneratedBlocks}
           />
         ) : (
           <CopilotPanel chapter={chapter} selectedBlockId={selectedBlockId} />

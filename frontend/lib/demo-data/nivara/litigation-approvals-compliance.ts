@@ -118,7 +118,7 @@ export function createNivaraLitigationApprovalsCompliancePayload(): LitigationAp
       totalQuantifiedAmount: '3.5',
       currency: NIVARA_FINANCIAL_PERIODS.reportingCurrency,
       amountUnit: NIVARA_FINANCIAL_PERIODS.amountUnit,
-      amountDisputed: 'yes',
+      amountDisputed: '3.5',
     },
     statusOutcome: {
       ...createEmptyMatterRecord().statusOutcome,

@@ -821,10 +821,10 @@ CHAPTER_DEFINITIONS: dict[str, ChapterDefinition] = {
         requirements=COVER_PAGE_REQUIREMENTS,
         workstream_links=(_CI_IDENTITY, _CI_OFFICES, _CI_DOCUMENTS),
     ),
-    "company-history-incorporation": ChapterDefinition(
-        key="company-history-incorporation",
-        title=CHAPTER_TITLES["company-history-incorporation"],
-        order=5,
+    "company-history-promoters-structure": ChapterDefinition(
+        key="company-history-promoters-structure",
+        title=CHAPTER_TITLES["company-history-promoters-structure"],
+        order=11,
         source_adapter=SourceAdapterKey.COMPANY_INCORPORATION,
         requirements=COMPANY_HISTORY_REQUIREMENTS,
         workstream_links=(
@@ -844,7 +844,10 @@ for _index, _key in enumerate(ALL_CHAPTER_KEYS, start=1):
 
 
 def get_chapter_definition(chapter_key: str) -> ChapterDefinition | None:
-    return CHAPTER_DEFINITIONS.get(chapter_key)
+    from app.modules.drhp.constants import resolve_chapter_key
+
+    resolved = resolve_chapter_key(chapter_key) or chapter_key
+    return CHAPTER_DEFINITIONS.get(resolved)
 
 
 def iter_chapter_definitions() -> list[ChapterDefinition]:

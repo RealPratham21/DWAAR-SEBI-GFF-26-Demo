@@ -1,15 +1,18 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { PanelLeftClose, PanelLeft } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Loader2, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { ExportMenu } from '@/components/drhp/export-menu';
 import { ChapterNavigator } from '@/components/drhp/chapter-navigator';
 import { DocumentPane } from '@/components/drhp/document-pane';
 import { InspectorPane } from '@/components/drhp/inspector-pane';
 import { buildEmptyDrhpChapters } from '@/lib/drhp/chapters';
+import { astChapterToBlocks } from '@/lib/drhp/ast-mapper';
 import { useDrhpChapterReadiness } from '@/lib/drhp/hooks/use-drhp-chapter-readiness';
+import { useDrhpGeneration } from '@/lib/drhp/hooks/use-drhp-generation';
 import { useDrhpUrlState } from '@/lib/drhp/hooks/use-drhp-url-state';
 import { useSidebarCollapse } from '@/lib/layout/sidebar-collapse-context';
-import type { DrhpBlock } from '@/lib/drhp/types';
+import type { DrhpBlock, DrhpChapter } from '@/lib/drhp/types';
 import { cn } from '@/lib/utils';
 
 type DrhpWorkspaceProps = {
@@ -23,13 +26,108 @@ export function DrhpWorkspace({ fixtureBlocksByChapter }: DrhpWorkspaceProps) {
     useDrhpUrlState();
   const { chapters, readiness, listLoading, detailLoading, error } =
     useDrhpChapterReadiness(chapterKey);
+  const generation = useDrhpGeneration();
+  const {
+    documentVersionId,
+    status: generationStatus,
+    starting,
+    loading: generationLoading,
+    error: generationError,
+    startGeneration,
+    generationChapters,
+    loadGeneratedChapter,
+    isGenerating,
+  } = generation;
+  const generationProgress = generationStatus
+    ? `${generationStatus.status}:${generationStatus.completedChapters}`
+    : 'none';
   const { collapsed, setCollapsed } = useSidebarCollapse();
   const [mobilePane, setMobilePane] = useState<'chapters' | 'document' | 'inspector'>('document');
+  const [chapterBlocks, setChapterBlocks] = useState<DrhpBlock[]>([]);
+  const [chapterLoading, setChapterLoading] = useState(false);
 
-  const chapterList = chapters.length > 0 ? chapters : fallbackChapters;
+  const chapterList: DrhpChapter[] = useMemo(() => {
+    if (generationStatus) {
+      const readinessByKey = new Map(chapters.map((item) => [item.key, item]));
+      return generationChapters.map((item) => {
+        const readinessItem = readinessByKey.get(item.key);
+        return readinessItem
+          ? { ...readinessItem, status: item.status !== 'not_generated' ? item.status : readinessItem.status }
+          : item;
+      });
+    }
+    return chapters.length > 0 ? chapters : fallbackChapters;
+  }, [chapters, fallbackChapters, generationChapters, generationStatus]);
+
   const selectedChapter =
     chapterList.find((chapter) => chapter.key === chapterKey) ?? chapterList[0];
-  const blocks = fixtureBlocksByChapter?.[selectedChapter.key] ?? [];
+
+  useEffect(() => {
+    let cancelled = false;
+    setChapterLoading(true);
+    void (async () => {
+      if (fixtureBlocksByChapter?.[selectedChapter.key]?.length) {
+        if (!cancelled) {
+          setChapterBlocks(fixtureBlocksByChapter[selectedChapter.key] ?? []);
+          setChapterLoading(false);
+        }
+        return;
+      }
+      if (!documentVersionId) {
+        if (!cancelled) {
+          setChapterBlocks([]);
+          setChapterLoading(false);
+        }
+        return;
+      }
+      try {
+        const response = await loadGeneratedChapter(selectedChapter.key);
+        if (cancelled) return;
+        if (response?.ast) {
+          setChapterBlocks(astChapterToBlocks(response.ast, response.sourceRefsSummary));
+        } else {
+          setChapterBlocks([]);
+        }
+      } catch {
+        if (!cancelled) setChapterBlocks([]);
+      } finally {
+        if (!cancelled) setChapterLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    fixtureBlocksByChapter,
+    documentVersionId,
+    selectedChapter.key,
+    generationProgress,
+    loadGeneratedChapter,
+  ]);
+
+  const blocks = fixtureBlocksByChapter?.[selectedChapter.key] ?? chapterBlocks;
+  const selectedBlock = blocks.find((block) => block.id === blockId) ?? null;
+
+  const generatedChapterMeta = useMemo(() => {
+    if (blocks.length === 0) return null;
+    const supportStates: Record<string, number> = {};
+    let placeholders = 0;
+    let sourceRefCount = 0;
+    for (const block of blocks) {
+      const state = block.supportState ?? 'unknown';
+      supportStates[state] = (supportStates[state] ?? 0) + 1;
+      if (block.kind === 'placeholder') placeholders += 1;
+      sourceRefCount += block.sourceRefs?.length ?? 0;
+    }
+    const chapterRow = generationStatus?.chapters.find((c) => c.chapterKey === selectedChapter.key);
+    return {
+      blockCount: blocks.length,
+      sourceRefCount,
+      placeholderCount: placeholders,
+      supportStates,
+      warnings: chapterRow?.warnings ?? [],
+    };
+  }, [blocks, generationStatus, selectedChapter.key]);
 
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-col bg-background">
@@ -45,12 +143,41 @@ export function DrhpWorkspace({ fixtureBlocksByChapter }: DrhpWorkspaceProps) {
             <p className="max-w-3xl text-xs text-muted-foreground">
               Professional due diligence, certification and filing remain outside this workspace.
             </p>
-            {listLoading ? (
+            {isGenerating && generationStatus ? (
+              <p className="text-xs text-muted-foreground">
+                Generating Draft DRHP — {generationStatus.completedChapters} of{' '}
+                {generationStatus.totalChapters} chapters complete
+              </p>
+            ) : null}
+            {generationStatus?.isStale ? (
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                Source data changed after this draft was generated.
+              </p>
+            ) : null}
+            {listLoading || generationLoading ? (
               <p className="text-xs text-muted-foreground">Loading chapter readiness…</p>
             ) : null}
-            {error ? <p className="text-xs text-destructive">{error}</p> : null}
+            {error || generationError ? (
+              <p className="text-xs text-destructive">{error ?? generationError}</p>
+            ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <ExportMenu
+              documentVersionId={documentVersionId}
+              documentStatus={generationStatus?.status}
+              completedChapters={generationStatus?.completedChapters ?? 0}
+            />
+            <button
+              type="button"
+              disabled={starting || isGenerating}
+              onClick={() => void startGeneration()}
+              className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+            >
+              {starting || isGenerating ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : null}
+              Generate Draft DRHP
+            </button>
             {!collapsed ? (
               <button
                 type="button"
@@ -109,14 +236,23 @@ export function DrhpWorkspace({ fixtureBlocksByChapter }: DrhpWorkspaceProps) {
           blocks={blocks}
           selectedBlockId={blockId}
           onSelectBlock={setBlockId}
+          loading={chapterLoading}
+          documentVersionId={documentVersionId}
+          documentStatus={generationStatus?.status}
+          completedChapters={generationStatus?.completedChapters ?? 0}
         />
         <InspectorPane
           chapter={selectedChapter}
           selectedBlockId={blockId}
+          selectedBlock={selectedBlock}
           activeTab={inspectorTab}
           onTabChange={setInspectorTab}
           readiness={readiness}
           readinessLoading={detailLoading}
+          generationStatus={generationStatus}
+          documentVersionId={documentVersionId}
+          generatedChapterMeta={generatedChapterMeta}
+          hasGeneratedBlocks={blocks.length > 0}
         />
       </div>
 
@@ -137,16 +273,25 @@ export function DrhpWorkspace({ fixtureBlocksByChapter }: DrhpWorkspaceProps) {
             blocks={blocks}
             selectedBlockId={blockId}
             onSelectBlock={setBlockId}
+            loading={chapterLoading}
+            documentVersionId={documentVersionId}
+            documentStatus={generationStatus?.status}
+            completedChapters={generationStatus?.completedChapters ?? 0}
           />
         ) : null}
         {mobilePane === 'inspector' ? (
           <InspectorPane
             chapter={selectedChapter}
             selectedBlockId={blockId}
+            selectedBlock={selectedBlock}
             activeTab={inspectorTab}
             onTabChange={setInspectorTab}
             readiness={readiness}
             readinessLoading={detailLoading}
+            generationStatus={generationStatus}
+            documentVersionId={documentVersionId}
+            generatedChapterMeta={generatedChapterMeta}
+            hasGeneratedBlocks={blocks.length > 0}
           />
         ) : null}
       </div>

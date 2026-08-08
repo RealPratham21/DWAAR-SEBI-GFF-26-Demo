@@ -63,6 +63,7 @@ export const NIVARA_IDS = {
   kmpCfo: 'nivara-kmp-cfo-001',
   kmpCs: 'nivara-kmp-cs-001',
   groupEntity001: 'nivara-group-entity-001',
+  issuerEntity: 'nivara-issuer-entity-001',
   facility001: 'nivara-facility-001',
   charge001: 'nivara-charge-001',
   property001: 'nivara-property-001',

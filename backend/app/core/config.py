@@ -180,6 +180,7 @@ class Settings(BaseSettings):
         alias="STRUCTURED_EXTRACTION_PROVIDER",
     )
     cohere_api_key: str = Field(default="", alias="COHERE_API_KEY")
+    cohere_api_keys: str = Field(default="", alias="COHERE_API_KEYS")
     cohere_model: str = Field(
         default="command-a-plus-05-2026",
         alias="COHERE_MODEL",
@@ -187,6 +188,30 @@ class Settings(BaseSettings):
     cohere_timeout_seconds: int = Field(default=60, alias="COHERE_TIMEOUT_SECONDS")
     cohere_max_retries: int = Field(default=2, alias="COHERE_MAX_RETRIES")
     cohere_temperature: float = Field(default=0.0, alias="COHERE_TEMPERATURE")
+    cohere_drhp_model: str = Field(
+        default="",
+        alias="COHERE_DRHP_MODEL",
+        description="Model for DRHP generation; falls back to COHERE_MODEL when empty.",
+    )
+    cohere_drhp_max_tokens: int = Field(
+        default=8192,
+        alias="COHERE_DRHP_MAX_TOKENS",
+        description="Max output tokens for DRHP chapter generation.",
+    )
+    cohere_drhp_thinking_token_budget: int = Field(
+        default=2000,
+        alias="COHERE_DRHP_THINKING_TOKEN_BUDGET",
+        description="Cap internal reasoning tokens so structured JSON output is not truncated.",
+    )
+    drhp_generation_max_concurrency: int = Field(
+        default=3,
+        alias="DRHP_GENERATION_MAX_CONCURRENCY",
+    )
+    drhp_use_fake_cohere: bool = Field(
+        default=False,
+        alias="DRHP_USE_FAKE_COHERE",
+        description="CI/tests only. When false, COHERE_API_KEY is required for hybrid/derived chapters.",
+    )
     structured_extraction_max_attempts: int = Field(
         default=3,
         alias="STRUCTURED_EXTRACTION_MAX_ATTEMPTS",
