@@ -1,6 +1,6 @@
 """Add global issue acknowledgement overlay table (G4).
 
-Revision ID: 023_global_issue_acknowledgements
+Revision ID: 023_global_issue_ack
 Revises: 022_drhp_documents
 Create Date: 2026-08-08
 """
@@ -10,7 +10,7 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "023_global_issue_acknowledgements"
+revision: str = "023_global_issue_ack"
 down_revision: str | None = "022_drhp_documents"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
