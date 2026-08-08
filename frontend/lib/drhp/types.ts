@@ -11,7 +11,9 @@ export type DrhpChapterStatus =
   | 'blocked'
   | 'not_connected'
   | 'ready_with_gaps'
-  | 'ready_to_generate';
+  | 'ready_with_placeholders'
+  | 'ready_to_generate'
+  | 'depends_on_generated';
 
 export type DrhpBlockStatus =
   | 'empty'
@@ -26,7 +28,15 @@ export type DrhpBlockKind =
   | 'table'
   | 'list'
   | 'notice'
-  | 'missing_information';
+  | 'missing_information'
+  | 'heading'
+  | 'bullet_list'
+  | 'numbered_list'
+  | 'key_value_table'
+  | 'legal_notice'
+  | 'cross_reference'
+  | 'placeholder'
+  | 'page_break';
 
 export interface DrhpEvidenceReference {
   id: string;
@@ -85,6 +95,18 @@ export type DrhpBlockContent =
   | DrhpNoticeContent
   | DrhpMissingInformationContent;
 
+export interface DrhpSourceReference {
+  refId: string;
+  workstreamKey: string;
+  sectionKey: string;
+  recordId?: string;
+  fieldPath: string;
+  fieldLabel?: string;
+  sourceType: string;
+  valuePreview?: unknown;
+  workspaceVersion?: number;
+}
+
 export interface DrhpBlock {
   id: string;
   kind: DrhpBlockKind;
@@ -93,6 +115,17 @@ export interface DrhpBlock {
   content: DrhpBlockContent;
   evidenceRefs: DrhpEvidenceReference[];
   gapRefs: DrhpGapReference[];
+  /** Resolved source refs for block → evidence panel contract */
+  sourceRefs?: DrhpSourceReference[];
+  sourceRefIds?: string[];
+  evidenceRefIds?: string[];
+  supportState?:
+    | 'evidence_backed'
+    | 'structured_input_backed'
+    | 'calculation_backed'
+    | 'professional_confirmation_pending'
+    | 'placeholder'
+    | 'mixed_support';
 }
 
 export interface DrhpSection {
@@ -114,7 +147,12 @@ export interface DrhpChapter {
   workstreamTitle?: string;
   /** Latest readiness fields from the DRHP API (G1). */
   connectionStatus?: 'not_connected' | 'partially_connected' | 'connected';
-  generationStatus?: 'blocked' | 'ready_with_gaps' | 'ready_to_generate';
+  generationStatus?:
+    | 'blocked'
+    | 'ready_with_gaps'
+    | 'ready_with_placeholders'
+    | 'ready_to_generate'
+    | 'depends_on_generated_chapters';
   canGenerate?: boolean;
   readinessSummary?: {
     satisfiedCount: number;

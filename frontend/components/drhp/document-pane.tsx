@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { FileText } from 'lucide-react';
-import { DraftBlock } from '@/components/drhp/draft-block';
+import { AstRenderer } from '@/components/drhp/ast-renderer';
+import { ExportMenu } from '@/components/drhp/export-menu';
 import { chapterStatusLabel } from '@/lib/drhp/chapters';
 import type { DrhpBlock, DrhpChapter } from '@/lib/drhp/types';
 
@@ -11,13 +12,25 @@ type DocumentPaneProps = {
   blocks: DrhpBlock[];
   selectedBlockId: string | null;
   onSelectBlock: (blockId: string | null) => void;
+  loading?: boolean;
+  documentVersionId?: string | null;
+  documentStatus?: string | null;
+  completedChapters?: number;
 };
+
+/** A4 width at 96dpi ≈ 794px; print-like margins and dense serif body. */
+const PAGE_CLASS =
+  'mx-auto w-full max-w-[210mm] min-h-[297mm] bg-[#fffef9] px-[20mm] py-[18mm] shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-card';
 
 export function DocumentPane({
   chapter,
   blocks,
   selectedBlockId,
   onSelectBlock,
+  loading = false,
+  documentVersionId = null,
+  documentStatus = null,
+  completedChapters = 0,
 }: DocumentPaneProps) {
   const workstreamHref = chapter.workstreamSlug
     ? `/projects/demo/workstreams/${chapter.workstreamSlug}`
@@ -26,68 +39,63 @@ export function DocumentPane({
   return (
     <section
       aria-label="DRHP document preview"
-      className="flex h-full min-h-0 min-w-0 flex-col bg-[#f7f4ef] dark:bg-background"
+      className="flex h-full min-h-0 min-w-0 flex-col bg-[#ebe8e2] dark:bg-background"
     >
       <div className="flex items-center justify-between gap-3 border-b border-border/80 bg-card/80 px-4 py-3 backdrop-blur">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-foreground">{chapter.title}</p>
           <p className="text-xs text-muted-foreground">{chapterStatusLabel(chapter.status)}</p>
         </div>
-        <button
-          type="button"
-          disabled
-          title="PDF download will be available when a generated draft exists"
-          className="shrink-0 rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground opacity-60"
-        >
-          Download PDF
-        </button>
+        <ExportMenu
+          documentVersionId={documentVersionId}
+          documentStatus={documentStatus}
+          completedChapters={completedChapters}
+        />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8">
-        <article className="mx-auto min-h-[70vh] w-full max-w-5xl rounded-sm border border-border/70 bg-white p-8 shadow-sm dark:bg-card sm:p-12">
-          <header className="mb-8 border-b border-border pb-6">
-            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              Draft offer document
-            </p>
-            <h1 className="mt-2 font-serif text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-              {chapter.title}
-            </h1>
-          </header>
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-6 sm:px-6">
+        <div className="space-y-6">
+          <article className={PAGE_CLASS}>
+            <header className="mb-6 border-b border-neutral-300 pb-4">
+              <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-neutral-500">
+                Draft Red Herring Prospectus
+              </p>
+              <h1 className="mt-2 font-serif text-xl font-semibold leading-tight tracking-tight text-neutral-900 sm:text-2xl">
+                {chapter.title}
+              </h1>
+            </header>
 
-          {blocks.length > 0 ? (
-            <div className="space-y-3">
-              {blocks.map((block) => (
-                <DraftBlock
-                  key={block.id}
-                  block={block}
-                  selected={selectedBlockId === block.id}
-                  onSelect={(id) => onSelectBlock(id === selectedBlockId ? null : id)}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-start gap-4 py-10">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-muted">
-                <FileText className="h-5 w-5 text-muted-foreground" />
+            {loading ? (
+              <div className="py-10 font-serif text-sm text-neutral-600">Loading generated chapter…</div>
+            ) : blocks.length > 0 ? (
+              <AstRenderer
+                blocks={blocks}
+                selectedBlockId={selectedBlockId}
+                onSelectBlock={onSelectBlock}
+              />
+            ) : (
+              <div className="flex flex-col items-start gap-4 py-10">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-muted">
+                  <FileText className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="font-serif text-base font-semibold text-neutral-900">Chapter not generated</h2>
+                  <p className="max-w-md font-serif text-sm leading-relaxed text-neutral-600">
+                    This chapter has no draft content yet. Generation will populate a page-like preview here.
+                  </p>
+                </div>
+                {workstreamHref && chapter.workstreamTitle ? (
+                  <Link
+                    href={workstreamHref}
+                    className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                  >
+                    Complete {chapter.workstreamTitle}
+                  </Link>
+                ) : null}
               </div>
-              <div className="space-y-2">
-                <h2 className="text-base font-semibold text-foreground">Chapter not generated</h2>
-                <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
-                  This chapter has no draft content yet. Generation will populate a page-like
-                  preview here. Nothing fabricated is shown until a real draft exists.
-                </p>
-              </div>
-              {workstreamHref && chapter.workstreamTitle ? (
-                <Link
-                  href={workstreamHref}
-                  className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-                >
-                  Complete {chapter.workstreamTitle}
-                </Link>
-              ) : null}
-            </div>
-          )}
-        </article>
+            )}
+          </article>
+        </div>
       </div>
     </section>
   );

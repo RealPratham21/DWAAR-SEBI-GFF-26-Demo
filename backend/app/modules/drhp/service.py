@@ -12,6 +12,7 @@ from app.core.exceptions import AppException
 from app.models.company_incorporation_workspace import CompanyIncorporationWorkspace
 from app.models.document import Document
 from app.models.document_version import DocumentVersion
+from app.models.drhp_generation_snapshot import DrhpGenerationSnapshot
 from app.models.drhp_source_snapshot import DrhpSnapshotItem, DrhpSourceSnapshot
 from app.models.fact_evidence_reference import FactEvidenceReference
 from app.models.fact_issue import FactIssue
@@ -26,10 +27,23 @@ from app.modules.drhp.constants import (
     OPEN_ISSUE_STATUSES,
     REGISTRY_VERSION,
     SNAPSHOT_SCHEMA_VERSION,
-    SUPPORTED_CHAPTER_KEYS,
+    resolve_chapter_key,
     CoverageStatus,
     DrhpErrorCode,
 )
+from app.modules.drhp.generation.readiness_bridge import (
+    build_list_item_from_bundle,
+    evaluate_chapter_for_listing,
+    should_use_g1_legacy,
+    G1_LEGACY_CHAPTER_KEYS,
+)
+from app.modules.drhp.generation.snapshot_service import (
+    create_generation_snapshot,
+    get_generation_snapshot,
+)
+from app.modules.drhp.generation.staleness import compare_snapshot_staleness
+from app.modules.drhp.bundles.builders import build_chapter_source_bundle
+from app.modules.drhp.workstreams import load_all_workstreams, missing_workstream_slugs
 from app.modules.drhp.readiness import ChapterReadiness, evaluate_chapter_readiness
 from app.modules.drhp.registry import (
     ChapterDefinition,
@@ -42,9 +56,17 @@ from app.modules.drhp.schemas import (
     ChapterListItemResponse,
     ChapterListResponse,
     ChapterReadinessResponse,
+    ChapterSourceBundleResponse,
+    DocumentGenerationStatusResponse,
+    DrhpDocumentSummaryResponse,
     EvidenceRefResponse,
+    GenerateDrhpResponse,
+    GeneratedChapterResponse,
+    GenerationSnapshotDetailResponse,
+    GenerationSnapshotSummaryResponse,
     RequirementReadinessResponse,
     SnapshotItemResponse,
+    SnapshotStalenessResponse,
     SourceSnapshotResponse,
     WorkstreamLinkResponse,
 )
@@ -295,9 +317,10 @@ def _evaluate_definition(
 def list_chapters(db: Session, user: User) -> ChapterListResponse:
     chapters: list[ChapterListItemResponse] = []
     for index, definition in enumerate(iter_chapter_definitions(), start=1):
-        result = _evaluate_definition(db, user, definition)
-        chapters.append(
-            ChapterListItemResponse(
+        g1_item: ChapterListItemResponse | None = None
+        if should_use_g1_legacy(definition):
+            result = _evaluate_definition(db, user, definition)
+            g1_item = ChapterListItemResponse(
                 key=definition.key,
                 title=definition.title,
                 order=definition.order or index,
@@ -318,6 +341,14 @@ def list_chapters(db: Session, user: User) -> ChapterListResponse:
                     if link is not None
                 ],
             )
+        chapters.append(
+            evaluate_chapter_for_listing(
+                db,
+                user,
+                definition,
+                order=index,
+                g1_result=g1_item,
+            )
         )
     return ChapterListResponse(
         registry_version=registry_meta()["registryVersion"],
@@ -330,15 +361,52 @@ def get_chapter_readiness(
     user: User,
     chapter_key: str,
 ) -> ChapterReadinessResponse:
-    definition = get_chapter_definition(chapter_key)
+    resolved = resolve_chapter_key(chapter_key) or chapter_key
+    definition = get_chapter_definition(resolved)
     if definition is None:
         raise AppException(
             status_code=404,
             code=DrhpErrorCode.CHAPTER_NOT_FOUND,
             message=f"Unknown DRHP chapter key: {chapter_key}",
         )
-    result = _evaluate_definition(db, user, definition)
-    return _readiness_response(result)
+    if should_use_g1_legacy(definition):
+        result = _evaluate_definition(db, user, definition)
+        return _readiness_response(result)
+
+    snapshots = load_all_workstreams(db, user.id)
+    if missing_workstream_slugs(snapshots):
+        bundle = build_chapter_source_bundle("preview", definition.key, snapshots)
+    else:
+        bundle = build_chapter_source_bundle("preview", definition.key, snapshots)
+    readiness = bundle.readiness
+    return ChapterReadinessResponse(
+        chapter_key=definition.key,
+        title=definition.title,
+        supported=True,
+        source_adapter=definition.source_adapter,
+        connection_status=readiness.connection_status,
+        generation_status=readiness.generation_status,
+        can_generate=readiness.can_generate,
+        registry_version=REGISTRY_VERSION,
+        source_hash="",
+        requirement_total=readiness.satisfied_count + readiness.missing_count,
+        satisfied_count=readiness.satisfied_count,
+        missing_count=readiness.missing_count,
+        unknown_applicability_count=0,
+        blocking_count=readiness.blocker_count,
+        gap_count=readiness.missing_count,
+        warning_count=readiness.warning_count,
+        warnings=bundle.warnings,
+        workstream_links=[
+            WorkstreamLinkResponse(
+                slug=ref.workstream_key,
+                title=ref.field_label or ref.workstream_key,
+                href=f"/projects/demo/workstreams/{ref.workstream_key}?tab=information",
+                section_id=ref.section_key,
+            )
+            for ref in bundle.source_refs[:5]
+        ],
+    )
 
 
 def _readiness_result_dict(response: ChapterReadinessResponse) -> dict[str, Any]:
@@ -468,15 +536,16 @@ def create_source_snapshot(
     user: User,
     chapter_key: str,
 ) -> SourceSnapshotResponse:
-    if chapter_key not in SUPPORTED_CHAPTER_KEYS:
+    resolved = resolve_chapter_key(chapter_key) or chapter_key
+    if resolved not in G1_LEGACY_CHAPTER_KEYS:
         raise AppException(
             status_code=400,
             code=DrhpErrorCode.CHAPTER_NOT_CONNECTED,
-            message="Source snapshots are only available for connected G1 chapters.",
+            message="Per-chapter G1 source snapshots are only available for legacy C&I adapters.",
             details={"chapterKey": chapter_key},
         )
 
-    definition = get_chapter_definition(chapter_key)
+    definition = get_chapter_definition(resolved)
     if definition is None:
         raise AppException(
             status_code=404,
@@ -568,3 +637,313 @@ def get_source_snapshot(
             message="You do not have access to this DRHP source snapshot.",
         )
     return _snapshot_response(snapshot, created=False)
+
+
+def create_generation_snapshot_for_user(
+    db: Session,
+    user: User,
+) -> GenerationSnapshotSummaryResponse:
+    snapshot = create_generation_snapshot(db, user)
+    return GenerationSnapshotSummaryResponse(
+        id=snapshot.id,
+        snapshot_version=snapshot.snapshot_version,
+        registry_version=snapshot.registry_version,
+        snapshot_schema_version=snapshot.snapshot_schema_version,
+        aggregate_source_hash=snapshot.aggregate_source_hash,
+        readiness_summary=snapshot.readiness_summary,
+        created_at=snapshot.created_at,
+        created=True,
+    )
+
+
+def get_generation_snapshot_detail(
+    db: Session,
+    user: User,
+    snapshot_id: uuid.UUID,
+) -> GenerationSnapshotDetailResponse:
+    snapshot = get_generation_snapshot(db, user, snapshot_id)
+    return GenerationSnapshotDetailResponse(
+        id=snapshot.id,
+        snapshot_version=snapshot.snapshot_version,
+        registry_version=snapshot.registry_version,
+        snapshot_schema_version=snapshot.snapshot_schema_version,
+        aggregate_source_hash=snapshot.aggregate_source_hash,
+        readiness_summary=snapshot.readiness_summary,
+        created_at=snapshot.created_at,
+        created=False,
+        source_workstream_versions=snapshot.source_workstream_versions,
+        canonical_context=snapshot.canonical_context,
+        source_registry=snapshot.source_registry,
+    )
+
+
+def get_chapter_source_bundle_for_snapshot(
+    db: Session,
+    user: User,
+    snapshot_id: uuid.UUID,
+    chapter_key: str,
+) -> ChapterSourceBundleResponse:
+    resolved = resolve_chapter_key(chapter_key) or chapter_key
+    snapshot = get_generation_snapshot(db, user, snapshot_id)
+    from app.modules.drhp.workstreams import WorkstreamSnapshot
+
+    snapshots: dict[str, WorkstreamSnapshot] = {}
+    versions = snapshot.source_workstream_versions or {}
+    workstreams = (snapshot.normalized_payload or {}).get("workstreams") or {}
+    for slug, payload in workstreams.items():
+        version_meta = versions.get(slug) or {}
+        snapshots[slug] = WorkstreamSnapshot(
+            slug=slug,
+            workspace_id=uuid.UUID(str(version_meta.get("workspaceId"))) if version_meta.get("workspaceId") else uuid.uuid4(),
+            version=int(version_meta.get("version") or 1),
+            schema_version=int(version_meta.get("schemaVersion") or 1),
+            payload=payload if isinstance(payload, dict) else {},
+            payload_hash=str(version_meta.get("payloadHash") or ""),
+            last_saved_at=version_meta.get("lastSavedAt"),
+        )
+    bundle = build_chapter_source_bundle(str(snapshot.id), resolved, snapshots)
+    return ChapterSourceBundleResponse.model_validate(bundle.model_dump(mode="json"))
+
+
+def get_snapshot_staleness(
+    db: Session,
+    user: User,
+    snapshot_id: uuid.UUID,
+) -> SnapshotStalenessResponse:
+    snapshot = get_generation_snapshot(db, user, snapshot_id)
+    result = compare_snapshot_staleness(db, user.id, snapshot)
+    return SnapshotStalenessResponse(
+        snapshot_id=snapshot.id,
+        is_stale=result["isStale"],
+        stale_workstreams=result["staleWorkstreams"],
+        affected_chapters=result["affectedChapters"],
+    )
+
+
+def _get_or_create_document(db: Session, user: User):
+    from app.models.drhp_document import DrhpDocument
+
+    doc = db.scalar(select(DrhpDocument).where(DrhpDocument.user_id == user.id))
+    if doc is None:
+        doc = DrhpDocument(user_id=user.id)
+        db.add(doc)
+        db.flush()
+    return doc
+
+
+def start_drhp_generation(
+    db: Session,
+    user: User,
+    *,
+    snapshot_id: uuid.UUID | None = None,
+    create_snapshot: bool = True,
+) -> GenerateDrhpResponse:
+    from app.models.drhp_document import DrhpChapterVersion, DrhpDocument, DrhpDocumentVersion
+    from app.modules.drhp.constants import (
+        ALL_CHAPTER_KEYS,
+        CHAPTER_GENERATION_MODES,
+        ChapterVersionStatus,
+        DocumentVersionStatus,
+        PROMPT_VERSION,
+        RULES_VERSION,
+    )
+    if snapshot_id:
+        snapshot = get_generation_snapshot(db, user, snapshot_id)
+    elif create_snapshot:
+        snapshot = create_generation_snapshot(db, user)
+    else:
+        raise AppException(
+            status_code=422,
+            code=DrhpErrorCode.GENERATION_SNAPSHOT_NOT_FOUND,
+            message="snapshotId is required when createSnapshot is false.",
+        )
+
+    document = _get_or_create_document(db, user)
+    latest_version = db.scalar(
+        select(DrhpDocumentVersion)
+        .where(DrhpDocumentVersion.document_id == document.id)
+        .order_by(DrhpDocumentVersion.version_number.desc())
+    )
+    next_version = (latest_version.version_number + 1) if latest_version else 1
+
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    model_name = settings.cohere_drhp_model or settings.cohere_model or "fake"
+
+    doc_version = DrhpDocumentVersion(
+        document_id=document.id,
+        user_id=user.id,
+        version_number=next_version,
+        generation_snapshot_id=snapshot.id,
+        status=DocumentVersionStatus.QUEUED,
+        total_chapters=len(ALL_CHAPTER_KEYS),
+        generation_model=model_name,
+        prompt_version=PROMPT_VERSION,
+        rules_version=RULES_VERSION,
+        generation_metadata={"registryVersion": REGISTRY_VERSION},
+    )
+    db.add(doc_version)
+    db.flush()
+
+    for chapter_key in ALL_CHAPTER_KEYS:
+        db.add(
+            DrhpChapterVersion(
+                document_version_id=doc_version.id,
+                chapter_key=chapter_key,
+                generation_mode=CHAPTER_GENERATION_MODES.get(chapter_key, "hybrid"),
+                status=ChapterVersionStatus.QUEUED,
+                prompt_version=PROMPT_VERSION,
+                model=model_name,
+            )
+        )
+    db.flush()
+
+    return GenerateDrhpResponse(
+        document_id=document.id,
+        document_version_id=doc_version.id,
+        version_number=next_version,
+        snapshot_id=snapshot.id,
+        status=DocumentVersionStatus.QUEUED,
+        total_chapters=len(ALL_CHAPTER_KEYS),
+    )
+
+
+def get_document_generation_status(
+    db: Session,
+    user: User,
+    document_version_id: uuid.UUID,
+) -> DocumentGenerationStatusResponse:
+    from app.models.drhp_document import DrhpChapterVersion, DrhpDocumentVersion
+    from app.modules.drhp.constants import CHAPTER_TITLES
+
+    doc_version = db.get(DrhpDocumentVersion, document_version_id)
+    if doc_version is None:
+        raise AppException(
+            status_code=404,
+            code=DrhpErrorCode.DOCUMENT_VERSION_NOT_FOUND,
+            message="DRHP document version not found.",
+        )
+    if doc_version.user_id != user.id:
+        raise AppException(
+            status_code=403,
+            code=DrhpErrorCode.DOCUMENT_FORBIDDEN,
+            message="DRHP document access denied.",
+        )
+
+    from app.modules.drhp.schemas import ChapterGenerationStatusItem
+
+    chapter_rows = db.scalars(
+        select(DrhpChapterVersion)
+        .where(DrhpChapterVersion.document_version_id == document_version_id)
+        .order_by(DrhpChapterVersion.chapter_key)
+    ).all()
+    chapters = [
+        ChapterGenerationStatusItem(
+            chapter_key=row.chapter_key,
+            title=CHAPTER_TITLES.get(row.chapter_key, row.chapter_key),
+            status=row.status,
+            generation_mode=row.generation_mode,
+            warnings=list(row.generation_warnings or []),
+            error_message=row.error_message,
+        )
+        for row in chapter_rows
+    ]
+
+    stale = False
+    stale_count = 0
+    snapshot = db.get(DrhpGenerationSnapshot, doc_version.generation_snapshot_id)
+    if snapshot:
+        stale_result = compare_snapshot_staleness(db, user.id, snapshot)
+        stale = stale_result["isStale"]
+        stale_count = len(stale_result["staleWorkstreams"])
+
+    return DocumentGenerationStatusResponse(
+        document_id=doc_version.document_id,
+        document_version_id=doc_version.id,
+        version_number=doc_version.version_number,
+        snapshot_id=doc_version.generation_snapshot_id,
+        status=doc_version.status,
+        generation_started_at=doc_version.generation_started_at,
+        completed_at=doc_version.completed_at,
+        total_chapters=doc_version.total_chapters,
+        completed_chapters=doc_version.completed_chapters,
+        warning_chapters=doc_version.warning_chapters,
+        failed_chapters=doc_version.failed_chapters,
+        blocked_chapters=doc_version.blocked_chapters,
+        chapters=chapters,
+        is_stale=stale,
+        stale_workstream_count=stale_count,
+    )
+
+
+def get_generated_chapter(
+    db: Session,
+    user: User,
+    document_version_id: uuid.UUID,
+    chapter_key: str,
+) -> GeneratedChapterResponse:
+    from app.models.drhp_document import DrhpChapterVersion, DrhpDocumentVersion
+    from app.modules.drhp.constants import CHAPTER_TITLES
+
+    resolved = resolve_chapter_key(chapter_key) or chapter_key
+    doc_version = db.get(DrhpDocumentVersion, document_version_id)
+    if doc_version is None:
+        raise AppException(
+            status_code=404,
+            code=DrhpErrorCode.DOCUMENT_VERSION_NOT_FOUND,
+            message="DRHP document version not found.",
+        )
+    if doc_version.user_id != user.id:
+        raise AppException(
+            status_code=403,
+            code=DrhpErrorCode.DOCUMENT_FORBIDDEN,
+            message="DRHP document access denied.",
+        )
+
+    row = db.scalar(
+        select(DrhpChapterVersion).where(
+            DrhpChapterVersion.document_version_id == document_version_id,
+            DrhpChapterVersion.chapter_key == resolved,
+        )
+    )
+    if row is None:
+        raise AppException(
+            status_code=404,
+            code=DrhpErrorCode.CHAPTER_VERSION_NOT_FOUND,
+            message=f"No generated chapter for key: {chapter_key}",
+        )
+
+    return GeneratedChapterResponse(
+        chapter_key=row.chapter_key,
+        title=CHAPTER_TITLES.get(row.chapter_key, row.chapter_key),
+        status=row.status,
+        ast=row.ast_payload,
+        source_refs_summary=list(row.source_refs_summary or []),
+        evidence_refs_summary=list(row.evidence_refs_summary or []),
+        generation_warnings=list(row.generation_warnings or []),
+        validation_warnings=list(row.validation_warnings or []),
+        model=row.model,
+        prompt_version=row.prompt_version,
+    )
+
+
+def get_latest_drhp_document(db: Session, user: User) -> DrhpDocumentSummaryResponse | None:
+    from app.models.drhp_document import DrhpDocument, DrhpDocumentVersion
+
+    document = db.scalar(select(DrhpDocument).where(DrhpDocument.user_id == user.id))
+    if document is None:
+        return None
+    latest = db.scalar(
+        select(DrhpDocumentVersion)
+        .where(DrhpDocumentVersion.document_id == document.id)
+        .order_by(DrhpDocumentVersion.version_number.desc())
+    )
+    return DrhpDocumentSummaryResponse(
+        document_id=document.id,
+        latest_version_id=latest.id if latest else None,
+        latest_version_number=latest.version_number if latest else None,
+        latest_status=latest.status if latest else None,
+        snapshot_id=latest.generation_snapshot_id if latest else None,
+        created_at=document.created_at,
+    )

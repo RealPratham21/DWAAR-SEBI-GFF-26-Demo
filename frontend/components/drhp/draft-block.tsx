@@ -61,14 +61,14 @@ function DraftBlockBody({ block }: { block: DrhpBlock }) {
     case 'list':
       return content.ordered ? (
         <ol className="list-decimal space-y-1 pl-5 text-foreground">
-          {content.items.map((item) => (
-            <li key={item}>{item}</li>
+          {content.items.map((item, index) => (
+            <li key={`list-item-${index}`}>{item}</li>
           ))}
         </ol>
       ) : (
         <ul className="list-disc space-y-1 pl-5 text-foreground">
-          {content.items.map((item) => (
-            <li key={item}>{item}</li>
+          {content.items.map((item, index) => (
+            <li key={`list-item-${index}`}>{item}</li>
           ))}
         </ul>
       );

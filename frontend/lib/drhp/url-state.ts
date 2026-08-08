@@ -1,6 +1,6 @@
 import {
   DEFAULT_DRHP_CHAPTER_KEY,
-  isDrhpChapterKey,
+  resolveDrhpChapterKey,
 } from '@/lib/drhp/chapters';
 import type { DrhpInspectorTab } from '@/lib/drhp/types';
 
@@ -13,7 +13,7 @@ export function readDrhpChapterKey(
   fallback: string = DEFAULT_DRHP_CHAPTER_KEY,
 ): string {
   const value = params.get('chapter');
-  return isDrhpChapterKey(value) ? (value as string) : fallback;
+  return resolveDrhpChapterKey(value) ?? fallback;
 }
 
 export function readDrhpBlockId(params: URLSearchParams): string | null {

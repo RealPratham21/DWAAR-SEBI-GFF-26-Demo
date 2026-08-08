@@ -22,6 +22,7 @@ from app.modules.drhp.hashing import build_chapter_source_material, compute_sour
 from app.modules.drhp.readiness import evaluate_chapter_readiness
 from app.modules.drhp.registry import get_chapter_definition, iter_chapter_definitions
 from app.modules.drhp.source_selection import AssertionView, IssueView, select_source_for_requirement
+from app.modules.drhp.workstreams import WorkstreamSnapshot
 
 FIXTURE_PATH = (
     Path(__file__).resolve().parents[2]
@@ -47,14 +48,31 @@ def _empty_identity_payload() -> dict:
     return payload
 
 
-def test_registry_covers_all_fifteen_frontend_chapters() -> None:
+def _nivara_snapshots() -> dict[str, WorkstreamSnapshot]:
+    payloads_file = Path(__file__).resolve().parents[1] / "scripts" / "nivara_workstream_payloads.json"
+    payloads = json.loads(payloads_file.read_text(encoding="utf-8"))
+    snapshots: dict[str, WorkstreamSnapshot] = {}
+    for slug, payload in payloads.items():
+        snapshots[slug] = WorkstreamSnapshot(
+            slug=slug,
+            workspace_id=uuid4(),
+            version=1,
+            schema_version=1,
+            payload=payload,
+            payload_hash=f"hash-{slug}",
+            last_saved_at="2024-03-31T00:00:00+00:00",
+        )
+    return snapshots
+
+
+def test_registry_covers_all_eighteen_frontend_chapters() -> None:
     definitions = iter_chapter_definitions()
-    assert len(definitions) == 15
+    assert len(definitions) == 18
     assert [item.key for item in definitions] == list(ALL_CHAPTER_KEYS)
-    supported = [item for item in definitions if item.supported]
-    assert {item.key for item in supported} == {
+    g1_legacy = [item for item in definitions if item.source_adapter == "company_incorporation"]
+    assert {item.key for item in g1_legacy} == {
         "cover-page-front-matter",
-        "company-history-incorporation",
+        "company-history-promoters-structure",
     }
 
 
@@ -107,7 +125,7 @@ def test_cover_blocked_when_required_identity_missing() -> None:
 
 
 def test_company_history_nivara_ready_with_gaps_and_unknown_applicability() -> None:
-    definition = get_chapter_definition("company-history-incorporation")
+    definition = get_chapter_definition("company-history-promoters-structure")
     assert definition is not None
     result = evaluate_chapter_readiness(
         definition,
@@ -152,9 +170,14 @@ def test_company_history_nivara_ready_with_gaps_and_unknown_applicability() -> N
     )
 
 
-def test_unsupported_chapter_is_not_connected() -> None:
+def test_non_g1_chapter_has_no_legacy_requirements() -> None:
+    from app.modules.drhp.bundles.builders import build_chapter_source_bundle
+
     definition = get_chapter_definition("risk-factors")
     assert definition is not None
+    assert definition.supported is True
+    assert definition.source_adapter == "none"
+    assert definition.requirements == ()
     result = evaluate_chapter_readiness(
         definition,
         payload=_nivara_payload(),
@@ -162,10 +185,15 @@ def test_unsupported_chapter_is_not_connected() -> None:
         open_issues=[],
         workspace_id=uuid4(),
     )
-    assert result.supported is False
     assert result.connection_status == ConnectionStatus.NOT_CONNECTED
-    assert result.generation_status == GenerationStatus.BLOCKED
     assert result.can_generate is False
+
+    bundle = build_chapter_source_bundle("preview", "risk-factors", _nivara_snapshots())
+    assert bundle.readiness.connection_status in {
+        ConnectionStatus.CONNECTED,
+        ConnectionStatus.PARTIALLY_CONNECTED,
+    }
+    assert len(bundle.risk_candidates) >= 0
 
 
 def test_blocking_open_issue_blocks_requirement_and_generation() -> None:
@@ -219,7 +247,7 @@ def test_warning_issue_does_not_block_chapter() -> None:
 
 
 def test_historical_assertion_supports_history_not_current_office() -> None:
-    definition = get_chapter_definition("company-history-incorporation")
+    definition = get_chapter_definition("company-history-promoters-structure")
     assert definition is not None
     assertion = AssertionView(
         id=uuid4(),

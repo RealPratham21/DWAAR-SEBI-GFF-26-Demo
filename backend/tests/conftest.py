@@ -67,7 +67,8 @@ def db_session(engine) -> Generator[Session, None, None]:
     with engine.begin() as connection:
         connection.execute(
             text(
-                "TRUNCATE TABLE drhp_snapshot_items, drhp_source_snapshots, "
+                "TRUNCATE TABLE drhp_chapter_versions, drhp_document_versions, drhp_documents, "
+                "drhp_generation_snapshots, drhp_snapshot_items, drhp_source_snapshots, "
                 "fact_issue_resolutions, fact_issue_assertions, fact_issues, "
                 "fact_assertion_reviews, fact_evidence_references, fact_assertions, "
                 "structured_extraction_runs, document_pages, document_processing_runs, "
@@ -137,7 +138,8 @@ def truncate_auth_tables(engine) -> None:
     with engine.begin() as connection:
         connection.execute(
             text(
-                "TRUNCATE TABLE drhp_snapshot_items, drhp_source_snapshots, "
+                "TRUNCATE TABLE drhp_chapter_versions, drhp_document_versions, drhp_documents, "
+                "drhp_generation_snapshots, drhp_snapshot_items, drhp_source_snapshots, "
                 "fact_issue_resolutions, fact_issue_assertions, fact_issues, "
                 "fact_assertion_reviews, fact_evidence_references, fact_assertions, "
                 "structured_extraction_runs, document_pages, document_processing_runs, "

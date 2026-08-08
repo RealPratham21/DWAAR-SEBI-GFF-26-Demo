@@ -11,6 +11,7 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 from nivara_bootstrap_lib import (  # noqa: E402
     WORKSTREAM_SECTION_ORDER_OVERRIDES,
     _resolve_section_order,
+    bootstrap_database_url,
 )
 
 
@@ -44,3 +45,9 @@ def test_intermediaries_saves_document_versions_before_filings() -> None:
     assert ordered.index(
         "final-offer-document-advertisements-material-documents-and-filing-readiness"
     ) < ordered.index("filing-and-regulatory-milestone-tracker")
+
+
+def test_bootstrap_database_url_adds_local_sslmode_and_ipv4() -> None:
+    url = bootstrap_database_url("postgresql+psycopg://dwaar:dwaar_local@localhost:5433/dwaar")
+    assert "127.0.0.1:5433" in url
+    assert "sslmode=disable" in url

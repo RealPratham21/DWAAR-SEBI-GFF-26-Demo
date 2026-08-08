@@ -15,6 +15,8 @@ from app.models.document import Document
 from app.models.document_page import DocumentPage
 from app.models.document_processing_run import DocumentProcessingRun
 from app.models.document_version import DocumentVersion
+from app.models.drhp_document import DrhpChapterVersion, DrhpDocument, DrhpDocumentVersion
+from app.models.drhp_generation_snapshot import DrhpGenerationSnapshot
 from app.models.drhp_source_snapshot import DrhpSnapshotItem, DrhpSourceSnapshot
 from app.models.enums import (
     ACTIVE_ONBOARDING_STATUSES,
@@ -50,6 +52,10 @@ __all__ = [
     "DocumentPage",
     "DocumentProcessingRun",
     "DocumentVersion",
+    "DrhpChapterVersion",
+    "DrhpDocument",
+    "DrhpDocumentVersion",
+    "DrhpGenerationSnapshot",
     "DrhpSnapshotItem",
     "DrhpSourceSnapshot",
     "FactAssertion",

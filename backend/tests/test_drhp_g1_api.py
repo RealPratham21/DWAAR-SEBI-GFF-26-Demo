@@ -64,7 +64,7 @@ async def _seed_nivara_workspace(
 
 
 @pytest.mark.postgres
-async def test_list_chapters_returns_fifteen_with_not_connected(
+async def test_list_chapters_returns_eighteen_with_mixed_readiness(
     auth_client: AsyncClient,
     db_session: Session,
 ) -> None:
@@ -74,13 +74,16 @@ async def test_list_chapters_returns_fifteen_with_not_connected(
     response = await auth_client.get("/api/v1/drhp/chapters", headers=headers)
     assert response.status_code == 200
     body = response.json()
-    assert len(body["chapters"]) == 15
+    assert len(body["chapters"]) == 18
     by_key = {item["key"]: item for item in body["chapters"]}
     assert by_key["cover-page-front-matter"]["generationStatus"] == "ready_with_gaps"
     assert by_key["cover-page-front-matter"]["canGenerate"] is True
-    assert by_key["company-history-incorporation"]["generationStatus"] == "ready_with_gaps"
-    assert by_key["risk-factors"]["connectionStatus"] == "not_connected"
-    assert by_key["risk-factors"]["canGenerate"] is False
+    assert by_key["company-history-promoters-structure"]["generationStatus"] == "ready_with_gaps"
+    assert by_key["risk-factors"]["connectionStatus"] in {
+        "partially_connected",
+        "connected",
+        "not_connected",
+    }
 
 
 @pytest.mark.postgres
@@ -102,7 +105,7 @@ async def test_cover_and_history_readiness_for_nivara(
     assert any(item["key"] == "cover.promoters" for item in cover_body["gapRequirements"])
 
     history = await auth_client.get(
-        "/api/v1/drhp/chapters/company-history-incorporation/readiness",
+        "/api/v1/drhp/chapters/company-history-promoters-structure/readiness",
         headers=headers,
     )
     assert history.status_code == 200

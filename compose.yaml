@@ -7,6 +7,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
+      # 5433 on the host avoids clashing with a locally installed Postgres on 5432 (common on Windows).
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -106,6 +107,16 @@ services:
       S3_SECURE: ${S3_SECURE:-false}
       S3_PRESIGNED_EXPIRY_SECONDS: ${S3_PRESIGNED_EXPIRY_SECONDS:-900}
       S3_ADDRESSING_STYLE: ${S3_ADDRESSING_STYLE:-path}
+      DRHP_USE_FAKE_COHERE: ${DRHP_USE_FAKE_COHERE:-false}
+      COHERE_API_KEY: ${COHERE_API_KEY:-}
+      COHERE_API_KEYS: ${COHERE_API_KEYS:-}
+      COHERE_MODEL: ${COHERE_MODEL:-command-a-plus-05-2026}
+      COHERE_DRHP_MODEL: ${COHERE_DRHP_MODEL:-}
+      COHERE_DRHP_MAX_TOKENS: ${COHERE_DRHP_MAX_TOKENS:-8192}
+      COHERE_DRHP_THINKING_TOKEN_BUDGET: ${COHERE_DRHP_THINKING_TOKEN_BUDGET:-2000}
+      COHERE_TIMEOUT_SECONDS: ${COHERE_TIMEOUT_SECONDS:-120}
+      COHERE_MAX_RETRIES: ${COHERE_MAX_RETRIES:-2}
+      COHERE_TEMPERATURE: ${COHERE_TEMPERATURE:-0}
     ports:
       - "8000:8000"
     volumes:
