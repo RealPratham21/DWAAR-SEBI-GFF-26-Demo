@@ -9,9 +9,10 @@ import { OutlookConfirmationsForm } from '@/components/industry-market/forms/out
 import { ResearchSourcesForm } from '@/components/industry-market/forms/research-sources-form';
 import { ValueChainForm } from '@/components/industry-market/forms/value-chain-form';
 import { IndustryMarketSectionNavigation } from '@/components/industry-market/section-navigation';
+import { NivaraSampleDataPanel } from '@/components/demo-data/nivara-sample-data-panel';
 import { useIndustryMarket } from '@/lib/industry-market/context';
 import { INDUSTRY_MARKET_INFORMATION_SECTIONS } from '@/lib/industry-market/options';
-import type { IndustryMarketSectionId } from '@/lib/schemas/industry-market';
+import type { IndustryMarketPayload, IndustryMarketSectionId } from '@/lib/schemas/industry-market';
 
 export function IndustryMarketInformationTab({
   activeSection,
@@ -20,7 +21,8 @@ export function IndustryMarketInformationTab({
   activeSection: IndustryMarketSectionId;
   onSectionChange: (section: IndustryMarketSectionId) => void;
 }) {
-  const { progress, dirtySections, confirmLeave } = useIndustryMarket();
+  const { progress, dirtySections, confirmLeave, isDirty, applySampleDraft, isLoading } =
+    useIndustryMarket();
   const meta = INDUSTRY_MARKET_INFORMATION_SECTIONS.find(
     (section) => section.id === activeSection,
   );
@@ -40,6 +42,12 @@ export function IndustryMarketInformationTab({
         onSelect={selectSection}
       />
       <div className="min-w-0 space-y-4">
+        <NivaraSampleDataPanel<IndustryMarketPayload>
+          workstreamKey="industry-market"
+          isDirty={isDirty}
+          disabled={isLoading}
+          applySampleDraft={applySampleDraft}
+        />
         {meta ? <p className="text-sm text-muted-foreground">{meta.description}</p> : null}
         {activeSection === 'industry-scope-and-company-market-mapping' ? (
           <IndustryScopeForm />

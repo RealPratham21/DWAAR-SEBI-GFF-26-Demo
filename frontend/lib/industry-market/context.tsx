@@ -33,6 +33,7 @@ import {
   type IndustryMarketProgress,
 } from '@/lib/industry-market/types';
 import { useNotifications } from '@/lib/notifications/context';
+import { applyWorkstreamSampleDraft } from '@/lib/demo-data/apply-sample-draft';
 import { isDeepEqual } from '@/lib/workspace/deep-equal';
 import type {
   IndustryMarketPayload,
@@ -122,6 +123,7 @@ type IndustryMarketContextValue = {
   saveActiveSection: (sectionId: IndustryMarketSectionId) => Promise<boolean>;
   discardSectionDraft: (sectionId: IndustryMarketSectionId) => void;
   confirmLeave: (sectionId?: IndustryMarketSectionId) => boolean;
+  applySampleDraft: (sample: IndustryMarketPayload) => void;
   refreshDerived: () => Promise<void>;
 };
 
@@ -334,6 +336,16 @@ export function IndustryMarketProvider({ children }: { children: ReactNode }) {
   const clearSaveNotice = useCallback(() => setSaveNotice(null), []);
   const clearSaveError = useCallback(() => setSaveError(null), []);
 
+  const applySampleDraft = useCallback(
+    (sample: IndustryMarketPayload) => {
+      applyWorkstreamSampleDraft(sample, clonePayload, setPayload, () => {
+        setSaveNotice(null);
+        setSaveError(null);
+      });
+    },
+    [],
+  );
+
   const value = useMemo<IndustryMarketContextValue>(
     () => ({
       payload,
@@ -358,9 +370,11 @@ export function IndustryMarketProvider({ children }: { children: ReactNode }) {
       saveActiveSection,
       discardSectionDraft,
       confirmLeave,
+      applySampleDraft,
       refreshDerived,
     }),
     [
+      applySampleDraft,
       assessment,
       clearSaveError,
       clearSaveNotice,

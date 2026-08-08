@@ -10,9 +10,13 @@ import { LegalUniverseForm } from '@/components/litigation-approvals-compliance/
 import { MattersMasterForm } from '@/components/litigation-approvals-compliance/forms/matters-master-form';
 import { ReconciliationForm } from '@/components/litigation-approvals-compliance/forms/reconciliation-form';
 import { LitigationApprovalsComplianceSectionNavigation } from '@/components/litigation-approvals-compliance/section-navigation';
+import { NivaraSampleDataPanel } from '@/components/demo-data/nivara-sample-data-panel';
 import { useLitigationApprovalsCompliance } from '@/lib/litigation-approvals-compliance/context';
 import { LAC_INFORMATION_SECTIONS } from '@/lib/litigation-approvals-compliance/options';
-import type { LitigationApprovalsComplianceSectionId } from '@/lib/schemas/litigation-approvals-compliance';
+import type {
+  LitigationApprovalsCompliancePayload,
+  LitigationApprovalsComplianceSectionId,
+} from '@/lib/schemas/litigation-approvals-compliance';
 
 const FORM_BY_SECTION: Record<LitigationApprovalsComplianceSectionId, ComponentType> = {
   'legal-universe-materiality-policy-and-party-mapping': LegalUniverseForm,
@@ -32,7 +36,8 @@ export function LitigationApprovalsComplianceInformationTab({
   activeSection: LitigationApprovalsComplianceSectionId;
   onSectionChange: (section: LitigationApprovalsComplianceSectionId) => void;
 }) {
-  const { progress, dirtySections, confirmLeave } = useLitigationApprovalsCompliance();
+  const { progress, dirtySections, confirmLeave, isDirty, applySampleDraft, isLoading } =
+    useLitigationApprovalsCompliance();
   const sectionMeta = LAC_INFORMATION_SECTIONS.find((s) => s.id === activeSection);
   const ActiveForm = FORM_BY_SECTION[activeSection];
 
@@ -54,6 +59,12 @@ export function LitigationApprovalsComplianceInformationTab({
       </aside>
 
       <div className="min-w-0 space-y-4">
+        <NivaraSampleDataPanel<LitigationApprovalsCompliancePayload>
+          workstreamKey="litigation-approvals-compliance"
+          isDirty={isDirty}
+          disabled={isLoading}
+          applySampleDraft={applySampleDraft}
+        />
         {sectionMeta ? (
           <p className="text-sm text-muted-foreground">{sectionMeta.description}</p>
         ) : null}

@@ -27,6 +27,7 @@ import { createEmptyIpoSetupPayload } from '@/lib/ipo-setup/defaults';
 import { computeOfferFromPayload, type OfferComputations } from '@/lib/ipo-setup/offer-compute';
 import { useNotifications } from '@/lib/notifications/context';
 import type { IpoSetupPayload, IpoSetupSectionId } from '@/lib/schemas/ipo-setup';
+import { applyWorkstreamSampleDraft } from '@/lib/demo-data/apply-sample-draft';
 import { isDeepEqual } from '@/lib/workspace/deep-equal';
 import { formatCompanyClass } from '@/lib/workspace/format';
 
@@ -42,6 +43,10 @@ const SECTION_PAYLOAD_KEYS: Record<IpoSetupSectionId, keyof IpoSetupPayload> = {
 const SECTION_ENTRIES = Object.entries(SECTION_PAYLOAD_KEYS) as Array<
   [IpoSetupSectionId, keyof IpoSetupPayload]
 >;
+
+function clonePayload(payload: IpoSetupPayload): IpoSetupPayload {
+  return structuredClone(payload);
+}
 
 /**
  * Server state wins for the section just saved and for sections the user has not touched,
@@ -112,6 +117,7 @@ type IpoSetupContextValue = {
   discardSectionDraft: (sectionId: IpoSetupSectionId) => void;
   /** Prompts only when there is a real difference. Scoped to one section when an id is given. */
   confirmLeave: (sectionId?: IpoSetupSectionId) => boolean;
+  applySampleDraft: (sample: IpoSetupPayload) => void;
   refreshDerived: () => Promise<void>;
 };
 
@@ -238,6 +244,16 @@ export function IpoSetupProvider({ children }: { children: ReactNode }) {
   const clearSaveNotice = useCallback(() => setSaveNotice(null), []);
   const clearSaveError = useCallback(() => setSaveError(null), []);
 
+  const applySampleDraft = useCallback(
+    (sample: IpoSetupPayload) => {
+      applyWorkstreamSampleDraft(sample, clonePayload, setPayload, () => {
+        setSaveNotice(null);
+        setSaveError(null);
+      });
+    },
+    [],
+  );
+
   const saveActiveSection = useCallback(
     async (sectionId: IpoSetupSectionId) => {
       const key = SECTION_PAYLOAD_KEYS[sectionId];
@@ -331,9 +347,11 @@ export function IpoSetupProvider({ children }: { children: ReactNode }) {
       saveActiveSection,
       discardSectionDraft,
       confirmLeave,
+      applySampleDraft,
       refreshDerived,
     }),
     [
+      applySampleDraft,
       assessment,
       clearSaveError,
       clearSaveNotice,

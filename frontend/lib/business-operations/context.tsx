@@ -35,6 +35,7 @@ import {
   type LinkedWorkstreamReferences,
 } from '@/lib/business-operations/types';
 import { useNotifications } from '@/lib/notifications/context';
+import { applyWorkstreamSampleDraft } from '@/lib/demo-data/apply-sample-draft';
 import { isDeepEqual } from '@/lib/workspace/deep-equal';
 import { formatCompanyClass } from '@/lib/workspace/format';
 import type {
@@ -159,6 +160,7 @@ type BusinessOperationsContextValue = {
   discardSectionDraft: (sectionId: BusinessOperationsSectionId) => void;
   /** Prompts only when there is a real difference. Scoped to one section when an id is given. */
   confirmLeave: (sectionId?: BusinessOperationsSectionId) => boolean;
+  applySampleDraft: (sample: BusinessOperationsPayload) => void;
   refreshDerived: () => Promise<void>;
 };
 
@@ -314,6 +316,16 @@ export function BusinessOperationsProvider({ children }: { children: ReactNode }
   const clearSaveNotice = useCallback(() => setSaveNotice(null), []);
   const clearSaveError = useCallback(() => setSaveError(null), []);
 
+  const applySampleDraft = useCallback(
+    (sample: BusinessOperationsPayload) => {
+      applyWorkstreamSampleDraft(sample, clonePayload, setPayload, () => {
+        setSaveNotice(null);
+        setSaveError(null);
+      });
+    },
+    [],
+  );
+
   const saveActiveSection = useCallback(
     async (sectionId: BusinessOperationsSectionId) => {
       const key = BUSINESS_OPERATIONS_SECTION_PAYLOAD_KEYS[sectionId];
@@ -419,9 +431,11 @@ export function BusinessOperationsProvider({ children }: { children: ReactNode }
       saveActiveSection,
       discardSectionDraft,
       confirmLeave,
+      applySampleDraft,
       refreshDerived,
     }),
     [
+      applySampleDraft,
       assessment,
       clearSaveError,
       clearSaveNotice,

@@ -9,9 +9,10 @@ import { RatiosMetricsForm } from '@/components/financials-kpis/forms/ratios-met
 import { ReportingScopeForm } from '@/components/financials-kpis/forms/reporting-scope-form';
 import { RestatementAuditForm } from '@/components/financials-kpis/forms/restatement-audit-form';
 import { FinancialsKpisSectionNavigation } from '@/components/financials-kpis/section-navigation';
+import { NivaraSampleDataPanel } from '@/components/demo-data/nivara-sample-data-panel';
 import { useFinancialsKpis } from '@/lib/financials-kpis/context';
 import { FINANCIALS_KPIS_INFORMATION_SECTIONS } from '@/lib/financials-kpis/options';
-import type { FinancialsKpisSectionId } from '@/lib/schemas/financials-kpis';
+import type { FinancialsKpisPayload, FinancialsKpisSectionId } from '@/lib/schemas/financials-kpis';
 
 export function FinancialsKpisInformationTab({
   activeSection,
@@ -20,7 +21,8 @@ export function FinancialsKpisInformationTab({
   activeSection: FinancialsKpisSectionId;
   onSectionChange: (section: FinancialsKpisSectionId) => void;
 }) {
-  const { progress, dirtySections, confirmLeave } = useFinancialsKpis();
+  const { progress, dirtySections, confirmLeave, isDirty, applySampleDraft, isLoading } =
+    useFinancialsKpis();
   const meta = FINANCIALS_KPIS_INFORMATION_SECTIONS.find(
     (section) => section.id === activeSection,
   );
@@ -40,6 +42,12 @@ export function FinancialsKpisInformationTab({
         onSelect={selectSection}
       />
       <div className="min-w-0 space-y-4">
+        <NivaraSampleDataPanel<FinancialsKpisPayload>
+          workstreamKey="financials-kpis"
+          isDirty={isDirty}
+          disabled={isLoading}
+          applySampleDraft={applySampleDraft}
+        />
         {meta ? <p className="text-sm text-muted-foreground">{meta.description}</p> : null}
         {activeSection === 'reporting-scope-periods-and-auditor-readiness' ? (
           <ReportingScopeForm />

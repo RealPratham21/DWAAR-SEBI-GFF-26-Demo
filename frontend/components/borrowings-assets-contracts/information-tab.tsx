@@ -10,9 +10,13 @@ import { PropertiesForm } from '@/components/borrowings-assets-contracts/forms/p
 import { ReconciliationForm } from '@/components/borrowings-assets-contracts/forms/reconciliation-form';
 import { SecurityChargesForm } from '@/components/borrowings-assets-contracts/forms/security-charges-form';
 import { BorrowingsAssetsContractsSectionNavigation } from '@/components/borrowings-assets-contracts/section-navigation';
+import { NivaraSampleDataPanel } from '@/components/demo-data/nivara-sample-data-panel';
 import { useBorrowingsAssetsContracts } from '@/lib/borrowings-assets-contracts/context';
 import { BAC_INFORMATION_SECTIONS } from '@/lib/borrowings-assets-contracts/options';
-import type { BorrowingsAssetsContractsSectionId } from '@/lib/schemas/borrowings-assets-contracts';
+import type {
+  BorrowingsAssetsContractsPayload,
+  BorrowingsAssetsContractsSectionId,
+} from '@/lib/schemas/borrowings-assets-contracts';
 
 const FORM_BY_SECTION: Record<BorrowingsAssetsContractsSectionId, ComponentType> = {
   'financial-indebtedness-and-facility-master': FacilityMasterForm,
@@ -32,7 +36,8 @@ export function BorrowingsAssetsContractsInformationTab({
   activeSection: BorrowingsAssetsContractsSectionId;
   onSectionChange: (section: BorrowingsAssetsContractsSectionId) => void;
 }) {
-  const { progress, dirtySections, confirmLeave } = useBorrowingsAssetsContracts();
+  const { progress, dirtySections, confirmLeave, isDirty, applySampleDraft, isLoading } =
+    useBorrowingsAssetsContracts();
   const sectionMeta = BAC_INFORMATION_SECTIONS.find((s) => s.id === activeSection);
   const ActiveForm = FORM_BY_SECTION[activeSection];
 
@@ -54,6 +59,12 @@ export function BorrowingsAssetsContractsInformationTab({
       </aside>
 
       <div className="min-w-0 space-y-4">
+        <NivaraSampleDataPanel<BorrowingsAssetsContractsPayload>
+          workstreamKey="borrowings-assets-contracts"
+          isDirty={isDirty}
+          disabled={isLoading}
+          applySampleDraft={applySampleDraft}
+        />
         {sectionMeta ? (
           <p className="text-sm text-muted-foreground">{sectionMeta.description}</p>
         ) : null}

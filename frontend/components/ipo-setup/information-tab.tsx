@@ -7,9 +7,10 @@ import { OfferStructureForm } from '@/components/ipo-setup/forms/offer-structure
 import { ProcessReadinessForm } from '@/components/ipo-setup/forms/process-readiness-form';
 import { TrackRecordForm } from '@/components/ipo-setup/forms/track-record-form';
 import { IpoSetupSectionNavigation } from '@/components/ipo-setup/section-navigation';
+import { NivaraSampleDataPanel } from '@/components/demo-data/nivara-sample-data-panel';
 import { useIpoSetup } from '@/lib/ipo-setup/context';
 import { IPO_SETUP_INFORMATION_SECTIONS } from '@/lib/ipo-setup/options';
-import type { IpoSetupSectionId } from '@/lib/schemas/ipo-setup';
+import type { IpoSetupPayload, IpoSetupSectionId } from '@/lib/schemas/ipo-setup';
 
 export function IpoSetupInformationTab({
   activeSection,
@@ -18,7 +19,8 @@ export function IpoSetupInformationTab({
   activeSection: IpoSetupSectionId;
   onSectionChange: (section: IpoSetupSectionId) => void;
 }) {
-  const { progress, dirtySections, confirmLeave, isLoading } = useIpoSetup();
+  const { progress, dirtySections, confirmLeave, isDirty, applySampleDraft, isLoading } =
+    useIpoSetup();
   const meta = IPO_SETUP_INFORMATION_SECTIONS.find((section) => section.id === activeSection);
 
   const selectSection = (section: IpoSetupSectionId) => {
@@ -45,6 +47,12 @@ export function IpoSetupInformationTab({
           onSelect={selectSection}
         />
         <div className="min-w-0 space-y-4">
+          <NivaraSampleDataPanel<IpoSetupPayload>
+            workstreamKey="ipo-setup-eligibility"
+            isDirty={isDirty}
+            disabled={isLoading}
+            applySampleDraft={applySampleDraft}
+          />
           {meta ? (
             <p className="text-sm text-muted-foreground">{meta.description}</p>
           ) : null}

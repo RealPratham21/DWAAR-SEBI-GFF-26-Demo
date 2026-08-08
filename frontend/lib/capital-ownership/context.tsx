@@ -35,6 +35,7 @@ import {
 } from '@/lib/capital-ownership/types';
 import { useNotifications } from '@/lib/notifications/context';
 import { isDeepEqual } from '@/lib/workspace/deep-equal';
+import { applyWorkstreamSampleDraft } from '@/lib/demo-data/apply-sample-draft';
 import type {
   CapitalOwnershipPayload,
   CapitalOwnershipSectionId,
@@ -87,6 +88,7 @@ type CapitalOwnershipContextValue = {
   discardSectionDraft: (sectionId: CapitalOwnershipSectionId) => void;
   /** Prompts only when there is a real difference. Scoped to one section when an id is given. */
   confirmLeave: (sectionId?: CapitalOwnershipSectionId) => boolean;
+  applySampleDraft: (sample: CapitalOwnershipPayload) => void;
   refreshDerived: () => Promise<void>;
 };
 
@@ -273,6 +275,16 @@ export function CapitalOwnershipProvider({ children }: { children: ReactNode }) 
   const clearSaveNotice = useCallback(() => setSaveNotice(null), []);
   const clearSaveError = useCallback(() => setSaveError(null), []);
 
+  const applySampleDraft = useCallback(
+    (sample: CapitalOwnershipPayload) => {
+      applyWorkstreamSampleDraft(sample, clonePayload, setPayload, () => {
+        setSaveNotice(null);
+        setSaveError(null);
+      });
+    },
+    [],
+  );
+
   const saveActiveSection = useCallback(
     async (sectionId: CapitalOwnershipSectionId) => {
       const key = CAPITAL_OWNERSHIP_SECTION_PAYLOAD_KEYS[sectionId];
@@ -374,9 +386,11 @@ export function CapitalOwnershipProvider({ children }: { children: ReactNode }) 
       saveActiveSection,
       discardSectionDraft,
       confirmLeave,
+      applySampleDraft,
       refreshDerived,
     }),
     [
+      applySampleDraft,
       assessment,
       clearSaveError,
       clearSaveNotice,

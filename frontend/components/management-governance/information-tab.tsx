@@ -9,9 +9,13 @@ import { InterestsConflictsForm } from '@/components/management-governance/forms
 import { KmpOrganisationForm } from '@/components/management-governance/forms/kmp-organisation-form';
 import { RemunerationForm } from '@/components/management-governance/forms/remuneration-form';
 import { ManagementGovernanceSectionNavigation } from '@/components/management-governance/section-navigation';
+import { NivaraSampleDataPanel } from '@/components/demo-data/nivara-sample-data-panel';
 import { useManagementGovernance } from '@/lib/management-governance/context';
 import { MANAGEMENT_GOVERNANCE_INFORMATION_SECTIONS } from '@/lib/management-governance/options';
-import type { ManagementGovernanceSectionId } from '@/lib/schemas/management-governance';
+import type {
+  ManagementGovernancePayload,
+  ManagementGovernanceSectionId,
+} from '@/lib/schemas/management-governance';
 
 export function ManagementGovernanceInformationTab({
   activeSection,
@@ -20,7 +24,8 @@ export function ManagementGovernanceInformationTab({
   activeSection: ManagementGovernanceSectionId;
   onSectionChange: (section: ManagementGovernanceSectionId) => void;
 }) {
-  const { progress, dirtySections, confirmLeave } = useManagementGovernance();
+  const { progress, dirtySections, confirmLeave, isDirty, applySampleDraft, isLoading } =
+    useManagementGovernance();
   const meta = MANAGEMENT_GOVERNANCE_INFORMATION_SECTIONS.find(
     (section) => section.id === activeSection,
   );
@@ -40,6 +45,12 @@ export function ManagementGovernanceInformationTab({
         onSelect={selectSection}
       />
       <div className="min-w-0 space-y-4">
+        <NivaraSampleDataPanel<ManagementGovernancePayload>
+          workstreamKey="management-governance"
+          isDirty={isDirty}
+          disabled={isLoading}
+          applySampleDraft={applySampleDraft}
+        />
         {meta ? <p className="text-sm text-muted-foreground">{meta.description}</p> : null}
         {activeSection === 'board-structure-and-ipo-governance-readiness' ? (
           <BoardStructureForm />

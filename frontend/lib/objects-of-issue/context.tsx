@@ -32,6 +32,7 @@ import {
   type ObjectsOfIssueProgress,
 } from '@/lib/objects-of-issue/types';
 import { useNotifications } from '@/lib/notifications/context';
+import { applyWorkstreamSampleDraft } from '@/lib/demo-data/apply-sample-draft';
 import { isDeepEqual } from '@/lib/workspace/deep-equal';
 import { formatCompanyClass } from '@/lib/workspace/format';
 import type {
@@ -119,6 +120,7 @@ type ObjectsOfIssueContextValue = {
   ) => void;
   saveActiveSection: (sectionId: ObjectsOfIssueSectionId) => Promise<boolean>;
   discardSectionDraft: (sectionId: ObjectsOfIssueSectionId) => void;
+  applySampleDraft: (sample: ObjectsOfIssuePayload) => void;
   refreshDerived: () => Promise<void>;
 };
 
@@ -264,6 +266,16 @@ export function ObjectsOfIssueProvider({ children }: { children: ReactNode }) {
   const clearSaveNotice = useCallback(() => setSaveNotice(null), []);
   const clearSaveError = useCallback(() => setSaveError(null), []);
 
+  const applySampleDraft = useCallback(
+    (sample: ObjectsOfIssuePayload) => {
+      applyWorkstreamSampleDraft(sample, clonePayload, setPayload, () => {
+        setSaveNotice(null);
+        setSaveError(null);
+      });
+    },
+    [],
+  );
+
   const saveActiveSection = useCallback(
     async (sectionId: ObjectsOfIssueSectionId) => {
       const key = SECTION_PAYLOAD_KEYS[sectionId];
@@ -351,9 +363,11 @@ export function ObjectsOfIssueProvider({ children }: { children: ReactNode }) {
       updateSection,
       saveActiveSection,
       discardSectionDraft,
+      applySampleDraft,
       refreshDerived,
     }),
     [
+      applySampleDraft,
       assessment,
       clearSaveError,
       clearSaveNotice,
