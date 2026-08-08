@@ -30,6 +30,7 @@ from app.modules.dev.router import router as dev_router
 from app.modules.drhp.router import router as drhp_router
 from app.modules.health.router import health_router
 from app.modules.ipo_setup_eligibility.router import router as ipo_setup_eligibility_router
+from app.modules.facts_evidence.router import router as facts_evidence_router
 from app.modules.issues_gaps.router import router as issues_gaps_router
 from app.modules.notifications.router import router as notifications_router
 from app.modules.onboarding.sme.router import router as sme_onboarding_router
@@ -80,5 +81,6 @@ api_v1_router.include_router(
 )
 api_v1_router.include_router(drhp_router, tags=["drhp"])
 api_v1_router.include_router(issues_gaps_router)
+api_v1_router.include_router(facts_evidence_router)
 api_v1_router.include_router(notifications_router, tags=["notifications"])
 api_v1_router.include_router(sme_onboarding_router, prefix="/onboarding", tags=["onboarding"])
