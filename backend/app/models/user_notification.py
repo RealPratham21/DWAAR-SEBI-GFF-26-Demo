@@ -26,7 +26,7 @@ class UserNotification(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     message: Mapped[str] = mapped_column(String(512), nullable=False)
     workstream_slug: Mapped[str | None] = mapped_column(String(128), nullable=True)
-    section_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    section_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
     target_route: Mapped[str | None] = mapped_column(String(512), nullable=True)
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 

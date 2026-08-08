@@ -308,7 +308,8 @@ def validate_kmp_draft(data: dict[str, Any], full_payload: dict[str, Any]) -> No
         for k in (data.get("kmpSmpRecords") or [])
         if isinstance(k, dict) and k.get("id")
     }
-    all_person_ids = person_ids | new_person_ids
+    # Org chart nodes and reports-to links may reference directors (e.g. MD) as well as KMP/SMP.
+    all_person_ids = person_ids | new_person_ids | director_ids
 
     readiness = data.get("kmpRoleReadiness") or {}
     if isinstance(readiness, dict):
@@ -591,6 +592,7 @@ def validate_governance_policies_draft(data: dict[str, Any], full_payload: dict[
         )
         for field in rpt:
             if field not in (
+                "regulation23ApplicabilityStatus",
                 "auditCommitteeProcess",
                 "shareholderApprovalProcess",
                 "relatedPartyAbstentionControlProcess",
