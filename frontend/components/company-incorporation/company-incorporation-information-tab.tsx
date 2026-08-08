@@ -8,6 +8,9 @@ import { IssuerConfirmationsForm } from '@/components/company-incorporation/issu
 import { LegalIdentityForm } from '@/components/company-incorporation/legal-identity-form';
 import { OfficesSection } from '@/components/company-incorporation/offices-section';
 import { RegistrationsSection } from '@/components/company-incorporation/registrations-section';
+import { NivaraSampleDataPanel } from '@/components/demo-data/nivara-sample-data-panel';
+import { useCompanyIncorporation } from '@/lib/company-incorporation/context';
+import type { CompanyIncorporationSessionData } from '@/lib/company-incorporation/defaults';
 import type { InformationSectionId } from '@/lib/types/company-incorporation';
 
 interface CompanyIncorporationInformationTabProps {
@@ -19,6 +22,8 @@ export function CompanyIncorporationInformationTab({
   activeSection,
   onSectionChange,
 }: CompanyIncorporationInformationTabProps) {
+  const { isDirty, applySampleDraft, isLoading } = useCompanyIncorporation();
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-6">
       <aside className="lg:sticky lg:top-6 lg:self-start">
@@ -29,6 +34,12 @@ export function CompanyIncorporationInformationTab({
       </aside>
 
       <div className="space-y-6">
+        <NivaraSampleDataPanel<CompanyIncorporationSessionData>
+          workstreamKey="company-incorporation"
+          isDirty={isDirty}
+          disabled={isLoading}
+          applySampleDraft={applySampleDraft}
+        />
         {activeSection === 'legal-identity' ? <LegalIdentityForm /> : null}
         {activeSection === 'corporate-history' ? <CorporateEventsSection /> : null}
         {activeSection === 'offices-contact' ? <OfficesSection /> : null}

@@ -32,6 +32,7 @@ import {
   type LinkedWorkstreamReferences,
 } from '@/lib/financials-kpis/types';
 import { useNotifications } from '@/lib/notifications/context';
+import { applyWorkstreamSampleDraft } from '@/lib/demo-data/apply-sample-draft';
 import { isDeepEqual } from '@/lib/workspace/deep-equal';
 import { formatCompanyClass } from '@/lib/workspace/format';
 import type {
@@ -122,6 +123,7 @@ type FinancialsKpisContextValue = {
   saveActiveSection: (sectionId: FinancialsKpisSectionId) => Promise<boolean>;
   discardSectionDraft: (sectionId: FinancialsKpisSectionId) => void;
   confirmLeave: (sectionId?: FinancialsKpisSectionId) => boolean;
+  applySampleDraft: (sample: FinancialsKpisPayload) => void;
   refreshDerived: () => Promise<void>;
 };
 
@@ -283,6 +285,16 @@ export function FinancialsKpisProvider({ children }: { children: ReactNode }) {
   const clearSaveNotice = useCallback(() => setSaveNotice(null), []);
   const clearSaveError = useCallback(() => setSaveError(null), []);
 
+  const applySampleDraft = useCallback(
+    (sample: FinancialsKpisPayload) => {
+      applyWorkstreamSampleDraft(sample, clonePayload, setPayload, () => {
+        setSaveNotice(null);
+        setSaveError(null);
+      });
+    },
+    [],
+  );
+
   const saveActiveSection = useCallback(
     async (sectionId: FinancialsKpisSectionId) => {
       const key = SECTION_PAYLOAD_KEYS[sectionId];
@@ -371,9 +383,11 @@ export function FinancialsKpisProvider({ children }: { children: ReactNode }) {
       saveActiveSection,
       discardSectionDraft,
       confirmLeave,
+      applySampleDraft,
       refreshDerived,
     }),
     [
+      applySampleDraft,
       assessment,
       clearSaveError,
       clearSaveNotice,

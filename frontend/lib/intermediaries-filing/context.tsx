@@ -33,6 +33,7 @@ import {
   type LinkedWorkstreamReferences,
 } from '@/lib/intermediaries-filing/types';
 import { useNotifications } from '@/lib/notifications/context';
+import { applyWorkstreamSampleDraft } from '@/lib/demo-data/apply-sample-draft';
 import { isDeepEqual } from '@/lib/workspace/deep-equal';
 import type {
   IntermediariesFilingPayload,
@@ -131,6 +132,7 @@ type IntermediariesFilingContextValue = {
   saveActiveSection: (sectionId: IntermediariesFilingSectionId) => Promise<boolean>;
   discardSectionDraft: (sectionId: IntermediariesFilingSectionId) => void;
   confirmLeave: (sectionId?: IntermediariesFilingSectionId) => boolean;
+  applySampleDraft: (sample: IntermediariesFilingPayload) => void;
   refreshDerived: () => Promise<void>;
 };
 
@@ -347,6 +349,16 @@ export function IntermediariesFilingProvider({ children }: { children: ReactNode
   const clearSaveNotice = useCallback(() => setSaveNotice(null), []);
   const clearSaveError = useCallback(() => setSaveError(null), []);
 
+  const applySampleDraft = useCallback(
+    (sample: IntermediariesFilingPayload) => {
+      applyWorkstreamSampleDraft(sample, clonePayload, setPayload, () => {
+        setSaveNotice(null);
+        setSaveError(null);
+      });
+    },
+    [],
+  );
+
   const value = useMemo<IntermediariesFilingContextValue>(
     () => ({
       payload,
@@ -371,9 +383,11 @@ export function IntermediariesFilingProvider({ children }: { children: ReactNode
       saveActiveSection,
       discardSectionDraft,
       confirmLeave,
+      applySampleDraft,
       refreshDerived,
     }),
     [
+      applySampleDraft,
       assessment,
       clearSaveError,
       clearSaveNotice,

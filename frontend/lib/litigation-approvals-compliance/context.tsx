@@ -33,6 +33,7 @@ import {
   type LinkedWorkstreamReferences,
 } from '@/lib/litigation-approvals-compliance/types';
 import { useNotifications } from '@/lib/notifications/context';
+import { applyWorkstreamSampleDraft } from '@/lib/demo-data/apply-sample-draft';
 import { isDeepEqual } from '@/lib/workspace/deep-equal';
 import type {
   LitigationApprovalsCompliancePayload,
@@ -134,6 +135,7 @@ type LitigationApprovalsComplianceContextValue = {
   saveActiveSection: (sectionId: LitigationApprovalsComplianceSectionId) => Promise<boolean>;
   discardSectionDraft: (sectionId: LitigationApprovalsComplianceSectionId) => void;
   confirmLeave: (sectionId?: LitigationApprovalsComplianceSectionId) => boolean;
+  applySampleDraft: (sample: LitigationApprovalsCompliancePayload) => void;
   refreshDerived: () => Promise<void>;
 };
 
@@ -354,6 +356,16 @@ export function LitigationApprovalsComplianceProvider({ children }: { children: 
   const clearSaveNotice = useCallback(() => setSaveNotice(null), []);
   const clearSaveError = useCallback(() => setSaveError(null), []);
 
+  const applySampleDraft = useCallback(
+    (sample: LitigationApprovalsCompliancePayload) => {
+      applyWorkstreamSampleDraft(sample, clonePayload, setPayload, () => {
+        setSaveNotice(null);
+        setSaveError(null);
+      });
+    },
+    [],
+  );
+
   const value = useMemo<LitigationApprovalsComplianceContextValue>(
     () => ({
       payload,
@@ -378,9 +390,11 @@ export function LitigationApprovalsComplianceProvider({ children }: { children: 
       saveActiveSection,
       discardSectionDraft,
       confirmLeave,
+      applySampleDraft,
       refreshDerived,
     }),
     [
+      applySampleDraft,
       assessment,
       clearSaveError,
       clearSaveNotice,

@@ -35,6 +35,7 @@ import {
   type ManagementGovernanceProgress,
 } from '@/lib/management-governance/types';
 import { useNotifications } from '@/lib/notifications/context';
+import { applyWorkstreamSampleDraft } from '@/lib/demo-data/apply-sample-draft';
 import { isDeepEqual } from '@/lib/workspace/deep-equal';
 import type {
   ManagementGovernancePayload,
@@ -133,6 +134,7 @@ type ManagementGovernanceContextValue = {
   saveActiveSection: (sectionId: ManagementGovernanceSectionId) => Promise<boolean>;
   discardSectionDraft: (sectionId: ManagementGovernanceSectionId) => void;
   confirmLeave: (sectionId?: ManagementGovernanceSectionId) => boolean;
+  applySampleDraft: (sample: ManagementGovernancePayload) => void;
   refreshDerived: () => Promise<void>;
 };
 
@@ -296,6 +298,16 @@ export function ManagementGovernanceProvider({ children }: { children: ReactNode
   const clearSaveNotice = useCallback(() => setSaveNotice(null), []);
   const clearSaveError = useCallback(() => setSaveError(null), []);
 
+  const applySampleDraft = useCallback(
+    (sample: ManagementGovernancePayload) => {
+      applyWorkstreamSampleDraft(sample, clonePayload, setPayload, () => {
+        setSaveNotice(null);
+        setSaveError(null);
+      });
+    },
+    [],
+  );
+
   const saveActiveSection = useCallback(
     async (sectionId: ManagementGovernanceSectionId) => {
       const key = SECTION_PAYLOAD_KEYS[sectionId];
@@ -388,9 +400,11 @@ export function ManagementGovernanceProvider({ children }: { children: ReactNode
       saveActiveSection,
       discardSectionDraft,
       confirmLeave,
+      applySampleDraft,
       refreshDerived,
     }),
     [
+      applySampleDraft,
       assessment,
       clearSaveError,
       clearSaveNotice,

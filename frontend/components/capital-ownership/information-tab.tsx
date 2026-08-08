@@ -8,9 +8,11 @@ import { PrePostIssueForm } from '@/components/capital-ownership/forms/pre-post-
 import { PromotersControlForm } from '@/components/capital-ownership/forms/promoters-control-form';
 import { ShareCapitalHistoryForm } from '@/components/capital-ownership/forms/share-capital-history-form';
 import { ShareholdersForm } from '@/components/capital-ownership/forms/shareholders-form';
+import { NivaraSampleDataPanel } from '@/components/demo-data/nivara-sample-data-panel';
 import { useCapitalOwnership } from '@/lib/capital-ownership/context';
 import { CAPITAL_OWNERSHIP_INFORMATION_SECTIONS } from '@/lib/capital-ownership/options';
 import type { CapitalOwnershipSectionId } from '@/lib/capital-ownership/types';
+import type { CapitalOwnershipPayload } from '@/lib/schemas/capital-ownership';
 
 export function CapitalOwnershipInformationTab({
   activeSection,
@@ -19,7 +21,8 @@ export function CapitalOwnershipInformationTab({
   activeSection: CapitalOwnershipSectionId;
   onSectionChange: (section: CapitalOwnershipSectionId) => void;
 }) {
-  const { progress, dirtySections, confirmLeave, isLoading } = useCapitalOwnership();
+  const { progress, dirtySections, confirmLeave, isDirty, applySampleDraft, isLoading } =
+    useCapitalOwnership();
   const meta = CAPITAL_OWNERSHIP_INFORMATION_SECTIONS.find(
     (section) => section.id === activeSection,
   );
@@ -47,6 +50,12 @@ export function CapitalOwnershipInformationTab({
         onSelect={selectSection}
       />
       <div className="min-w-0 space-y-4">
+        <NivaraSampleDataPanel<CapitalOwnershipPayload>
+          workstreamKey="capital-ownership"
+          isDirty={isDirty}
+          disabled={isLoading}
+          applySampleDraft={applySampleDraft}
+        />
         {meta ? <p className="text-sm text-muted-foreground">{meta.description}</p> : null}
         {activeSection === 'current-capital-structure' ? <CurrentCapitalStructureForm /> : null}
         {activeSection === 'share-capital-history' ? <ShareCapitalHistoryForm /> : null}

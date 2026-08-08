@@ -102,7 +102,16 @@ export function evaluateCommonPursuitsStatus(payload: GroupEntitiesRelatedPartie
     section.commonPursuitRecords.length > 0 ||
     section.interCompanyDependencies.length > 0;
   if (!hasData) return 'not_started';
-  return 'in_progress';
+  const screeningsComplete = section.commonPursuitScreenings.every(
+    (screening) => filled(screening.entityId) && filled(screening.sameLineOfBusiness),
+  );
+  const recordsComplete = section.commonPursuitRecords.every(
+    (record) => filled(record.entityId) && filled(record.natureOfOverlap),
+  );
+  const dependenciesComplete = section.interCompanyDependencies.every(
+    (dep) => filled(dep.entityId) && filled(dep.dependencyType),
+  );
+  return screeningsComplete && recordsComplete && dependenciesComplete ? 'complete' : 'in_progress';
 }
 
 export function evaluateFinancialReadinessStatus(

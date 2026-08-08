@@ -33,6 +33,7 @@ import {
   type LinkedWorkstreamReferences,
 } from '@/lib/borrowings-assets-contracts/types';
 import { useNotifications } from '@/lib/notifications/context';
+import { applyWorkstreamSampleDraft } from '@/lib/demo-data/apply-sample-draft';
 import { isDeepEqual } from '@/lib/workspace/deep-equal';
 import type {
   BorrowingsAssetsContractsPayload,
@@ -128,6 +129,7 @@ type BorrowingsAssetsContractsContextValue = {
   saveActiveSection: (sectionId: BorrowingsAssetsContractsSectionId) => Promise<boolean>;
   discardSectionDraft: (sectionId: BorrowingsAssetsContractsSectionId) => void;
   confirmLeave: (sectionId?: BorrowingsAssetsContractsSectionId) => boolean;
+  applySampleDraft: (sample: BorrowingsAssetsContractsPayload) => void;
   refreshDerived: () => Promise<void>;
 };
 
@@ -347,6 +349,16 @@ export function BorrowingsAssetsContractsProvider({ children }: { children: Reac
   const clearSaveNotice = useCallback(() => setSaveNotice(null), []);
   const clearSaveError = useCallback(() => setSaveError(null), []);
 
+  const applySampleDraft = useCallback(
+    (sample: BorrowingsAssetsContractsPayload) => {
+      applyWorkstreamSampleDraft(sample, clonePayload, setPayload, () => {
+        setSaveNotice(null);
+        setSaveError(null);
+      });
+    },
+    [],
+  );
+
   const value = useMemo<BorrowingsAssetsContractsContextValue>(
     () => ({
       payload,
@@ -371,9 +383,11 @@ export function BorrowingsAssetsContractsProvider({ children }: { children: Reac
       saveActiveSection,
       discardSectionDraft,
       confirmLeave,
+      applySampleDraft,
       refreshDerived,
     }),
     [
+      applySampleDraft,
       assessment,
       clearSaveError,
       clearSaveNotice,

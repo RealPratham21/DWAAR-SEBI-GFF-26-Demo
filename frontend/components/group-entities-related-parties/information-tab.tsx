@@ -10,9 +10,13 @@ import { OwnershipMappingForm } from '@/components/group-entities-related-partie
 import { RelatedPartyForm } from '@/components/group-entities-related-parties/forms/related-party-form';
 import { RptForm } from '@/components/group-entities-related-parties/forms/rpt-form';
 import { GroupEntitiesSectionNavigation } from '@/components/group-entities-related-parties/section-navigation';
+import { NivaraSampleDataPanel } from '@/components/demo-data/nivara-sample-data-panel';
 import { useGroupEntities } from '@/lib/group-entities-related-parties/context';
 import { GROUP_ENTITIES_INFORMATION_SECTIONS } from '@/lib/group-entities-related-parties/options';
-import type { GroupEntitiesSectionId } from '@/lib/schemas/group-entities-related-parties';
+import type {
+  GroupEntitiesRelatedPartiesPayload,
+  GroupEntitiesSectionId,
+} from '@/lib/schemas/group-entities-related-parties';
 
 const FORM_BY_SECTION: Record<GroupEntitiesSectionId, ComponentType> = {
   'group-structure-and-entity-master': EntityMasterForm,
@@ -32,7 +36,8 @@ export function GroupEntitiesInformationTab({
   activeSection: GroupEntitiesSectionId;
   onSectionChange: (section: GroupEntitiesSectionId) => void;
 }) {
-  const { progress, dirtySections, confirmLeave } = useGroupEntities();
+  const { progress, dirtySections, confirmLeave, isDirty, applySampleDraft, isLoading } =
+    useGroupEntities();
   const sectionMeta = GROUP_ENTITIES_INFORMATION_SECTIONS.find((s) => s.id === activeSection);
   const ActiveForm = FORM_BY_SECTION[activeSection];
 
@@ -54,6 +59,12 @@ export function GroupEntitiesInformationTab({
       </aside>
 
       <div className="min-w-0 space-y-4">
+        <NivaraSampleDataPanel<GroupEntitiesRelatedPartiesPayload>
+          workstreamKey="group-entities-related-parties"
+          isDirty={isDirty}
+          disabled={isLoading}
+          applySampleDraft={applySampleDraft}
+        />
         {sectionMeta ? (
           <p className="text-sm text-muted-foreground">{sectionMeta.description}</p>
         ) : null}

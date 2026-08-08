@@ -9,9 +9,11 @@ import { StrategyConfirmationsForm } from '@/components/business-operations/form
 import { SuppliersProcurementForm } from '@/components/business-operations/forms/suppliers-procurement-form';
 import { TechnologyQualityIpForm } from '@/components/business-operations/forms/technology-quality-ip-form';
 import { WorkforceInsuranceForm } from '@/components/business-operations/forms/workforce-insurance-form';
+import { NivaraSampleDataPanel } from '@/components/demo-data/nivara-sample-data-panel';
 import { useBusinessOperations } from '@/lib/business-operations/context';
 import { BUSINESS_OPERATIONS_INFORMATION_SECTIONS } from '@/lib/business-operations/options';
 import type { BusinessOperationsSectionId } from '@/lib/business-operations/types';
+import type { BusinessOperationsPayload } from '@/lib/schemas/business-operations';
 
 export function BusinessOperationsInformationTab({
   activeSection,
@@ -20,7 +22,8 @@ export function BusinessOperationsInformationTab({
   activeSection: BusinessOperationsSectionId;
   onSectionChange: (section: BusinessOperationsSectionId) => void;
 }) {
-  const { progress, dirtySections, confirmLeave, isLoading } = useBusinessOperations();
+  const { progress, dirtySections, confirmLeave, isDirty, applySampleDraft, isLoading } =
+    useBusinessOperations();
   const meta = BUSINESS_OPERATIONS_INFORMATION_SECTIONS.find(
     (section) => section.id === activeSection,
   );
@@ -48,6 +51,12 @@ export function BusinessOperationsInformationTab({
         onSelect={selectSection}
       />
       <div className="min-w-0 space-y-4">
+        <NivaraSampleDataPanel<BusinessOperationsPayload>
+          workstreamKey="business-operations"
+          isDirty={isDirty}
+          disabled={isLoading}
+          applySampleDraft={applySampleDraft}
+        />
         {meta ? <p className="text-sm text-muted-foreground">{meta.description}</p> : null}
         {activeSection === 'business-profile-operating-model' ? <BusinessProfileForm /> : null}
         {activeSection === 'products-services-revenue-mix' ? <ProductsRevenueForm /> : null}

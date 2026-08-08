@@ -33,6 +33,7 @@ import {
   type LinkedWorkstreamReferences,
 } from '@/lib/group-entities-related-parties/types';
 import { useNotifications } from '@/lib/notifications/context';
+import { applyWorkstreamSampleDraft } from '@/lib/demo-data/apply-sample-draft';
 import { isDeepEqual } from '@/lib/workspace/deep-equal';
 import type {
   GroupEntitiesRelatedPartiesPayload,
@@ -124,6 +125,7 @@ type GroupEntitiesContextValue = {
   saveActiveSection: (sectionId: GroupEntitiesSectionId) => Promise<boolean>;
   discardSectionDraft: (sectionId: GroupEntitiesSectionId) => void;
   confirmLeave: (sectionId?: GroupEntitiesSectionId) => boolean;
+  applySampleDraft: (sample: GroupEntitiesRelatedPartiesPayload) => void;
   refreshDerived: () => Promise<void>;
 };
 
@@ -336,6 +338,16 @@ export function GroupEntitiesProvider({ children }: { children: ReactNode }) {
   const clearSaveNotice = useCallback(() => setSaveNotice(null), []);
   const clearSaveError = useCallback(() => setSaveError(null), []);
 
+  const applySampleDraft = useCallback(
+    (sample: GroupEntitiesRelatedPartiesPayload) => {
+      applyWorkstreamSampleDraft(sample, clonePayload, setPayload, () => {
+        setSaveNotice(null);
+        setSaveError(null);
+      });
+    },
+    [],
+  );
+
   const value = useMemo<GroupEntitiesContextValue>(
     () => ({
       payload,
@@ -360,9 +372,11 @@ export function GroupEntitiesProvider({ children }: { children: ReactNode }) {
       saveActiveSection,
       discardSectionDraft,
       confirmLeave,
+      applySampleDraft,
       refreshDerived,
     }),
     [
+      applySampleDraft,
       assessment,
       clearSaveError,
       clearSaveNotice,

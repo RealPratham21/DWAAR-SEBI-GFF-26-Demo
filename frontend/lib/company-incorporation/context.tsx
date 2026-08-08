@@ -24,7 +24,9 @@ import {
   type CompanyIncorporationSessionData,
 } from '@/lib/company-incorporation/defaults';
 import type { SectionSaveResponse, WorkspaceProgress } from '@/lib/company-incorporation/types';
+import { applyWorkstreamSampleDraft } from '@/lib/demo-data/apply-sample-draft';
 import { useNotifications } from '@/lib/notifications/context';
+import { isDeepEqual } from '@/lib/workspace/deep-equal';
 import type {
   CompanyRegistration,
   ConstitutionalAmendment,
@@ -37,6 +39,7 @@ interface CompanyIncorporationContextValue {
   data: CompanyIncorporationSessionData;
   version: number;
   progress: WorkspaceProgress | null;
+  isDirty: boolean;
   isLoading: boolean;
   isSaving: boolean;
   loadError: string | null;
@@ -53,17 +56,24 @@ interface CompanyIncorporationContextValue {
   saveConfirmations: (confirmations: IssuerConfirmation) => Promise<boolean>;
   clearSaveNotice: () => void;
   clearSaveError: () => void;
+  applySampleDraft: (sample: CompanyIncorporationSessionData) => void;
 }
 
 const CompanyIncorporationContext = createContext<CompanyIncorporationContextValue | null>(null);
 
+function cloneSessionData(data: CompanyIncorporationSessionData): CompanyIncorporationSessionData {
+  return structuredClone(data);
+}
+
 function applySaveResponse(
   response: SectionSaveResponse,
   setData: (data: CompanyIncorporationSessionData) => void,
+  setBaseline: (data: CompanyIncorporationSessionData) => void,
   setVersion: (version: number) => void,
   setProgress: (progress: WorkspaceProgress) => void,
 ) {
   setData(response.payload);
+  setBaseline(structuredClone(response.payload));
   setVersion(response.version);
   setProgress(response.progress);
 }
@@ -71,6 +81,9 @@ function applySaveResponse(
 export function CompanyIncorporationProvider({ children }: { children: ReactNode }) {
   const { prependNotification } = useNotifications();
   const [data, setData] = useState<CompanyIncorporationSessionData>(
+    emptyCompanyIncorporationFormData,
+  );
+  const [baseline, setBaseline] = useState<CompanyIncorporationSessionData>(
     emptyCompanyIncorporationFormData,
   );
   const [version, setVersion] = useState(0);
@@ -91,6 +104,7 @@ export function CompanyIncorporationProvider({ children }: { children: ReactNode
         const response = await initializeCompanyIncorporationWorkspace();
         if (cancelled) return;
         setData(response.payload);
+        setBaseline(structuredClone(response.payload));
         setVersion(response.version);
         setProgress(response.progress);
       } catch (error) {
@@ -121,6 +135,15 @@ export function CompanyIncorporationProvider({ children }: { children: ReactNode
     setSaveError(null);
   }, []);
 
+  const isDirty = useMemo(() => !isDeepEqual(data, baseline), [baseline, data]);
+
+  const applySampleDraft = useCallback((sample: CompanyIncorporationSessionData) => {
+    applyWorkstreamSampleDraft(sample, cloneSessionData, setData, () => {
+      setSaveNotice(null);
+      setSaveError(null);
+    });
+  }, []);
+
   const handleSaveError = useCallback((error: unknown) => {
     if (error instanceof ApiClientError) {
       if (error.code === 'COMPANY_INCORPORATION_VERSION_CONFLICT') {
@@ -131,6 +154,7 @@ export function CompanyIncorporationProvider({ children }: { children: ReactNode
         } | undefined;
         if (details?.payload && details.currentVersion && details.progress) {
           setData(details.payload);
+          setBaseline(structuredClone(details.payload));
           setVersion(details.currentVersion);
           setProgress(details.progress);
         }
@@ -157,7 +181,7 @@ export function CompanyIncorporationProvider({ children }: { children: ReactNode
       setSaveError(null);
       try {
         const response = await saveFn();
-        applySaveResponse(response, setData, setVersion, setProgress);
+        applySaveResponse(response, setData, setBaseline, setVersion, setProgress);
         prependNotification(response.notification);
         setSaveNotice(response.notification.title);
         return true;
@@ -227,6 +251,7 @@ export function CompanyIncorporationProvider({ children }: { children: ReactNode
       data,
       version,
       progress,
+      isDirty,
       isLoading,
       isSaving,
       loadError,
@@ -241,11 +266,14 @@ export function CompanyIncorporationProvider({ children }: { children: ReactNode
       saveConfirmations,
       clearSaveNotice,
       clearSaveError,
+      applySampleDraft,
     }),
     [
+      applySampleDraft,
       data,
       version,
       progress,
+      isDirty,
       isLoading,
       isSaving,
       loadError,
