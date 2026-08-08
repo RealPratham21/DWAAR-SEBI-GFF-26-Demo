@@ -32,6 +32,7 @@ from app.models.ipo_setup_eligibility_workspace import IpoSetupEligibilityWorksp
 from app.models.onboarding_application import OnboardingApplication
 from app.models.refresh_session import RefreshSession
 from app.models.structured_extraction_run import StructuredExtractionRun
+from app.models.global_issue_acknowledgement import GlobalIssueAcknowledgement
 from app.models.user import User
 from app.models.user_notification import UserNotification
 
@@ -64,6 +65,7 @@ __all__ = [
     "FactIssue",
     "FactIssueAssertion",
     "FactIssueResolution",
+    "GlobalIssueAcknowledgement",
     "IpoSetupEligibilityWorkspace",
     "OnboardingApplication",
     "OnboardingCurrentStep",
