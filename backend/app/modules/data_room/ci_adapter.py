@@ -67,7 +67,7 @@ def _counts_for_versions(
     ).all()
     evidence_rows = db.execute(
         select(FactAssertion.document_version_id, func.count(FactEvidenceReference.id))
-        .join(FactEvidenceReference, FactEvidenceReference.assertion_id == FactAssertion.id)
+        .join(FactEvidenceReference, FactEvidenceReference.fact_assertion_id == FactAssertion.id)
         .where(FactAssertion.document_version_id.in_(version_ids))
         .group_by(FactAssertion.document_version_id)
     ).all()
