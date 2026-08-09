@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { PublicAuthShell } from '@/components/auth/public-auth-shell';
 import { PublicAuthRedirect } from '@/components/auth/public-auth-redirect';
@@ -7,7 +8,7 @@ import { LoginForm } from '@/components/auth/login-form';
 import { DwaarLogo } from '@/components/dwaar-logo';
 import { NIVARA_DEMO } from '@/lib/demo/constants';
 
-export default function LoginPage() {
+function LoginPageContent() {
   const searchParams = useSearchParams();
   const emailParam = searchParams.get('email') ?? '';
   const isDemoLogin = emailParam.toLowerCase() === NIVARA_DEMO.email;
@@ -31,5 +32,23 @@ export default function LoginPage() {
         </div>
       </PublicAuthShell>
     </PublicAuthRedirect>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <PublicAuthShell>
+          <div className="max-w-md mx-auto">
+            <div className="bg-card border border-border rounded-lg p-8">
+              <p className="text-center text-muted-foreground">Loading…</p>
+            </div>
+          </div>
+        </PublicAuthShell>
+      }
+    >
+      <LoginPageContent />
+    </Suspense>
   );
 }
