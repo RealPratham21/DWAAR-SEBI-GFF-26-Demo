@@ -37,6 +37,72 @@ def _val(value: str | None, *, allow_placeholder: bool = True) -> str:
     return PLACEHOLDER_TOKEN if allow_placeholder else ""
 
 
+def _display_text(value: Any, *, allow_placeholder: bool = True) -> str:
+    """Render a scalar or nested object as publication display text — never str(dict)."""
+    if value is None:
+        return PLACEHOLDER_TOKEN if allow_placeholder else ""
+    if isinstance(value, str):
+        return _val(value, allow_placeholder=allow_placeholder)
+    if isinstance(value, dict):
+        party_keys = (
+            "counterparty",
+            "counterpartyName",
+            "partyName",
+            "relatedPartyName",
+            "entityName",
+            "companyName",
+            "name",
+            "label",
+            "title",
+        )
+        for key in party_keys:
+            nested = value.get(key)
+            if nested and str(nested).strip():
+                return str(nested).strip()
+        if value.get("line1") or value.get("city"):
+            from app.modules.drhp.generation.source_extractors import format_office_address
+
+            address = format_office_address(value)
+            if address:
+                return address
+        return PLACEHOLDER_TOKEN if allow_placeholder else ""
+    if isinstance(value, list):
+        parts = [_display_text(item, allow_placeholder=False) for item in value]
+        parts = [part for part in parts if part and part != PLACEHOLDER_TOKEN]
+        if parts:
+            return ", ".join(parts)
+        return PLACEHOLDER_TOKEN if allow_placeholder else ""
+    return _val(str(value), allow_placeholder=allow_placeholder)
+
+
+def _contract_title(contract: dict[str, Any]) -> str:
+    basic = contract.get("basicTerms") or {}
+    if not isinstance(basic, dict):
+        basic = {}
+    return _val(
+        contract.get("contractTitle")
+        or contract.get("name")
+        or basic.get("agreementTitle")
+        or basic.get("title")
+    )
+
+
+def _contract_parties(contract: dict[str, Any]) -> str:
+    return _display_text(contract.get("counterpartyName") or contract.get("parties"))
+
+
+def _contract_date(contract: dict[str, Any]) -> str:
+    basic = contract.get("basicTerms") or {}
+    if not isinstance(basic, dict):
+        basic = {}
+    return _val(
+        contract.get("contractDate")
+        or contract.get("effectiveDate")
+        or basic.get("effectiveDate")
+        or basic.get("executionDate")
+    )
+
+
 def _block(
     *,
     kind: str,
@@ -360,7 +426,7 @@ def _build_material_contracts(bundle: ChapterSourceBundle, snapshots: dict[str, 
             doc_rows.append(
                 [
                     _val(item.get("documentTitle") or item.get("contractName")),
-                    _val(item.get("parties") or item.get("partyNames")),
+                    _display_text(item.get("parties") or item.get("partyNames")),
                     _val(item.get("documentDate") or item.get("date")),
                     _val(item.get("inspectionAvailability") or item.get("availability")),
                 ]
@@ -372,9 +438,9 @@ def _build_material_contracts(bundle: ChapterSourceBundle, snapshots: dict[str, 
                 continue
             contract_rows.append(
                 [
-                    _val(c.get("contractTitle") or c.get("name")),
-                    _val(c.get("counterpartyName") or c.get("parties")),
-                    _val(c.get("contractDate") or c.get("effectiveDate")),
+                    _contract_title(c),
+                    _contract_parties(c),
+                    _contract_date(c),
                     _val(c.get("materialityBasis") or c.get("description"))[:80],
                 ]
             )

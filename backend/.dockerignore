@@ -1,7 +1,9 @@
 .git
 .gitignore
-.venv
-venv
+.backend/.venv
+backend/.venv
+frontend/.next
+node_modules
 __pycache__
 **/__pycache__
 *.py[cod]

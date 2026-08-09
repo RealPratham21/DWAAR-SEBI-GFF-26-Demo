@@ -146,7 +146,7 @@ def test_pdf_and_docx_render_from_same_assembly() -> None:
     pdf_text = "".join(page.get_text() for page in pdf)
     assert "TABLE OF CONTENTS" in pdf_text
     assert "Capital Structure" in pdf_text
-    assert "45000000" in pdf_text or "45,000,000" in pdf_text
+    assert "45000000" in pdf_text or "4,50,00,000" in pdf_text or "45,000,000" in pdf_text
     assert "src:" not in pdf_text
     assert "unsupported_number" not in pdf_text
     assert "could not be generated in this draft" in pdf_text.lower()

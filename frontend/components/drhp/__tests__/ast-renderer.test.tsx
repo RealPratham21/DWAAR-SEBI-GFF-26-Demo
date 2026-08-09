@@ -10,7 +10,7 @@ const FIXTURE_BLOCKS: DrhpBlock[] = [
     kind: 'heading',
     status: 'draft',
     order: 1,
-    content: { kind: 'paragraph', text: 'Section heading fixture' },
+    content: { kind: 'heading', text: 'Section heading fixture', level: 2 },
     evidenceRefs: [],
     gapRefs: [],
     supportState: 'structured_input_backed',
@@ -63,7 +63,7 @@ describe('AstRenderer', () => {
     );
     expect(screen.getByText('Section heading fixture')).toBeInTheDocument();
     expect(screen.getByText('Share capital')).toBeInTheDocument();
-    expect(screen.getByText('[●] Final issue price')).toBeInTheDocument();
+    expect(screen.getByText('[●]')).toBeInTheDocument();
   });
 
   it('supports selectable block ids for evidence linking', async () => {

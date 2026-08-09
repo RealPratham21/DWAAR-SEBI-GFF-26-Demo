@@ -12,6 +12,8 @@ from app.modules.drhp.constants import (
     CHAPTER_TITLES,
     ChapterVersionStatus,
 )
+
+COVER_CHAPTER_KEY = "cover-page-front-matter"
 from app.modules.drhp.export.content import cell_text, normalize_chapter_ast
 from app.modules.drhp.export.styles import DRAFT_FOOTER_NOTICE, EXPORTER_VERSION
 
@@ -26,6 +28,15 @@ class ExportChapter:
     chapter_ast: DrhpChapterAST | None = None
 
 
+@dataclass(frozen=True)
+class TocEntry:
+    """Body-chapter TOC row — cover is excluded from publication contents."""
+
+    display_number: int
+    title: str
+    chapter_key: str
+
+
 @dataclass
 class DRHPExportDocument:
     exporter_version: str = EXPORTER_VERSION
@@ -36,8 +47,23 @@ class DRHPExportDocument:
     is_partial: bool = False
     partial_label: str | None = None
     draft_notice: str = DRAFT_FOOTER_NOTICE
-    table_of_contents: list[tuple[int, str]] = field(default_factory=list)
+    table_of_contents: list[TocEntry] = field(default_factory=list)
     chapters: list[ExportChapter] = field(default_factory=list)
+
+    def cover_chapter(self) -> ExportChapter | None:
+        return next((c for c in self.chapters if c.chapter_key == COVER_CHAPTER_KEY), None)
+
+    def body_chapters(self) -> list[ExportChapter]:
+        return [c for c in self.chapters if c.chapter_key != COVER_CHAPTER_KEY]
+
+    def publication_chapters(self) -> list[ExportChapter]:
+        """Render order: cover (if present) then all body chapters."""
+        ordered: list[ExportChapter] = []
+        cover = self.cover_chapter()
+        if cover is not None:
+            ordered.append(cover)
+        ordered.extend(self.body_chapters())
+        return ordered
 
 
 def _unavailable_message(*, status: str, error_message: str | None) -> str:
@@ -151,7 +177,19 @@ def assemble_export_document(
         )
 
     issuer = extract_issuer_name(chapters)
-    toc = [(chapter.order, chapter.title) for chapter in chapters]
+    toc: list[TocEntry] = []
+    display_number = 0
+    for chapter in chapters:
+        if chapter.chapter_key == COVER_CHAPTER_KEY:
+            continue
+        display_number += 1
+        toc.append(
+            TocEntry(
+                display_number=display_number,
+                title=chapter.title,
+                chapter_key=chapter.chapter_key,
+            )
+        )
     partial_label = "Partial Draft" if is_partial else None
     return DRHPExportDocument(
         issuer_name=issuer,

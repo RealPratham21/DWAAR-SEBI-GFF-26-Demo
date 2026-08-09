@@ -18,9 +18,7 @@ type DocumentPaneProps = {
   completedChapters?: number;
 };
 
-/** A4 width at 96dpi ≈ 794px; print-like margins and dense serif body. */
-const PAGE_CLASS =
-  'mx-auto w-full max-w-[210mm] min-h-[297mm] bg-[#fffef9] px-[20mm] py-[18mm] shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-card';
+import { DRHP_PUBLICATION_CLASSES } from '@/lib/drhp/publication/theme';
 
 export function DocumentPane({
   chapter,
@@ -32,6 +30,22 @@ export function DocumentPane({
   documentStatus = null,
   completedChapters = 0,
 }: DocumentPaneProps) {
+  const emptyMessage =
+    chapter.status === 'generation_incomplete'
+      ? {
+          title: 'Generation incomplete',
+          body: 'This chapter was marked generated but has no renderable content. Try regenerating the DRHP version.',
+        }
+      : chapter.status === 'draft_ready' || chapter.status === 'needs_review'
+        ? {
+            title: 'Chapter content unavailable',
+            body: 'Generated chapter content could not be loaded or mapped for preview.',
+          }
+        : {
+            title: 'Chapter not generated',
+            body: 'This chapter has no draft content yet. Generation will populate a page-like preview here.',
+          };
+
   const workstreamHref = chapter.workstreamSlug
     ? `/projects/demo/workstreams/${chapter.workstreamSlug}`
     : null;
@@ -55,14 +69,10 @@ export function DocumentPane({
 
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-6 sm:px-6">
         <div className="space-y-6">
-          <article className={PAGE_CLASS}>
-            <header className="mb-6 border-b border-neutral-300 pb-4">
-              <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-neutral-500">
-                Draft Red Herring Prospectus
-              </p>
-              <h1 className="mt-2 font-serif text-xl font-semibold leading-tight tracking-tight text-neutral-900 sm:text-2xl">
-                {chapter.title}
-              </h1>
+          <article className={DRHP_PUBLICATION_CLASSES.page}>
+            <header className="mb-4 border-b border-neutral-400 pb-3">
+              <p className={DRHP_PUBLICATION_CLASSES.runningHeader}>Draft Red Herring Prospectus</p>
+              <h1 className={`${DRHP_PUBLICATION_CLASSES.chapterTitle} mt-2`}>{chapter.title}</h1>
             </header>
 
             {loading ? (
@@ -72,6 +82,8 @@ export function DocumentPane({
                 blocks={blocks}
                 selectedBlockId={selectedBlockId}
                 onSelectBlock={onSelectBlock}
+                isCoverChapter={chapter.key === 'cover-page-front-matter'}
+                isRiskChapter={chapter.key === 'risk-factors'}
               />
             ) : (
               <div className="flex flex-col items-start gap-4 py-10">
@@ -79,9 +91,9 @@ export function DocumentPane({
                   <FileText className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div className="space-y-2">
-                  <h2 className="font-serif text-base font-semibold text-neutral-900">Chapter not generated</h2>
+                  <h2 className="font-serif text-base font-semibold text-neutral-900">{emptyMessage.title}</h2>
                   <p className="max-w-md font-serif text-sm leading-relaxed text-neutral-600">
-                    This chapter has no draft content yet. Generation will populate a page-like preview here.
+                    {emptyMessage.body}
                   </p>
                 </div>
                 {workstreamHref && chapter.workstreamTitle ? (

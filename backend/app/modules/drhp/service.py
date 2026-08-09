@@ -833,6 +833,8 @@ def get_document_generation_status(
 
     from app.modules.drhp.schemas import ChapterGenerationStatusItem
 
+    from app.modules.drhp.export.content import ast_has_renderable_content
+
     chapter_rows = db.scalars(
         select(DrhpChapterVersion)
         .where(DrhpChapterVersion.document_version_id == document_version_id)
@@ -846,6 +848,7 @@ def get_document_generation_status(
             generation_mode=row.generation_mode,
             warnings=list(row.generation_warnings or []),
             error_message=row.error_message,
+            has_ast_content=ast_has_renderable_content(row.ast_payload),
         )
         for row in chapter_rows
     ]

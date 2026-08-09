@@ -714,7 +714,7 @@ def _build_summary(
             order=1,
             blocks=[
                 _paragraph(intro, refs),
-                _block("list", {"items": bullets, "ordered": False}, refs, 2),
+                _block("bullet_list", {"items": bullets}, refs, 2),
             ],
         )
     ], validation_failures
