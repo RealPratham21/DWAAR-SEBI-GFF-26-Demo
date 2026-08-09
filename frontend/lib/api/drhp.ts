@@ -204,6 +204,7 @@ export type ChapterGenerationStatusItem = {
   generationMode?: string;
   warnings?: string[];
   errorMessage?: string | null;
+  hasAstContent?: boolean;
 };
 
 export type DocumentGenerationStatus = {

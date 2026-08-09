@@ -221,6 +221,7 @@ class ChapterGenerationStatusItem(ApiModel):
     generation_mode: str = ""
     warnings: list[str] = Field(default_factory=list)
     error_message: str | None = None
+    has_ast_content: bool = False
 
 
 class DocumentGenerationStatusResponse(ApiModel):

@@ -1,5 +1,15 @@
 /** Map persisted backend DRHP AST JSON to frontend DrhpBlock[]. */
 
+import {
+  formatDrhpValue,
+  formatTableCell,
+  headingsAreDuplicate,
+  inferColumnAlignments,
+  inferColumnSemanticTypes,
+  isInternalHeading,
+  normalizeHeadingText,
+} from '@/lib/drhp/publication/formatters';
+import { shouldSuppressSectionHeading } from '@/lib/drhp/publication/theme';
 import type { DrhpBlock, DrhpSourceReference } from '@/lib/drhp/types';
 
 type AstBlock = {
@@ -53,26 +63,54 @@ export function astChapterToBlocks(
   const blocks: DrhpBlock[] = [];
   let order = 0;
   for (const section of ast.sections) {
-    if (section.heading) {
+    const sectionHeading = normalizeHeadingText(section.heading ?? '');
+    let previousText = sectionHeading;
+
+    if (sectionHeading && !shouldSuppressSectionHeading(section.heading ?? '')) {
       order += 1;
       blocks.push({
         id: `section-${section.sectionKey ?? order}`,
         kind: 'heading',
         status: 'draft',
         order,
-        content: { kind: 'paragraph', text: section.heading },
+        content: { kind: 'heading', text: sectionHeading, level: 2 },
         evidenceRefs: [],
         gapRefs: [],
         supportState: 'structured_input_backed',
       });
     }
+
     for (const block of section.blocks ?? []) {
-      order += 1;
       const mapped = mapAstBlock(block, order, refMap);
-      if (mapped) blocks.push(mapped);
+      if (!mapped) continue;
+
+      const visibleText = visibleBlockText(mapped);
+      if (mapped.kind === 'heading' && mapped.content.kind === 'heading') {
+        const headingText = normalizeHeadingText(mapped.content.text);
+        if (isInternalHeading(headingText) || headingsAreDuplicate(previousText, headingText)) {
+          continue;
+        }
+        previousText = headingText;
+      } else if (
+        mapped.content.kind === 'paragraph' &&
+        headingsAreDuplicate(previousText, mapped.content.text)
+      ) {
+        continue;
+      }
+
+      order += 1;
+      mapped.order = order;
+      blocks.push(mapped);
+      if (visibleText) previousText = visibleText;
     }
   }
   return blocks;
+}
+
+function visibleBlockText(block: DrhpBlock): string {
+  if (block.content.kind === 'heading') return block.content.text;
+  if (block.content.kind === 'paragraph') return block.content.text;
+  return '';
 }
 
 function mapAstBlock(
@@ -89,6 +127,24 @@ function mapAstBlock(
   const kind = block.kind ?? 'paragraph';
 
   if (kind === 'table' || kind === 'key_value_table') {
+    const rawHeaders = Array.isArray(content.headers) ? content.headers.map(String) : [];
+    const columnTypes = inferColumnSemanticTypes(rawHeaders);
+    const headers = rawHeaders.map((h) => formatTableCell(h, 'plain_text'));
+    const rows = Array.isArray(content.rows)
+      ? content.rows.map((row) => {
+          if (Array.isArray(row)) {
+            return row.map((cell, i) => formatTableCell(cell, columnTypes[i] ?? undefined));
+          }
+          if (row && typeof row === 'object') {
+            const record = row as Record<string, unknown>;
+            return rawHeaders.map((header, i) =>
+              formatTableCell(record[header] ?? record[rawHeaders[i]] ?? '', columnTypes[i] ?? undefined),
+            );
+          }
+          return [];
+        })
+      : [];
+    const alignments = inferColumnAlignments(headers, rows);
     return {
       id,
       kind: 'table',
@@ -96,11 +152,12 @@ function mapAstBlock(
       order,
       content: {
         kind: 'table',
-        caption: content.caption ? String(content.caption) : undefined,
-        headers: Array.isArray(content.headers) ? content.headers.map(String) : [],
-        rows: Array.isArray(content.rows)
-          ? content.rows.map((row) => (Array.isArray(row) ? row.map(String) : []))
-          : [],
+        caption: content.caption ? formatDrhpValue(content.caption) : undefined,
+        headers,
+        rows,
+        columnAlignments: alignments,
+        notes: Array.isArray(content.notes) ? content.notes.map((note) => formatDrhpValue(note)) : undefined,
+        unit: content.unit ? String(content.unit) : undefined,
       },
       evidenceRefs: [],
       gapRefs: [],
@@ -119,7 +176,7 @@ function mapAstBlock(
       content: {
         kind: 'list',
         ordered: kind === 'numbered_list',
-        items: Array.isArray(content.items) ? content.items.map(String) : [],
+        items: Array.isArray(content.items) ? content.items.map((item) => formatDrhpValue(item)) : [],
       },
       evidenceRefs: [],
       gapRefs: [],
@@ -139,7 +196,7 @@ function mapAstBlock(
         kind: 'missing_information',
         marker: {
           id,
-          message: String(content.reason ?? content.text ?? 'Information not available'),
+          message: formatDrhpValue(content.reason ?? content.text ?? 'Information not available'),
         },
       },
       evidenceRefs: [],
@@ -156,9 +213,8 @@ function mapAstBlock(
       status: 'draft',
       order,
       content: {
-        kind: 'notice',
-        tone: 'caution',
-        text: String(content.text ?? ''),
+        kind: 'legal_notice',
+        text: formatDrhpValue(content.text ?? ''),
       },
       evidenceRefs: [],
       gapRefs: [],
@@ -174,7 +230,25 @@ function mapAstBlock(
       kind: 'heading',
       status: 'draft',
       order,
-      content: { kind: 'paragraph', text: String(content.text ?? '') },
+      content: {
+        kind: 'heading',
+        text: normalizeHeadingText(formatDrhpValue(content.text ?? '')),
+        level: typeof content.level === 'number' ? content.level : 3,
+      },
+      evidenceRefs: [],
+      gapRefs: [],
+      sourceRefs,
+      supportState,
+    };
+  }
+
+  if (kind === 'page_break') {
+    return {
+      id,
+      kind: 'page_break',
+      status: 'draft',
+      order,
+      content: { kind: 'paragraph', text: '' },
       evidenceRefs: [],
       gapRefs: [],
       sourceRefs,
@@ -187,7 +261,7 @@ function mapAstBlock(
     kind: 'paragraph',
     status: 'draft',
     order,
-    content: { kind: 'paragraph', text: String(content.text ?? '') },
+    content: { kind: 'paragraph', text: formatDrhpValue(content.text ?? content) },
     evidenceRefs: [],
     gapRefs: [],
     sourceRefs,

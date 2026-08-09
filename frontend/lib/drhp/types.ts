@@ -13,7 +13,8 @@ export type DrhpChapterStatus =
   | 'ready_with_gaps'
   | 'ready_with_placeholders'
   | 'ready_to_generate'
-  | 'depends_on_generated';
+  | 'depends_on_generated'
+  | 'generation_incomplete';
 
 export type DrhpBlockStatus =
   | 'empty'
@@ -69,6 +70,20 @@ export interface DrhpTableContent {
   caption?: string;
   headers: string[];
   rows: string[][];
+  columnAlignments?: Array<'left' | 'right' | 'center'>;
+  notes?: string[];
+  unit?: string;
+}
+
+export interface DrhpHeadingContent {
+  kind: 'heading';
+  text: string;
+  level?: number;
+}
+
+export interface DrhpLegalNoticeContent {
+  kind: 'legal_notice';
+  text: string;
 }
 
 export interface DrhpListContent {
@@ -93,7 +108,9 @@ export type DrhpBlockContent =
   | DrhpTableContent
   | DrhpListContent
   | DrhpNoticeContent
-  | DrhpMissingInformationContent;
+  | DrhpMissingInformationContent
+  | DrhpHeadingContent
+  | DrhpLegalNoticeContent;
 
 export interface DrhpSourceReference {
   refId: string;

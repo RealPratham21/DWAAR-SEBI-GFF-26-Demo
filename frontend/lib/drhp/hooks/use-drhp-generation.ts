@@ -20,7 +20,16 @@ const TERMINAL_STATUSES = new Set([
   'failed',
 ]);
 
-function mapGenerationChapterStatus(status: string): DrhpChapterStatus {
+function mapGenerationChapterStatus(
+  status: string,
+  hasAstContent: boolean,
+): DrhpChapterStatus {
+  if (
+    (status === 'generated' || status === 'generated_with_warnings') &&
+    !hasAstContent
+  ) {
+    return 'generation_incomplete';
+  }
   switch (status) {
     case 'queued':
     case 'waiting_for_dependency':
@@ -118,7 +127,9 @@ export function useDrhpGeneration() {
         key: definition.key,
         title: definition.title,
         order: definition.order,
-        status: row ? mapGenerationChapterStatus(row.status) : 'not_generated',
+        status: row
+          ? mapGenerationChapterStatus(row.status, Boolean(row.hasAstContent))
+          : 'not_generated',
         sections: [],
         workstreamSlug: definition.workstreamSlug,
         workstreamTitle: definition.workstreamTitle,

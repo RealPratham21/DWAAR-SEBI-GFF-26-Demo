@@ -172,6 +172,8 @@ export function chapterStatusLabel(status: DrhpChapterStatus): string {
       return 'Ready to generate';
     case 'depends_on_generated':
       return 'Depends on generated chapters';
+    case 'generation_incomplete':
+      return 'Generation incomplete';
     default:
       return 'Not generated';
   }

@@ -1,35 +1,44 @@
 'use client';
 
+import { DRHP_PUBLICATION_CLASSES } from '@/lib/drhp/publication/theme';
 import type { DrhpBlock, DrhpBlockContent } from '@/lib/drhp/types';
 
 type AstRendererProps = {
   blocks: DrhpBlock[];
   selectedBlockId: string | null;
   onSelectBlock: (blockId: string | null) => void;
+  isCoverChapter?: boolean;
+  isRiskChapter?: boolean;
 };
 
-function renderContent(content: DrhpBlockContent) {
+function renderContent(content: DrhpBlockContent, options: { isCoverChapter: boolean; isRiskChapter: boolean }) {
+  const { isCoverChapter, isRiskChapter } = options;
+  const c = DRHP_PUBLICATION_CLASSES;
+
   switch (content.kind) {
     case 'paragraph':
       return (
-        <p className="font-serif text-[11.5px] leading-[1.55] text-neutral-900">{content.text}</p>
+        <p className={isCoverChapter ? `${c.body} text-center` : c.body}>{content.text}</p>
       );
-    case 'table':
+    case 'heading': {
+      const level = content.level ?? 3;
+      const className = level <= 2 ? c.sectionHeading : c.subsectionHeading;
+      const riskClass = isRiskChapter ? `${className} mt-1` : className;
+      return <h3 className={riskClass}>{content.text}</h3>;
+    }
+    case 'table': {
+      const alignments = content.columnAlignments ?? [];
       return (
-        <figure className="my-4">
-          {content.caption ? (
-            <figcaption className="mb-2 text-center text-xs font-medium text-muted-foreground">
-              {content.caption}
-            </figcaption>
+        <figure className="my-2">
+          {content.caption ? <figcaption className={c.tableCaption}>{content.caption}</figcaption> : null}
+          {content.unit && !content.caption?.toLowerCase().includes(content.unit.toLowerCase()) ? (
+            <p className={c.tableNote}>(₹ in {content.unit}, unless otherwise stated)</p>
           ) : null}
-          <table className="w-full border-collapse border border-neutral-400 text-[10.5px] text-neutral-900">
+          <table className={c.table}>
             <thead>
               <tr>
                 {content.headers.map((header, headerIndex) => (
-                  <th
-                    key={`header-${headerIndex}`}
-                    className="border border-neutral-400 bg-neutral-100 px-2 py-1 text-left font-semibold"
-                  >
+                  <th key={`header-${headerIndex}`} className={c.tableHeaderCell}>
                     {header}
                   </th>
                 ))}
@@ -38,21 +47,36 @@ function renderContent(content: DrhpBlockContent) {
             <tbody>
               {content.rows.map((row, rowIndex) => (
                 <tr key={`row-${rowIndex}`}>
-                  {row.map((cell, cellIndex) => (
-                    <td key={`cell-${rowIndex}-${cellIndex}`} className="border border-neutral-400 px-2 py-1">
-                      {cell}
-                    </td>
-                  ))}
+                  {row.map((cell, cellIndex) => {
+                    const alignment = alignments[cellIndex] ?? 'left';
+                    const cellClass = alignment === 'right' ? c.tableCellNumeric : c.tableCell;
+                    return (
+                      <td key={`cell-${rowIndex}-${cellIndex}`} className={cellClass}>
+                        {cell}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
           </table>
+          {content.notes?.length ? (
+            <div className="mt-1">
+              <p className={`${c.tableNote} font-semibold`}>Notes:</p>
+              {content.notes.map((note, index) => (
+                <p key={`note-${index}`} className={c.tableNote}>
+                  {index + 1}. {note}
+                </p>
+              ))}
+            </div>
+          ) : null}
         </figure>
       );
+    }
     case 'list':
       if (content.ordered) {
         return (
-          <ol className="list-decimal space-y-1 pl-5 font-serif text-[13px] leading-[1.65]">
+          <ol className={`${c.list} list-decimal`}>
             {content.items.map((item, index) => (
               <li key={`list-item-${index}`}>{item}</li>
             ))}
@@ -60,61 +84,66 @@ function renderContent(content: DrhpBlockContent) {
         );
       }
       return (
-        <ul className="list-disc space-y-1 pl-5 font-serif text-[13px] leading-[1.65]">
+        <ul className={`${c.list} list-disc`}>
           {content.items.map((item, index) => (
             <li key={`list-item-${index}`}>{item}</li>
           ))}
         </ul>
       );
-    case 'notice':
     case 'legal_notice':
-      return (
-        <p className="rounded border border-border bg-muted/30 px-3 py-2 font-serif text-[12px] italic text-muted-foreground">
-          {content.text}
-        </p>
-      );
-    case 'heading':
-      return (
-        <h2 className="font-serif text-[15px] font-semibold tracking-tight text-foreground">
-          {(content as { text?: string }).text ?? ''}
-        </h2>
-      );
+      return <p className={c.legalNotice}>{content.text}</p>;
+    case 'notice':
+      return <p className={c.legalNotice}>{content.text}</p>;
     case 'missing_information':
-      return (
-        <p className="font-serif text-[13px] text-muted-foreground">
-          [●] {content.marker.message}
-        </p>
-      );
+      return <p className={c.placeholder}>[●]</p>;
     default:
       return null;
   }
 }
 
-/** Renderer-neutral AST block list — used with fixture data only until generation exists. */
-export function AstRenderer({ blocks, selectedBlockId, onSelectBlock }: AstRendererProps) {
+/** Renderer-neutral AST block list with prospectus-style publication treatment. */
+export function AstRenderer({
+  blocks,
+  selectedBlockId,
+  onSelectBlock,
+  isCoverChapter = false,
+  isRiskChapter = false,
+}: AstRendererProps) {
   return (
-    <div className="space-y-3">
-      {blocks.map((block) => (
-        <div
-          key={block.id}
-          role="button"
-          tabIndex={0}
-          onClick={() => onSelectBlock(block.id === selectedBlockId ? null : block.id)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              onSelectBlock(block.id === selectedBlockId ? null : block.id);
-            }
-          }}
-          className={`rounded-sm px-1 py-1 outline-none transition ${
-            selectedBlockId === block.id
-              ? 'ring-2 ring-primary/40 ring-offset-2 ring-offset-white'
-              : 'hover:bg-muted/20'
-          }`}
-        >
-          {renderContent(block.content)}
-        </div>
-      ))}
+    <div className={DRHP_PUBLICATION_CLASSES.blockGap}>
+      {blocks.map((block) => {
+        if (block.kind === 'page_break') {
+          return (
+            <div
+              key={block.id}
+              aria-hidden
+              className="my-6 border-t border-dashed border-neutral-300 print:break-before-page"
+            />
+          );
+        }
+
+        return (
+          <div
+            key={block.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => onSelectBlock(block.id === selectedBlockId ? null : block.id)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                onSelectBlock(block.id === selectedBlockId ? null : block.id);
+              }
+            }}
+            className={`rounded-sm px-0.5 py-0.5 outline-none transition ${
+              selectedBlockId === block.id
+                ? 'bg-primary/5 ring-1 ring-primary/30'
+                : 'hover:bg-neutral-100/60'
+            }`}
+          >
+            {renderContent(block.content, { isCoverChapter, isRiskChapter })}
+          </div>
+        );
+      })}
     </div>
   );
 }
