@@ -11,6 +11,8 @@ from app.models.management_governance_workspace import ManagementGovernanceWorks
 from app.models.objects_issue_workspace import ObjectsIssueWorkspace
 from app.models.capital_ownership_workspace import CapitalOwnershipWorkspace
 from app.models.company_incorporation_workspace import CompanyIncorporationWorkspace
+from app.models.data_room_stored_document import DataRoomStoredDocument
+from app.models.data_room_stored_document_version import DataRoomStoredDocumentVersion
 from app.models.document import Document
 from app.models.document_page import DocumentPage
 from app.models.document_processing_run import DocumentProcessingRun
@@ -49,6 +51,8 @@ __all__ = [
     "ObjectsIssueWorkspace",
     "CapitalOwnershipWorkspace",
     "CompanyIncorporationWorkspace",
+    "DataRoomStoredDocument",
+    "DataRoomStoredDocumentVersion",
     "Document",
     "DocumentPage",
     "DocumentProcessingRun",
