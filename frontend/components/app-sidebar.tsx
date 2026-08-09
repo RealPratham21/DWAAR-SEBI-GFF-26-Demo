@@ -2,6 +2,7 @@
 
 import { useContext, useState } from 'react';
 import Link from 'next/link';
+import { DwaarLogo } from '@/components/dwaar-logo';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -144,17 +145,13 @@ function AppSidebarInner() {
             title="Dwaar"
             onClick={() => setMobileOpen(false)}
           >
-            <div className="w-8 h-8 rounded-md bg-sidebar-primary flex items-center justify-center shrink-0">
-              <span className="text-sidebar-primary-foreground font-bold text-sm">D</span>
-            </div>
-            <span
-              className={cn(
-                'text-sidebar-foreground font-semibold text-sm',
+            <DwaarLogo
+              size="sm"
+              wordmarkClassName={cn(
+                'text-sidebar-foreground text-sm',
                 collapsed && 'md:hidden',
               )}
-            >
-              Dwaar
-            </span>
+            />
           </Link>
           {!collapsed ? (
             <button

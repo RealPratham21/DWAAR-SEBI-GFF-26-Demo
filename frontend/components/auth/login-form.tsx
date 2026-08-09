@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -30,7 +30,7 @@ const STATUS_MESSAGES: Record<Exclude<LoginFormStatus, 'idle' | 'submitting'>, s
   'unexpected-error': 'An unexpected error occurred. Please try again.',
 };
 
-export function LoginForm() {
+export function LoginForm({ defaultEmail = '' }: { defaultEmail?: string }) {
   const router = useRouter();
   const { login } = useAuth();
   const [status, setStatus] = useState<LoginFormStatus>('idle');
@@ -45,11 +45,17 @@ export function LoginForm() {
   } = useForm<LoginInput, unknown, LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
+      email: defaultEmail,
       password: '',
       rememberMe: false,
     },
   });
+
+  useEffect(() => {
+    if (defaultEmail) {
+      setValue('email', defaultEmail);
+    }
+  }, [defaultEmail, setValue]);
 
   const password = watch('password');
 

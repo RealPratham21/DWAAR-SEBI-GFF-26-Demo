@@ -1,288 +1,395 @@
-# Dwaar – Unlocking Public Markets for Small Enterprises
+# Dwaar
 
-> **From IPO intent to a substantially complete DRHP draft—guided, structured, and built for small enterprises.**
+**From company information and evidence to a review-ready draft offer document for SME IPO preparation.**
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Open_Dwaar-4f2fd3?style=for-the-badge&logo=vercel&logoColor=white)](https://dwaar-sebi-gff-26-demo.vercel.app/)
-[![TechSprint](https://img.shields.io/badge/SEBI_TechSprint-GFF_2026-d946ef?style=for-the-badge)](https://hackculture.io/hackathons/sebi-securities-market-techsprint)
-[![License: MIT](https://img.shields.io/badge/License-MIT-14b8a6?style=for-the-badge)](#license)
+Dwaar is a structured IPO preparation workspace for Indian SME promoters. It helps teams move from scattered company information, documents and disclosures toward a traceable, review-ready draft Red Herring Prospectus (DRHP) — before professional due diligence, certification and filing.
 
-Dwaar is a prototype submission for the **SEBI Securities Market TechSprint at Global Fintech Fest 2026**.
+Built for **[SEBI Securities Market TechSprint @ GFF 2026](https://hackculture.io/hackathons/sebi-securities-market-techsprint)** — Problem Statement 04: *Simplifying IPO Offer Document Preparation for SMEs*.
 
-## Project Overview
+[![Live Demo](https://img.shields.io/badge/Live_Demo-dwaar--sebi--gff--26--demo.vercel.app-4f2fd3?style=flat-square)](https://dwaar-sebi-gff-26-demo.vercel.app/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-000?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
 
-Small and medium enterprises often have the ambition to access public markets but lack the capital, time, and specialist knowledge required to begin the IPO process confidently.
+---
 
-Preparing an SME Draft Red Herring Prospectus (DRHP) can involve:
+## Demo
 
-- **₹25–30 lakh in merchant banker fees** before the issuer is market-ready.
-- **Three to four months of drafting and information collection.**
-- Complex disclosure requirements under **Schedule VI of the SEBI ICDR Regulations**.
-- A high risk of avoidable gaps, inconsistencies, and regulatory observations.
-- A potentially damaging **six-month cooling-off period** following rejection or withdrawal in applicable circumstances.
+For the pre-filled **Nivara Techfab Private Limited** demonstration workspace:
 
-**Dwaar** addresses this early-stage readiness gap. It is a guided digital workspace that helps SME promoters organize company information, understand disclosure requirements, identify missing data, and generate a substantially complete first DRHP draft in days rather than months.
-
-The platform is designed for **SME promoters, founders, and owner-led teams** with limited capital-market experience and constrained access to specialist resources. Dwaar does not replace a merchant banker, legal counsel, auditor, or regulatory review. It helps an issuer arrive at those conversations better prepared.
-
-The name **Dwaar** means **“door”** in Sanskrit and Hindi. It represents the project’s purpose: opening the door to public markets for India’s small enterprises.
-
-## Key Features
-
-### 1. Guided Questionnaire
-
-A structured disclosure workflow covering the nine core areas required for IPO-readiness assessment:
-
-1. Company Background
-2. Business Operations
-3. Financials
-4. Shareholding
-5. Promoters and Management
-6. Related-Party Transactions (RPTs)
-7. Litigation
-8. Use of Proceeds
-9. Risk Factors
-
-The checked-in demonstration consolidates these topics into representative interactive modules so judges can complete the journey quickly.
-
-### 2. Document Upload Center
-
-A centralized checklist designed around **14 document types commonly required for BSE SME preparation**, including audited financial statements, constitutional documents, board resolutions, director records, governance certificates, and supporting disclosures.
-
-The prototype provides representative upload slots and a one-click mock document pack for demonstration.
-
-### 3. Auto-Generated DRHP Preview
-
-Transforms structured questionnaire responses and company data into a readable DRHP preview aligned with the disclosure organization prescribed by **Schedule VI of the SEBI ICDR Regulations**.
-
-### 4. Gap-Checking Engine
-
-A rule-based review layer that flags:
-
-- Missing mandatory disclosures.
-- Incomplete questionnaire sections.
-- Numerical inconsistencies.
-- Missing supporting documents.
-- Potential regulatory red flags requiring professional attention.
-
-### 5. Export Package
-
-The envisioned export package contains:
-
-- A structured DRHP draft.
-- A **Merchant Banker Attention Report** highlighting unresolved matters.
-- A concise company and issue **Data Summary**.
-
-### 6. Judge-Ready Demo Mode
-
-Company details, questionnaire responses, and mock uploads can be populated in one click. This allows reviewers to experience the full workflow without manually entering test data.
-
-## Screenshots
-
-### Landing Page
-
-![Dwaar landing page](public/screenshots/ss1.png)
-
-### IPO Readiness Dashboard
-
-![Dwaar dashboard](public/screenshots/ss2.png)
-
-## Technology Stack
-
-| Area | Technology |
+| | |
 | --- | --- |
-| Framework | Next.js 16 with the App Router |
-| Frontend | React 19 and TypeScript |
-| Styling | Tailwind CSS 4 |
-| Components | shadcn/ui conventions with Base UI primitives |
-| State Management | React Context API with browser `localStorage` persistence |
-| Routing | Next.js App Router |
-| Icons | Lucide React |
-| Utilities | Class Variance Authority, `clsx`, and `tailwind-merge` |
-| Analytics | Vercel Analytics in production |
-| Deployment | Vercel |
+| **Email** | `nivara.demo@example.com` |
+| **Password** | `Password1` |
 
-## Prototype Scope and Limitations
+This account is intentionally populated for hackathon evaluation. You can also register and complete fresh SME onboarding to experience the full issuer journey from scratch.
 
-Dwaar is a **functional hackathon prototype** built to demonstrate product feasibility and the complete issuer journey.
+**Live app:** [dwaar-sebi-gff-26-demo.vercel.app](https://dwaar-sebi-gff-26-demo.vercel.app/)
 
-- All company, financial, questionnaire, and document data is mocked or simulated.
-- There is no production backend, database, object storage, or identity provider.
-- Prototype state is stored locally in the browser and may be cleared during logout.
-- Mock uploads store document metadata only; no real files are transmitted to a server.
-- DRHP generation uses predefined templates with dynamic data insertion.
-- Gap checking is rule-based and uses a predefined set of checks.
-- The interactive demo consolidates the broader nine-section and 14-document product design into a smaller representative workflow.
-- Generated output is not legal advice, regulatory approval, or a filing-ready offer document.
-- A registered merchant banker and appropriate legal, accounting, and compliance professionals must review any real IPO filing.
+---
 
-The prototype demonstrates the journey from onboarding and company profiling through questionnaire completion, document collection, readiness review, and export.
+## Why Dwaar?
 
-## Installation and Setup
+SME IPO offer-document preparation is difficult because preparation spans months, depends heavily on intermediaries from an early stage, and requires promoters to organise extensive business, financial, legal, governance and offer-related disclosures — often without prior capital-markets experience.
+
+Information typically lives across people, spreadsheets, email threads and document folders long before a coherent draft exists.
+
+**Dwaar addresses the preparation gap**, not regulated filing or professional certification.
+
+| Challenge | What promoters face |
+| --- | --- |
+| **Time** | Repeated gathering, reconciliation and drafting over many months |
+| **Cost** | Specialist involvement begins before information is organised |
+| **Complexity** | Many disclosure domains must eventually become one coherent document |
+| **Fragmentation** | Data sits across teams, files and systems without a single source of truth |
+
+---
+
+## Solution
+
+Dwaar gives promoters a guided path:
+
+```text
+SME promoter
+  → 12 guided workstreams
+  → structured issuer data + documents
+  → canonical facts & evidence
+  → issues & reconciliation
+  → immutable generation snapshot
+  → chapter-based DRHP draft
+  → professional review (outside Dwaar)
+```
+
+Dwaar **does not** replace SEBI-registered merchant bankers, counsel, auditors or other authorised professionals. It helps promoters arrive at professional review better prepared.
+
+---
+
+## Platform overview
+
+### 12 preparation workstreams
+
+1. Company & Incorporation
+2. IPO Setup & Eligibility
+3. Capital & Ownership
+4. Business & Operations
+5. Objects of the Issue
+6. Financials & KPIs
+7. Management & Governance
+8. Industry & Market
+9. Group Entities & Related Parties
+10. Borrowings, Assets & Contracts
+11. Litigation, Approvals & Compliance
+12. Intermediaries & Filing
+
+Each workstream captures structured issuer information with backend-authored progress tracking.
+
+### Document intelligence (Company & Incorporation)
+
+The richest document pipeline is implemented for **Company & Incorporation**:
+
+`Upload → OCR/extraction → assertions/facts → evidence linkage → discrepancy review`
+
+Other workstreams primarily use structured issuer input and deterministic validation in the current prototype.
+
+### Issues & Gaps (G4)
+
+Global aggregation of missing information, inconsistencies, evidence gaps, DRHP readiness items, generation warnings and professional-review requirements — with severity, workstream context and deep links back to source.
+
+### Facts & Evidence (G5)
+
+Canonical facts with support types:
+
+- document-backed
+- structured issuer input
+- calculated
+- professional confirmation
+
+Facts used in the latest DRHP draft are tracked separately from total canonical facts.
+
+### Data Room (G6)
+
+Central inventory of uploaded documents and expected due-diligence requirements across workstreams — distinguishing provided, missing and review-applicability states.
+
+### DRHP generation (G3)
+
+- **18 chapters** mapped to canonical workstream ownership
+- **Immutable generation snapshots** capturing source state at generation time
+- **Chapter source bundles** with `SourceRef` / `EvidenceRef` provenance
+- **Structured Document AST** persisted per chapter version
+- **Cohere** used for bounded narrative generation where appropriate; deterministic blocks where facts are authoritative
+- **PDF and DOCX export** from persisted AST — exports do not regenerate content
+- **Staleness detection** when source information changes after a draft was generated
+
+<details>
+<summary><strong>18 DRHP chapters (canonical registry)</strong></summary>
+
+1. Cover Page & Front Matter
+2. Definitions & Abbreviations
+3. Summary of DRHP
+4. Risk Factors
+5. General Information & The Issue
+6. Capital Structure & Ownership
+7. Objects of the Issue
+8. Basis for Issue Price
+9. Industry Overview
+10. Business & Operations
+11. Company History, Promoters & Corporate Structure
+12. Management & Governance
+13. Financial Information & MD&A
+14. Legal, Regulatory & Approvals
+15. Group Companies & Related Party Transactions
+16. Terms, Structure & Procedure of the Issue
+17. Material Contracts & Documents for Inspection
+18. Declarations, AOA & Miscellaneous
+
+</details>
+
+### Reports & Exports (G7)
+
+- Readiness report (PDF)
+- Issues register (XLSX / CSV)
+- Facts & Evidence register (XLSX)
+- Data Room register (XLSX)
+- Preparation workbook (XLSX)
+- Latest DRHP draft (PDF / DOCX via G3 export routes)
+
+### Dashboard
+
+IPO preparation command centre aggregating workstream progress, open issues, facts/evidence counts, data room coverage, latest DRHP state and deterministic next-best actions.
+
+---
+
+## Architecture
+
+Dwaar is a **modular monolith**: one FastAPI backend with domain modules, one Next.js frontend, PostgreSQL for authoritative state, and S3-compatible object storage for documents.
+
+```mermaid
+flowchart TB
+  User([User])
+  FE[Next.js on Vercel]
+  API[FastAPI modular monolith]
+  WS[Workstreams]
+  G4[Issues and Gaps]
+  G5[Facts and Evidence]
+  G6[Data Room]
+  G3[DRHP Generation]
+  DB[(PostgreSQL)]
+  S3[(S3-compatible storage)]
+  Cohere[Cohere API]
+
+  User --> FE --> API
+  API --> WS
+  API --> G4
+  API --> G5
+  API --> G6
+  API --> G3
+  WS --> DB
+  G4 --> DB
+  G5 --> DB
+  G6 --> DB
+  G3 --> DB
+  G6 --> S3
+  G3 --> Cohere
+  G3 --> S3
+```
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS 4 |
+| Backend | FastAPI, SQLAlchemy 2, Alembic, Pydantic v2 |
+| Database | PostgreSQL 16 |
+| Object storage | S3-compatible (MinIO locally, Railway Bucket in production) |
+| AI | Cohere for bounded DRHP narrative generation only |
+| Frontend hosting | Vercel |
+| Backend hosting | Railway (API + document worker) |
+
+### DRHP generation architecture
+
+1. **Canonical chapter mapping** — each of 18 chapters maps to owning workstreams and source bundles.
+2. **Generation snapshot** — immutable capture of facts, issues and structured inputs at generation time.
+3. **ChapterSourceBundle** — per-chapter inputs with `SourceRef` and `EvidenceRef` links.
+4. **Document AST** — structured chapter content persisted as versions (not ephemeral LLM output).
+5. **Hybrid generation** — deterministic tables/calculations where authoritative; Cohere for narrative sections within bounded prompts.
+6. **Export** — PDF/DOCX rendered from persisted AST without re-invoking generation.
+
+Cohere does **not** control deterministic calculations or factual authority.
+
+### Evidence model (honest scope)
+
+| Workstream area | Current depth |
+| --- | --- |
+| Company & Incorporation | Full document → extraction → fact → evidence → review pipeline |
+| Other workstreams | Structured issuer input + deterministic validation |
+| Global Facts & Evidence | Unified view with support-type distinction |
+
+---
+
+## Prototype boundaries
+
+- This is a **hackathon prototype**, not a regulatory filing system.
+- Dwaar is **not** SEBI-approved, does not certify compliance, and does not provide legal advice.
+- Dwaar **does not** replace merchant bankers, counsel, auditors or other authorised professionals.
+- Document extraction is **not** implemented uniformly across every workstream.
+- Generated drafts require **professional review** before any filing use.
+- Professional due diligence, certification and regulatory filing remain outside the platform.
+
+---
+
+## Project structure
+
+```text
+DWAAR-SEBI-GFF-26-Demo/
+├── frontend/                 # Next.js app (App Router)
+│   ├── app/                  # Routes: landing, auth, onboarding, /projects/demo/*
+│   ├── components/           # Workspaces, landing, auth, UI
+│   └── lib/                  # API clients, DRHP registry, auth, workstreams
+├── backend/
+│   ├── app/
+│   │   ├── modules/          # Domain modules (workstreams, drhp, issues_gaps, …)
+│   │   ├── models/           # SQLAlchemy models
+│   │   └── api/v1/           # API router aggregation
+│   ├── alembic/              # Database migrations
+│   └── tests/
+├── fixtures/nivara-techfab/  # Nivara ground-truth fixtures & document generators
+├── docs/                     # Deployment & smoke-test guides
+├── deploy/                   # Railway env examples
+├── infra/minio/              # Local object-storage init
+├── compose.yaml              # Local Docker stack
+└── .env.example              # Root environment template
+```
+
+---
+
+## Local development
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) 20 or later
-- npm 10 or later
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (recommended), or Node.js 20+ and Python 3.12+ with PostgreSQL
 - Git
 
-### 1. Clone the repository
-
-```bash
-git clone <your-repository-url>
-cd SEBI
-```
-
-### 2. Install dependencies
-
-```bash
-npm install
-```
-
-### 3. Configure environment variables
-
-No environment variables are required for the current prototype.
-
-If future backend services are added, create a `.env.local` file and document the required variables without committing secrets:
-
-```bash
-cp .env.example .env.local
-```
-
-### 4. Run the development server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## Local Docker Development
-
-Run the frontend, backend, and PostgreSQL together with Docker Compose.
-
-### Prerequisites
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine with Compose v2)
-
-### 1. Configure environment variables
+### 1. Configure environment
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` if needed. Do not commit `.env`.
+Edit `.env` as needed. **Do not commit secrets.**
 
-### 2. Start the stack
+Key variables (see `.env.example` for the full list):
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection (`@db:5432` inside Docker; `localhost:5432` on host) |
+| `JWT_SECRET` | Access/refresh token signing |
+| `NEXT_PUBLIC_API_BASE_URL` | Frontend → API base (e.g. `http://localhost:8000/api/v1`) |
+| `COHERE_API_KEY` | Single Cohere key (fallback) |
+| `COHERE_API_KEYS` | Comma-separated key pool (preferred when set) |
+| `S3_ENDPOINT` / `S3_BUCKET` | Object storage (MinIO locally) |
+| `ENABLE_DEV_SEED` / `DEV_SEED_SECRET` | Gated Nivara seed endpoint (local/dev only) |
+
+**Cohere configuration:** the backend accepts `COHERE_API_KEYS` (comma-separated pool) and falls back to `COHERE_API_KEY`. Set `DRHP_USE_FAKE_COHERE=true` for CI/tests without live API calls.
+
+### 2. Start with Docker Compose (recommended)
 
 ```bash
 docker compose up --build
 ```
-
-After startup:
 
 | Service | URL |
 | --- | --- |
 | Frontend | http://localhost:3000 |
-| Backend | http://localhost:8000 |
+| Backend API | http://localhost:8000 |
 | Swagger | http://localhost:8000/docs |
-| ReDoc | http://localhost:8000/redoc |
-| PostgreSQL (host) | localhost:5433 |
+| PostgreSQL | localhost:5432 |
 
-### Useful Docker commands
+Useful commands:
 
 ```bash
-docker compose up --build
-docker compose up -d
 docker compose logs -f migrate
-docker compose logs -f backend
-docker compose logs -f frontend
-docker compose exec backend bash
 docker compose exec backend uv run alembic current
-docker compose exec backend uv run alembic heads
-docker compose exec db psql -U dwaar -d dwaar
-docker compose down
-docker compose down -v
+docker compose down -v   # wipes local DB volume — use intentionally
 ```
 
-**Warning:** `docker compose down -v` deletes the named PostgreSQL volume and all local database data. Use it only when you intentionally want a fresh database.
-
-The frontend uses **npm** with `package-lock.json`. The backend uses **uv** with `uv.lock`. Source directories are bind-mounted for hot reload; frontend `node_modules` and backend dependencies remain in container volumes/layers outside the bind mounts.
-
-### 5. Create a production build
+### 3. Frontend only (API already running)
 
 ```bash
-npm run build
-npm run start
+cd frontend
+npm install
+npm run dev
 ```
 
-## Project Structure
+Production build requires `NEXT_PUBLIC_API_BASE_URL` (see `frontend/.env.production.example`).
 
-```text
-SEBI/
-├── app/                      # Next.js routes and page-level components
-│   ├── page.tsx              # Landing page
-│   ├── dashboard/            # IPO readiness overview
-│   ├── company-profile/      # Company and financial information
-│   ├── questionnaire/        # Guided disclosure workflow
-│   ├── documents/            # Document upload simulation
-│   ├── drhp-preview/         # DRHP preview and gap analysis
-│   ├── admin/                # Prototype administrative dashboard
-│   ├── help/                 # Help and educational resources
-│   └── globals.css           # Global theme and Tailwind styles
-├── components/               # Reusable layout and UI components
-│   └── ui/                   # Buttons, inputs, and design primitives
-├── lib/                      # Contexts, types, mock data, and utilities
-│   ├── contexts.tsx          # React Context providers and persistence
-│   ├── questionnaire-data.ts # Questions, document requirements, checks
-│   ├── demo-data.ts          # Judge-ready fictional data
-│   └── types.ts              # Shared TypeScript models
-├── public/                   # Static assets, logos, and screenshots
-├── package.json              # Dependencies and scripts
-└── README.md                 # Project documentation
+### 4. Backend only (without Docker)
+
+```bash
+cd backend
+uv sync
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
-
-## How to Use the Prototype
-
-1. **Landing Page** — Review the product proposition and select **Start Your IPO Journey**.
-2. **Registration** — Create a simulated account and provide initial company details.
-3. **Dashboard** — View overall readiness, step-level progress, and pending activities.
-4. **Company Profile** — Enter company, management, and financial information, or use **Fill demo data**.
-5. **Questionnaire** — Work through the guided disclosure sections. Use **Fill this section** or **Fill all sections** for a faster demonstration.
-6. **Document Upload** — Attach supporting records or select **Add demo documents** to simulate the required package.
-7. **DRHP Preview** — Review the dynamically assembled draft content.
-8. **Gap Checking** — Inspect missing information, recommendations, and readiness indicators.
-9. **Export** — Generate and download the prototype DRHP output package.
-
-Try the hosted version: **[dwaar-sebi-gff-26-demo.vercel.app](https://dwaar-sebi-gff-26-demo.vercel.app/)**
-
-## Acknowledgments
-
-Dwaar was created for the **SEBI Securities Market TechSprint at Global Fintech Fest 2026**.
-
-Special thanks to:
-
-- **Securities and Exchange Board of India (SEBI)** for framing the challenge and advancing securities-market innovation.
-- **Global Fintech Fest (GFF)** for providing a platform for financial-technology collaboration.
-- **HackCulture** for organizing and supporting the TechSprint.
-- The mentors, reviewers, open-source maintainers, and developer-tooling communities whose resources helped shape this prototype.
-
-## License
-
-This project is available under the **MIT License**. You may use, modify, and distribute the software in accordance with the license terms.
-
-This license applies to the source code only. SEBI, Global Fintech Fest, HackCulture, and other third-party names and logos remain the property of their respective owners.
-
-## Contact / Author
-
-**Prathamesh Bhamare**  
-Student at CWIT Pune | SWE Intern @ Arealis
-
-- Email: [prathamesh7x1@gmail.com](mailto:ftw.prathambhamare7@gmail.com)
-- GitHub: [RealPratham21](https://github.com/RealPratham21)
-- Live Demo: [Dwaar on Vercel](https://dwaar-sebi-gff-26-demo.vercel.app/)
 
 ---
 
-<p align="center">
-  <strong>Dwaar</strong> — opening the door to public markets for small enterprises.
-</p>
+## Deployment
+
+| Component | Host |
+| --- | --- |
+| Frontend | Vercel |
+| API | Railway |
+| Document worker | Railway (same image, worker command) |
+| PostgreSQL | Railway |
+| Object storage | Railway Bucket (S3-compatible) |
+
+See [docs/deployment.md](docs/deployment.md) and [docs/cloud-smoke-checklist.md](docs/cloud-smoke-checklist.md) for release order, migration ownership and smoke tests.
+
+---
+
+## Testing
+
+### Backend
+
+```bash
+cd backend
+uv run pytest
+```
+
+Postgres integration tests require `DATABASE_URL` or `TEST_DATABASE_URL`.
+
+### Frontend
+
+```bash
+cd frontend
+npm run typecheck
+npm run test
+npm run lint
+npm run build   # requires NEXT_PUBLIC_API_BASE_URL
+```
+
+---
+
+## Team
+
+**Team Stay24**
+
+**Prathamesh Bhamare** — Creator / sole team member
+
+The project was registered while Prathamesh was completing his Diploma in Computer Engineering at CWIT Pune.
+
+---
+
+## Hackathon
+
+**SEBI Securities Market TechSprint @ Global Fintech Fest 2026**
+
+**Problem Statement 04:** Simplifying IPO Offer Document Preparation for SMEs
+
+**Team:** Stay24
+
+Event: [hackculture.io/hackathons/sebi-securities-market-techsprint](https://hackculture.io/hackathons/sebi-securities-market-techsprint)
+
+---
+
+## License
+
+MIT License — see repository license file. Third-party names and logos remain property of their respective owners.

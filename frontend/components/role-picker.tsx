@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Building2, CheckCircle2 } from 'lucide-react';
+import { DwaarLogo } from '@/components/dwaar-logo';
 import { AUTH_ROUTES } from '@/lib/auth/constants';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -66,12 +67,7 @@ export function RolePicker() {
     <main className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto px-6 py-16">
         <div className="text-center mb-16">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold">D</span>
-            </div>
-            <span className="font-bold text-2xl text-foreground">Dwaar</span>
-          </div>
+          <DwaarLogo size="md" className="mb-4 justify-center" wordmarkClassName="text-2xl font-bold" />
           <h1 className="text-4xl font-bold text-foreground mb-4">Choose Your Role</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Select how you&apos;ll be using Dwaar to tailor your experience
