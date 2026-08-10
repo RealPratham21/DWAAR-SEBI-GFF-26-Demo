@@ -7,6 +7,8 @@ from typing import Any
 from app.modules.drhp.ast.schemas import CohereStructuredChapterOutput, DrhpBlockAST, DrhpChapterAST, DrhpSectionAST
 from app.modules.drhp.constants import CHAPTER_TITLES
 from app.modules.drhp.generation.deterministic_ast import build_deterministic_tables_for_hybrid
+from app.modules.drhp.generation.ast_sanitizer import sanitize_chapter_ast
+from app.modules.drhp.generation.fact_locking import allowed_display_values, build_global_locked_facts
 from app.modules.drhp.sources.models import ChapterSourceBundle
 from app.modules.drhp.workstreams import WorkstreamSnapshot
 
@@ -53,11 +55,17 @@ def compose_chapter_ast(
             )
             order += 1
 
-    return DrhpChapterAST(
+    chapter = DrhpChapterAST(
         chapter_key=chapter_key,
         title=CHAPTER_TITLES.get(chapter_key, chapter_key),
         order=0,
         sections=sections,
+    )
+    locked = build_global_locked_facts(snapshots)
+    return sanitize_chapter_ast(
+        chapter,
+        global_context=bundle.global_context,
+        allowed_displays=allowed_display_values(locked),
     )
 
 

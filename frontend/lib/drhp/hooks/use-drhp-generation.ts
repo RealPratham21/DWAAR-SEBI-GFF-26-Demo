@@ -9,7 +9,7 @@ import {
   type DocumentGenerationStatus,
   type GeneratedChapterResponse,
 } from '@/lib/api/drhp';
-import { astChapterToBlocks } from '@/lib/drhp/ast-mapper';
+import { astChapterToBlocks, hasRenderableChapterAst } from '@/lib/drhp/ast-mapper';
 import { DRHP_CHAPTER_DEFINITIONS } from '@/lib/drhp/chapters';
 import type { DrhpBlock, DrhpChapter, DrhpChapterStatus } from '@/lib/drhp/types';
 
@@ -19,6 +19,15 @@ const TERMINAL_STATUSES = new Set([
   'partially_generated',
   'failed',
 ]);
+
+const TERMINAL_CHAPTER_STATUSES = new Set(['generated', 'generated_with_warnings']);
+
+function chapterStatusSaysReady(
+  row: DocumentGenerationStatus['chapters'][number] | undefined,
+): boolean {
+  if (!row) return false;
+  return Boolean(row.hasAstContent) || TERMINAL_CHAPTER_STATUSES.has(row.status);
+}
 
 function mapGenerationChapterStatus(
   status: string,
@@ -140,13 +149,31 @@ export function useDrhpGeneration() {
   const loadGeneratedChapter = useCallback(
     async (chapterKey: string) => {
       if (!documentVersionId) return null;
+
+      const statusRow = status?.chapters.find((chapter) => chapter.chapterKey === chapterKey);
       const cached = chapterCacheRef.current[chapterKey];
-      if (cached) return cached;
+      const cachedRenderable = cached ? hasRenderableChapterAst(cached.ast) : false;
+      const shouldRefetchEmptyCache =
+        Boolean(cached) && !cachedRenderable && chapterStatusSaysReady(statusRow);
+
+      if (cached && !shouldRefetchEmptyCache) {
+        return cached;
+      }
+
       const response = await fetchGeneratedChapter(documentVersionId, chapterKey);
-      setChapterCache((prev) => ({ ...prev, [chapterKey]: response }));
+      if (hasRenderableChapterAst(response.ast)) {
+        setChapterCache((prev) => ({ ...prev, [chapterKey]: response }));
+      } else {
+        setChapterCache((prev) => {
+          if (!prev[chapterKey]) return prev;
+          const next = { ...prev };
+          delete next[chapterKey];
+          return next;
+        });
+      }
       return response;
     },
-    [documentVersionId],
+    [documentVersionId, status],
   );
 
   const blocksForChapter = useCallback((chapterKey: string): DrhpBlock[] => {

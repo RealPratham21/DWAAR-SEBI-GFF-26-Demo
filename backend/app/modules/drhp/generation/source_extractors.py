@@ -192,15 +192,16 @@ def extract_ipo_offer(snapshots: dict[str, WorkstreamSnapshot]) -> dict[str, str
 
 
 def extract_lead_manager(snapshots: dict[str, WorkstreamSnapshot]) -> str:
+    return extract_intermediary_by_role(
+        snapshots,
+        "lead_manager",
+        "book_running_lead_manager",
+        "book-running-lead-manager",
+    ) or _legacy_lead_manager(snapshots)
+
+
+def _legacy_lead_manager(snapshots: dict[str, WorkstreamSnapshot]) -> str:
     if_ws = _payload("intermediaries-filing", snapshots)
-    team = _section(if_ws, "issueTeamAndIntermediaryMaster")
-    intermediaries = team.get("intermediaries") or []
-    for item in intermediaries:
-        if not isinstance(item, dict):
-            continue
-        roles = [str(r).lower() for r in (item.get("roles") or [])]
-        if any(r in roles for r in ("lead_manager", "book_running_lead_manager", "book-running-lead-manager")):
-            return _first(item.get("legalName"), item.get("displayName"))
     legacy = _section(if_ws, "intermediaryAppointmentsAndRoles")
     lead_managers = legacy.get("leadManagers") or []
     if lead_managers and isinstance(lead_managers[0], dict):
@@ -209,15 +210,31 @@ def extract_lead_manager(snapshots: dict[str, WorkstreamSnapshot]) -> str:
 
 
 def extract_registrar(snapshots: dict[str, WorkstreamSnapshot]) -> str:
+    return extract_intermediary_by_role(snapshots, "registrar", "registrar_to_issue")
+
+
+def extract_intermediary_by_role(snapshots: dict[str, WorkstreamSnapshot], *roles: str) -> str:
     if_ws = _payload("intermediaries-filing", snapshots)
     team = _section(if_ws, "issueTeamAndIntermediaryMaster")
+    role_set = {r.lower().replace("-", "_") for r in roles}
     for item in team.get("intermediaries") or []:
         if not isinstance(item, dict):
             continue
-        roles = [str(r).lower() for r in (item.get("roles") or [])]
-        if "registrar" in roles or "registrar_to_the_issue" in roles:
+        item_roles = [str(r).lower().replace("-", "_") for r in (item.get("roles") or [])]
+        if any(r in role_set for r in item_roles):
             return _first(item.get("legalName"), item.get("displayName"))
     return ""
+
+
+def extract_legal_counsel(snapshots: dict[str, WorkstreamSnapshot]) -> str:
+    return extract_intermediary_by_role(
+        snapshots,
+        "legal_counsel",
+        "issuer_legal_counsel",
+        "legal_counsel_to_the_issue",
+        "legal_adviser",
+        "domestic_legal_counsel",
+    )
 
 
 def extract_capital_structure(snapshots: dict[str, WorkstreamSnapshot]) -> dict[str, Any]:
@@ -308,7 +325,7 @@ def extract_promoters(snapshots: dict[str, WorkstreamSnapshot]) -> list[dict[str
 def extract_reporting_periods(snapshots: dict[str, WorkstreamSnapshot]) -> list[dict[str, str]]:
     fin = _payload("financials-kpis", snapshots)
     scope = _section(fin, "reportingScopePeriodsAndAuditorReadiness")
-    periods = scope.get("reportingPeriods") or []
+    periods = scope.get("reportingPeriods") or scope.get("financialPeriods") or []
     result: list[dict[str, str]] = []
     for period in periods:
         if not isinstance(period, dict):
@@ -375,6 +392,8 @@ def extract_balance_sheet_summary(snapshots: dict[str, WorkstreamSnapshot]) -> t
     periods = extract_reporting_periods(snapshots)
     period_ids = [p["id"] for p in periods if p["id"]]
     period_labels = [p["label"] for p in periods if p["id"]]
+    scope = _section(fin, "reportingScopePeriodsAndAuditorReadiness")
+    amount_unit = _clean(scope.get("amountUnit") or "lakh")
     line_keys = ["totalAssets", "totalEquity", "totalLiabilities", "totalEquityAndLiabilities"]
     labels = {
         "totalAssets": "Total assets",
@@ -390,8 +409,101 @@ def extract_balance_sheet_summary(snapshots: dict[str, WorkstreamSnapshot]) -> t
         if lk in by_line:
             by_line[lk][_clean(item.get("periodId"))] = _clean(item.get("amount"))
     headers = ["Particulars", *period_labels]
-    rows = [[labels[k], *[by_line[k].get(pid, PLACEHOLDER_TOKEN) for pid in period_ids]] for k in line_keys if any(by_line[k].values())]
+
+    def _format_lakh_amount(raw: str) -> str:
+        if not raw or raw == PLACEHOLDER_TOKEN:
+            return PLACEHOLDER_TOKEN
+        numeric = raw.replace(",", "")
+        try:
+            value = int(numeric) if "." not in numeric else float(numeric)
+        except ValueError:
+            return raw
+        from app.modules.drhp.export.formatters import format_indian_decimal, format_indian_integer
+
+        grouped = format_indian_integer(int(value)) if isinstance(value, int) else format_indian_decimal(float(value))
+        return f"₹{grouped} {amount_unit}"
+
+    rows = [
+        [
+            labels[k],
+            *[_format_lakh_amount(by_line[k].get(pid, PLACEHOLDER_TOKEN)) for pid in period_ids],
+        ]
+        for k in line_keys
+        if any(by_line[k].values())
+    ]
     return headers, rows
+
+
+def extract_rpt_transactions(
+    snapshots: dict[str, WorkstreamSnapshot],
+    *,
+    entity_registry: dict[str, Any] | None = None,
+) -> list[dict[str, str]]:
+    ge = _payload("group-entities-related-parties", snapshots)
+    section = _section(ge, "relatedPartyTransactionsBalancesAndCommitments")
+    transactions = section.get("transactions") or []
+    entity_names: dict[str, str] = {}
+    if entity_registry:
+        for entity in entity_registry.get("entities") or []:
+            if isinstance(entity, dict) and entity.get("id"):
+                entity_names[str(entity["id"])] = _first(entity.get("legalName"), entity.get("displayName"))
+
+    ge_ws = snapshots.get("group-entities-related-parties")
+    if ge_ws:
+        master = ge_ws.payload.get("groupStructureAndEntityMaster") or {}
+        for entity in master.get("entities") or []:
+            if not isinstance(entity, dict):
+                continue
+            entity_id = _clean(entity.get("id"))
+            identity = entity.get("identity") if isinstance(entity.get("identity"), dict) else {}
+            if entity_id:
+                entity_names[entity_id] = _first(identity.get("legalName"), entity.get("entityName"))
+
+    rows: list[dict[str, str]] = []
+    for txn in transactions:
+        if not isinstance(txn, dict):
+            continue
+        linked_entity = _clean(txn.get("linkedEntityId"))
+        party = _first(
+            txn.get("relatedPartyName"),
+            txn.get("partyName"),
+            entity_names.get(linked_entity),
+        )
+        nature = _first(
+            txn.get("transactionNature"),
+            txn.get("nature"),
+            txn.get("description"),
+            txn.get("transactionType"),
+        )
+        if nature and "-" in nature:
+            nature = nature.replace("-", " ").title()
+        amount_raw = _first(txn.get("transactionAmount"), txn.get("transactionValue"), txn.get("amount"))
+        unit = _clean(txn.get("amountUnit") or txn.get("currencyUnit") or "INR")
+        if amount_raw:
+            if unit.casefold() == "lakh":
+                from app.modules.drhp.export.formatters import format_indian_decimal, format_indian_integer
+
+                numeric = amount_raw.replace(",", "")
+                try:
+                    value = float(numeric) if "." in numeric else int(numeric)
+                    grouped = (
+                        format_indian_integer(value)
+                        if isinstance(value, int)
+                        else format_indian_decimal(value)
+                    )
+                    amount = f"₹{grouped} lakh"
+                except ValueError:
+                    amount = amount_raw
+            elif unit.upper() == "INR" and amount_raw.isdigit() and len(amount_raw) > 6:
+                from app.modules.drhp.export.formatters import format_inr_amount
+
+                amount = format_inr_amount(int(amount_raw))
+            else:
+                amount = amount_raw
+        else:
+            amount = PLACEHOLDER_TOKEN
+        rows.append({"party": party or PLACEHOLDER_TOKEN, "nature": nature or PLACEHOLDER_TOKEN, "amount": amount})
+    return rows
 
 
 def extract_basis_metrics(snapshots: dict[str, WorkstreamSnapshot]) -> list[list[str]]:
@@ -446,6 +558,127 @@ def extract_customers_section(snapshots: dict[str, WorkstreamSnapshot]) -> dict[
         "customersSalesDistributionAndGeography",
         "customersSalesDistributionGeography",
     )
+
+
+def extract_customer_display_name(customer: dict[str, Any]) -> str:
+    return _first(
+        customer.get("customerNameOrConfidentialLabel"),
+        customer.get("customerName"),
+        customer.get("name"),
+    )
+
+
+def extract_approvals(snapshots: dict[str, WorkstreamSnapshot]) -> list[dict[str, str]]:
+    lac = _payload("litigation-approvals-compliance", snapshots)
+    section = _section(lac, "governmentRegulatoryAndBusinessApprovalsMaster")
+    approvals = section.get("approvals") or []
+    rows: list[dict[str, str]] = []
+    for a in approvals:
+        if not isinstance(a, dict):
+            continue
+        identity = a.get("identity") if isinstance(a.get("identity"), dict) else {}
+        authority = a.get("authority") if isinstance(a.get("authority"), dict) else {}
+        details = a.get("details") if isinstance(a.get("details"), dict) else {}
+        renewal = a.get("renewalMetadata") if isinstance(a.get("renewalMetadata"), dict) else {}
+        expiry = _first(details.get("expiryDate"), renewal.get("renewalDueDate"))
+        from app.modules.drhp.generation.publication_format import derive_approval_status
+
+        status = derive_approval_status(
+            stored_status=_first(a.get("status"), renewal.get("currentRenewalStage")),
+            expiry=expiry,
+            renewal=renewal,
+        )
+        rows.append(
+            {
+                "name": _first(identity.get("approvalLicenceName"), a.get("approvalName"), a.get("licenceName")),
+                "authority": _first(authority.get("issuingAuthority"), a.get("issuingAuthority")),
+                "status": status,
+                "expiry": expiry,
+                "number": _clean(details.get("licenceRegistrationNumber")),
+            }
+        )
+    return rows
+
+
+def extract_mda_facts(snapshots: dict[str, WorkstreamSnapshot]) -> dict[str, Any]:
+    fin = _payload("financials-kpis", snapshots)
+    mda = fin.get("mdaTrendsMaterialDevelopmentsAndConfirmations") or {}
+    if not isinstance(mda, dict):
+        return {"hasContent": False}
+    performance = mda.get("performanceFactors") or []
+    variances = mda.get("varianceAnalyses") or []
+    liquidity = mda.get("liquidityCapitalResources") if isinstance(mda.get("liquidityCapitalResources"), dict) else {}
+    trends = mda.get("trendsUncertainties") or []
+    parts: list[str] = []
+    for factor in performance[:4]:
+        if isinstance(factor, dict):
+            title = _clean(factor.get("title"))
+            explanation = _clean(factor.get("explanation"))
+            if title and explanation:
+                parts.append(f"{title}: {explanation}")
+            elif explanation:
+                parts.append(explanation)
+    for variance in variances[:3]:
+        if isinstance(variance, dict):
+            line = _clean(variance.get("lineItem"))
+            explanation = _clean(variance.get("explanation"))
+            prev_v = _clean(variance.get("previousValue"))
+            curr_v = _clean(variance.get("currentValue"))
+            if line and explanation:
+                if prev_v and curr_v:
+                    parts.append(f"{line} moved from {prev_v} to {curr_v} lakh: {explanation}")
+                else:
+                    parts.append(f"{line}: {explanation}")
+    liq = _clean(liquidity.get("principalLiquiditySources"))
+    if liq:
+        parts.append(f"Liquidity sources: {liq}.")
+    for trend in trends[:2]:
+        if isinstance(trend, dict):
+            title = _clean(trend.get("title"))
+            desc = _clean(trend.get("description"))
+            if title and desc:
+                parts.append(f"{title}: {desc}")
+    narrative = _scrub_export_references(" ".join(parts), snapshots)
+    return {
+        "hasContent": bool(narrative),
+        "narrative": narrative,
+        "performanceFactors": performance,
+        "varianceAnalyses": variances,
+        "liquidity": liquidity,
+        "trends": trends,
+    }
+
+
+def _revenue_is_domestic_only(snapshots: dict[str, WorkstreamSnapshot]) -> bool:
+    profile = extract_business_profile(snapshots)
+    if str(profile.get("exportOperations") or "").lower() not in {"no", "false", ""}:
+        return False
+    customers = extract_customers_section(snapshots)
+    geo = customers.get("geographicRevenueRows") or []
+    if not geo:
+        return str(profile.get("exportOperations") or "").lower() == "no"
+    for row in geo:
+        if not isinstance(row, dict):
+            continue
+        pct = _clean(row.get("percentageOfRevenue"))
+        region = _clean(row.get("regionOrCountry") or row.get("geographicScope"))
+        if pct and region.lower() not in {"india", ""} and pct not in {"0", "0%"}:
+            return False
+    return True
+
+
+def _scrub_export_references(text: str, snapshots: dict[str, WorkstreamSnapshot]) -> str:
+    if not text or not _revenue_is_domestic_only(snapshots):
+        return text
+    cleaned = text
+    for old, new in (
+        ("incremental export orders", "incremental customer orders"),
+        ("export shipments", "domestic customer shipments"),
+        ("export orders", "customer orders"),
+        ("export offtake", "customer offtake"),
+    ):
+        cleaned = cleaned.replace(old, new)
+    return cleaned
 
 
 def extract_directors(snapshots: dict[str, WorkstreamSnapshot]) -> list[dict[str, str]]:

@@ -17,6 +17,10 @@ from app.modules.drhp.export.formatters import (
     normalize_heading_text,
     should_suppress_section_heading,
 )
+from app.modules.drhp.export.semantic_types import (
+    infer_semantic_type_from_header,
+    infer_semantic_type_from_row_label,
+)
 
 INTERNAL_TEXT_PATTERNS = (
     re.compile(r"\bsrc:[a-f0-9:]+\b", re.I),
@@ -24,6 +28,13 @@ INTERNAL_TEXT_PATTERNS = (
     re.compile(r"\bunsupported_number:\d+\b", re.I),
     re.compile(r"\bunknown_source_ref:\S+\b", re.I),
     re.compile(r"\bnivara-fy\d{4}\b", re.I),
+    re.compile(r"\(\s*refId\b[^)]*\)", re.I),
+    re.compile(r"\brefId\s*[:=]\s*\S+", re.I),
+    re.compile(r"\bsourceRef\s*[:=]\s*\S+", re.I),
+    re.compile(r"\bevidenceRef\s*[:=]\s*\S+", re.I),
+    re.compile(r"\bperson:nivara-[a-z0-9-]+\b", re.I),
+    re.compile(r"\bentity:nivara-[a-z0-9-]+\b", re.I),
+    re.compile(r"\b(person|entity):[a-z0-9-]+\b", re.I),
 )
 
 
@@ -36,6 +47,12 @@ def sanitize_visible_text(text: str) -> str:
 
 def cell_text(value: Any, *, semantic_type: str | None = None, unit: str | None = None) -> str:
     """Convert an AST cell value to export-safe plain text — never raw JSON."""
+    if isinstance(value, str):
+        stripped = value.strip()
+        if stripped.startswith("₹") and "," in stripped:
+            return sanitize_visible_text(stripped)
+        if stripped.endswith(" lakh") and stripped.startswith("₹"):
+            return sanitize_visible_text(stripped)
     formatted = format_drhp_value(value, semantic_type=semantic_type, unit=unit)
     if isinstance(value, str):
         return sanitize_visible_text(formatted)
@@ -51,6 +68,10 @@ def normalize_table_content(content: dict[str, Any]) -> dict[str, Any]:
     headers = [cell_text(item, semantic_type="plain_text") for item in raw_headers]
     rows: list[list[str]] = []
     for row in content.get("rows") or []:
+        row_label = ""
+        if isinstance(row, list) and row:
+            row_label = str(row[0])
+        row_semantic = infer_semantic_type_from_row_label(row_label)
         if isinstance(row, dict):
             rows.append(
                 [
@@ -63,12 +84,13 @@ def normalize_table_content(content: dict[str, Any]) -> dict[str, Any]:
                 ]
             )
         elif isinstance(row, list):
-            rows.append(
-                [
-                    cell_text(cell, semantic_type=column_types[i] if i < len(column_types) else None, unit=unit)
-                    for i, cell in enumerate(row)
-                ]
-            )
+            formatted_row: list[str] = []
+            for i, cell in enumerate(row):
+                semantic = column_types[i] if i < len(column_types) else None
+                if i > 0 and row_semantic:
+                    semantic = row_semantic
+                formatted_row.append(cell_text(cell, semantic_type=semantic, unit=unit))
+            rows.append(formatted_row)
         else:
             rows.append([cell_text(row)])
     notes_raw = content.get("notes") or content.get("footnotes") or []
@@ -208,10 +230,14 @@ def normalize_block(block: DrhpBlockAST) -> DrhpBlockAST:
             content.get("displayText") or content.get("display_text") or "",
             semantic_type="plain_text",
         )
-        if not display:
-            target = str(content.get("targetChapterKey") or content.get("target_chapter_key") or "")
+        target = str(content.get("targetChapterKey") or content.get("target_chapter_key") or "").strip()
+        if not display and not target:
+            return block.model_copy(update={"kind": "paragraph", "content": {"text": ""}})
+        if not display and target:
             title = CHAPTER_TITLES.get(target, target.replace("-", " ").title())
             display = f'For further details, see "{title}".'
+        if re.search(r'see\s+["\'][\s]*["\']', display, re.I):
+            return block.model_copy(update={"kind": "paragraph", "content": {"text": ""}})
         return block.model_copy(update={"kind": "paragraph", "content": {"text": display}})
 
     if kind == "page_break":

@@ -27,15 +27,13 @@ from app.modules.drhp.constants import (
 from app.modules.drhp.generation.composer import (
     ast_source_refs_summary,
     build_chapter_digest,
-    compose_chapter_ast,
 )
-from app.modules.drhp.generation.deterministic_ast import build_deterministic_chapter_ast
-from app.modules.drhp.generation.risk_candidates import build_risk_candidate_registry
+from app.modules.drhp.generation.fact_locking import enrich_bundle_context
+from app.modules.drhp.generation.field_coverage import generation_coverage_metrics, workstream_coverage_report
 from app.modules.drhp.generation.source_refs import bundle_source_hash, load_snapshots_from_generation_snapshot
 from app.modules.drhp.generation.validation import ValidationFailure, validate_chapter_ast
 from app.modules.drhp.cohere.provider import build_drhp_generation_provider
 from app.modules.drhp.mapping.dependencies import get_dependency_chapters
-from app.modules.drhp.generation.terms import build_term_registry
 
 logger = logging.getLogger(__name__)
 
@@ -172,6 +170,7 @@ def run_document_generation(db: Session, document_version_id: UUID) -> None:
     model_name = settings.cohere_drhp_model or settings.cohere_model or "fake"
 
     chapter_rows = _chapter_rows(db, document_version_id)
+    chapter_metrics: dict[str, dict[str, Any]] = {}
     progress = True
     while progress:
         progress = False
@@ -187,7 +186,7 @@ def run_document_generation(db: Session, document_version_id: UUID) -> None:
                 continue
 
             progress = True
-            _generate_single_chapter(
+            metrics = _generate_single_chapter(
                 db,
                 row=row,
                 doc_version=doc_version,
@@ -197,11 +196,21 @@ def run_document_generation(db: Session, document_version_id: UUID) -> None:
                 model_name=model_name,
                 chapter_rows=chapter_rows,
             )
+            if metrics:
+                chapter_metrics[row.chapter_key] = metrics
             _refresh_document_counts(db, doc_version)
             db.commit()
 
     _finalize_stuck_chapters(chapter_rows)
     _refresh_document_counts(db, doc_version)
+    coverage = {
+        "workstreams": workstream_coverage_report(snapshots),
+        "generation": generation_coverage_metrics(chapter_metrics),
+    }
+    metadata = dict(doc_version.generation_metadata or {})
+    metadata["p22Coverage"] = coverage
+    doc_version.generation_metadata = metadata
+    logger.info("DRHP P2.2 coverage metrics: %s", coverage["generation"]["totals"])
     db.commit()
 
 
@@ -215,7 +224,7 @@ def _generate_single_chapter(
     provider: Any,
     model_name: str,
     chapter_rows: dict[str, DrhpChapterVersion],
-) -> None:
+) -> dict[str, Any] | None:
     chapter_key = row.chapter_key
     mode = CHAPTER_GENERATION_MODES.get(chapter_key, ChapterGenerationMode.HYBRID)
     row.generation_mode = mode
@@ -226,6 +235,7 @@ def _generate_single_chapter(
     db.flush()
 
     bundle = build_chapter_source_bundle(str(snapshot.id), chapter_key, snapshots)
+    bundle = enrich_bundle_context(bundle, snapshots)
     row.source_bundle_hash = bundle_source_hash(bundle.model_dump(mode="json"))
 
     readiness = bundle.readiness
@@ -234,10 +244,10 @@ def _generate_single_chapter(
         row.error_code = "READINESS_BLOCKED"
         row.error_message = "; ".join(bundle.unresolved_required_inputs[:5]) or "Chapter readiness blocked."
         row.completed_at = _utcnow()
-        return
+        return None
 
     try:
-        chapter_ast = _build_chapter_ast(
+        chapter_ast, assembly_metrics = _build_chapter_ast(
             chapter_key=chapter_key,
             mode=mode,
             bundle=bundle,
@@ -246,10 +256,10 @@ def _generate_single_chapter(
             chapter_rows=chapter_rows,
             snapshot_id=str(snapshot.id),
         )
-        validation_warnings = list(dict.fromkeys(validate_chapter_ast(chapter_ast, bundle=bundle)))
+        validation_warnings = list(dict.fromkeys(validate_chapter_ast(chapter_ast, bundle=bundle, snapshots=snapshots)))
         if validation_warnings and row.retry_count < MAX_CORRECTIVE_RETRIES:
             row.retry_count += 1
-            chapter_ast = _build_chapter_ast(
+            chapter_ast, assembly_metrics = _build_chapter_ast(
                 chapter_key=chapter_key,
                 mode=mode,
                 bundle=bundle,
@@ -259,7 +269,7 @@ def _generate_single_chapter(
                 snapshot_id=str(snapshot.id),
                 validation_failures=validation_warnings,
             )
-            validation_warnings = list(dict.fromkeys(validate_chapter_ast(chapter_ast, bundle=bundle)))
+            validation_warnings = list(dict.fromkeys(validate_chapter_ast(chapter_ast, bundle=bundle, snapshots=snapshots)))
 
         row.ast_payload = chapter_ast.model_dump(by_alias=True, mode="json")
         row.chapter_digest = build_chapter_digest(chapter_ast)
@@ -271,12 +281,14 @@ def _generate_single_chapter(
             row.generation_warnings = validation_warnings
         else:
             row.status = ChapterVersionStatus.GENERATED
+        return assembly_metrics
     except ValidationFailure as exc:
         row.status = ChapterVersionStatus.FAILED
         row.error_code = "VALIDATION_FAILED"
         row.error_message = "; ".join(exc.failures[:5])
         row.validation_warnings = exc.failures
         row.completed_at = _utcnow()
+        return None
     except Exception as exc:  # noqa: BLE001
         from app.modules.drhp.generation.structured_narrative import InsufficientSourceError
 
@@ -286,12 +298,13 @@ def _generate_single_chapter(
             row.error_code = "INSUFFICIENT_SOURCE"
             row.error_message = str(exc)[:500]
             row.completed_at = _utcnow()
-            return
+            return None
         logger.exception("Chapter generation failed chapter=%s", chapter_key)
         row.status = ChapterVersionStatus.FAILED
         row.error_code = "GENERATION_ERROR"
         row.error_message = str(exc)[:500]
         row.completed_at = _utcnow()
+        return None
 
 
 def _build_chapter_ast(
@@ -305,86 +318,16 @@ def _build_chapter_ast(
     snapshot_id: str,
     validation_failures: list[str] | None = None,
 ):
-    from app.modules.drhp.ast.schemas import DrhpChapterAST
+    from app.modules.drhp.generation.disclosure_assembly import assemble_chapter_with_plan
 
-    bundle_dict = bundle.model_dump(by_alias=True, mode="json")
-
-    if mode == ChapterGenerationMode.DETERMINISTIC:
-        return build_deterministic_chapter_ast(chapter_key, bundle, snapshots)
-
-    if chapter_key == "risk-factors":
-        candidates, extra_refs = build_risk_candidate_registry(snapshots)
-        bundle_dict["riskCandidates"] = candidates
-        bundle.source_refs.extend(extra_refs)
-        bundle.risk_candidates = candidates
-        cohere = provider.generate_chapter_narrative(
-            chapter_key=chapter_key,
-            bundle=bundle_dict,
-            validation_failures=validation_failures,
-        )
-        return compose_chapter_ast(
-            chapter_key=chapter_key,
-            bundle=bundle,
-            snapshots=snapshots,
-            cohere_output=cohere,
-        )
-
-    if chapter_key == "definitions-abbreviations":
-        terms = build_term_registry(bundle.global_context, snapshots)
-        used_terms: list[dict[str, Any]] = []
-        for row in chapter_rows.values():
-            digest = row.chapter_digest or {}
-            if digest:
-                used_terms.append({"term": digest.get("title"), "definition": digest.get("summaryLine")})
-        bundle_dict["termRegistry"] = {"terms": terms.get("terms") or used_terms}
-        cohere = provider.generate_chapter_narrative(
-            chapter_key=chapter_key,
-            bundle=bundle_dict,
-            validation_failures=validation_failures,
-        )
-        return compose_chapter_ast(
-            chapter_key=chapter_key,
-            bundle=bundle,
-            snapshots=snapshots,
-            cohere_output=cohere,
-        )
-
-    if chapter_key == "summary-of-drhp":
-        digests = []
-        for key, row in chapter_rows.items():
-            if key in ("summary-of-drhp", "definitions-abbreviations", "declarations-aoa-miscellaneous"):
-                continue
-            if row.chapter_digest:
-                digests.append(row.chapter_digest)
-        bundle_dict["chapterDigests"] = digests
-        cohere = provider.generate_chapter_narrative(
-            chapter_key=chapter_key,
-            bundle=bundle_dict,
-            validation_failures=validation_failures,
-        )
-        return compose_chapter_ast(
-            chapter_key=chapter_key,
-            bundle=bundle,
-            snapshots=snapshots,
-            cohere_output=cohere,
-        )
-
-    if mode == ChapterGenerationMode.HYBRID:
-        cohere = provider.generate_chapter_narrative(
-            chapter_key=chapter_key,
-            bundle=bundle_dict,
-            validation_failures=validation_failures,
-        )
-        return compose_chapter_ast(
-            chapter_key=chapter_key,
-            bundle=bundle,
-            snapshots=snapshots,
-            cohere_output=cohere,
-        )
-
-    return DrhpChapterAST(
+    chapter_ast, metrics = assemble_chapter_with_plan(
         chapter_key=chapter_key,
-        title=bundle.chapter_title,
-        order=0,
-        sections=[],
+        mode=mode,
+        bundle=bundle,
+        snapshots=snapshots,
+        provider=provider,
+        chapter_rows=chapter_rows,
+        validation_failures=validation_failures,
+        snapshot_id=snapshot_id,
     )
+    return chapter_ast, metrics

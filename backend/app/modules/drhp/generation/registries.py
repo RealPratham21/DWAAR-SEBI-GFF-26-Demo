@@ -29,7 +29,7 @@ def build_person_registry(
                 continue
             entry = {
                 "id": person_id,
-                "fullName": _clean(director.get("fullName")),
+                "fullName": _clean(director.get("fullLegalName") or director.get("fullName")),
                 "roles": ["director"],
                 "linkedDirectorId": person_id,
                 "sourceWorkstreams": ["management-governance"],

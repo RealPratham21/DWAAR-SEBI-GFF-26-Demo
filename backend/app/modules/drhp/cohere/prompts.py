@@ -131,11 +131,28 @@ def build_chapter_prompt(
         "warnings": warnings,
         "riskCandidates": bundle.get("riskCandidates") or [],
         "chapterDigests": bundle.get("chapterDigests") or [],
+        "lockedFacts": (bundle.get("lockedFacts") or [])[:80],
+        "personRegistry": {
+            "persons": (bundle.get("personRegistry") or (bundle.get("globalContext") or {}).get("personRegistry") or {}).get(
+                "persons", []
+            )[:40]
+        },
+        "entityRegistry": {
+            "entities": (bundle.get("entityRegistry") or (bundle.get("globalContext") or {}).get("entityRegistry") or {}).get(
+                "entities", []
+            )[:40]
+        },
+        "metricTerminology": bundle.get("metricTerminology") or {},
+        "canonicalDirectors": bundle.get("canonicalDirectors") or [],
         "termRegistry": bundle.get("termRegistry") or {},
         "instructions": [
             "Draft formal Indian DRHP prose suitable for inclusion in a Draft Red Herring Prospectus.",
             "Return JSON matching CohereStructuredChapterOutput: multiple sections with distinct sectionKey, heading, and blocks.",
-            "Every factual statement must cite one or more allowedSourceRefs refId values in sourceRefIds on each block.",
+            "Every factual statement must cite one or more allowedSourceRefs refId values in sourceRefIds on each block metadata — never print refId, sourceRef, or evidenceRef tokens in visible prose.",
+            "Use lockedFacts displayValue strings verbatim for all monetary amounts, share counts, percentages, and dates — do not convert units or rescale magnitudes.",
+            "Use personRegistry and entityRegistry canonical names when referring to people or entities — never invent or substitute names.",
+            "Preserve metricTerminology labels exactly (e.g. FCFE vs FCFF) — do not substitute related financial terms.",
+            "Do not state legal, regulatory, eligibility, or compliance conclusions unless explicitly supported; use issuer-representation language where appropriate.",
             "Do not invent numbers, dates, names, regulatory conclusions, or compliance statements.",
             "Do not output Markdown or HTML.",
             "Never write: 'this section describes disclosures relevant to', 'see the relevant workstream', or similar filler.",
