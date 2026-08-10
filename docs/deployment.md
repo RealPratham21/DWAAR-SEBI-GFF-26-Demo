@@ -30,7 +30,7 @@ API and worker are **separate Railway services** and must not be assumed to depl
 
 | Process | Runs Alembic? |
 | --- | --- |
-| API pre-deploy command | **Yes** — `./scripts/railway_predeploy.sh` (runs `alembic upgrade head` from `/opt/venv`) |
+| API pre-deploy command | **Yes** — `uv run --no-dev alembic upgrade head` |
 | API runtime start | **No** |
 | Worker | **Never** |
 
@@ -99,12 +99,8 @@ uv run python scripts/verify_s3_configuration.py
 - **Pre-deploy / release command:**
 
   ```bash
-  ./scripts/railway_predeploy.sh
+  uv run --no-dev alembic upgrade head
   ```
-
-  Uses the image venv directly (`alembic upgrade head`). Avoid `uv run` here — it can add minutes of dependency resolution on every deploy.
-
-  If pre-deploy hangs beyond ~30s, open **Deploy logs** (not Build logs). Usually `DATABASE_URL` is missing, wrong, or pointing at a Postgres host the API service cannot reach. Use Railway’s **private** Postgres reference (`${{Postgres.DATABASE_URL}}`), not a public URL with IP allowlists.
 
 - **Healthcheck path:** `/health/live` (readiness: `/health/ready`)
 - **Env:** copy from [`deploy/railway-api.env.example`](../deploy/railway-api.env.example)
@@ -116,7 +112,7 @@ uv run python scripts/verify_s3_configuration.py
 - **Start command:**
 
   ```bash
-  python -m app.modules.company_incorporation.document_processing.worker
+  uv run --no-dev python -m app.modules.company_incorporation.document_processing.worker
   ```
 
 - **No public domain**
