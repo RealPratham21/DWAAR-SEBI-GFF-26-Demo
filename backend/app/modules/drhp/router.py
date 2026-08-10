@@ -27,6 +27,8 @@ from app.modules.drhp.schemas import (
     SnapshotStalenessResponse,
     SourceSnapshotResponse,
 )
+from app.modules.drhp.copilot.schemas import CopilotChatRequest, CopilotChatResponse
+from app.modules.drhp.copilot.service import copilot_chat
 
 router = APIRouter(prefix="/drhp", tags=["drhp"])
 
@@ -172,6 +174,15 @@ def get_generated_chapter(
     current_user: User = Depends(get_current_user),
 ) -> GeneratedChapterResponse:
     return drhp_service.get_generated_chapter(db, current_user, document_version_id, chapter_key)
+
+
+@router.post("/copilot/chat", response_model=CopilotChatResponse)
+def post_copilot_chat(
+    body: CopilotChatRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> CopilotChatResponse:
+    return copilot_chat(db, current_user, body)
 
 
 @router.get("/documents/{document_version_id}/export/pdf")
