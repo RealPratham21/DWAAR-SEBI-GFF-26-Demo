@@ -12,10 +12,8 @@ import {
   BookOpen,
   AlertCircle,
   FileText,
-  CheckCircle2,
   DownloadCloud,
   HelpCircle,
-  ChevronDown,
   PanelLeftClose,
   PanelLeft,
   Menu,
@@ -74,11 +72,6 @@ const drwhLinks: NavLink[] = [
     icon: <FileText size={20} />,
   },
   {
-    href: '/projects/demo/review',
-    label: 'Merchant Banker Review',
-    icon: <CheckCircle2 size={20} />,
-  },
-  {
     href: '/projects/demo/exports',
     label: 'Reports & Export',
     icon: <DownloadCloud size={20} />,
@@ -109,10 +102,14 @@ export function AppSidebar() {
 function AppSidebarInner() {
   const pathname = usePathname();
   const { collapsed, toggleCollapsed } = useSidebarCollapse();
-  const [drhpOpen, setDrhpOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
+  const isActive = (href: string) => {
+    if (href === '/projects/demo') {
+      return pathname === '/projects/demo';
+    }
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   return (
     <>
@@ -178,44 +175,16 @@ function AppSidebarInner() {
             />
           ))}
 
-          <div className="pt-4">
-            <button
-              onClick={() => setDrhpOpen(!drhpOpen)}
-              title="DRHP Preparation"
-              className={cn(
-                'w-full flex items-center rounded-md transition-colors text-sm font-semibold text-sidebar-foreground hover:bg-sidebar-accent/50',
-                collapsed
-                  ? 'md:justify-center md:px-0 px-3 py-2 justify-between'
-                  : 'justify-between px-3 py-2',
-              )}
-            >
-              <span className={cn(collapsed && 'md:hidden')}>DRHP Preparation</span>
-              <ChevronDown
-                size={16}
-                className={cn(
-                  'transition-transform',
-                  drhpOpen ? 'rotate-0' : '-rotate-90',
-                  collapsed && 'md:hidden',
-                )}
+          <div className="space-y-1 pt-4">
+            {drwhLinks.map((link) => (
+              <SidebarNavLink
+                key={link.href}
+                link={link}
+                active={isActive(link.href)}
+                collapsed={collapsed}
+                onNavigate={() => setMobileOpen(false)}
               />
-              {collapsed ? (
-                <GitBranch size={20} className="hidden md:block text-sidebar-foreground" />
-              ) : null}
-            </button>
-
-            {(drhpOpen || collapsed) && (
-              <div className={cn('space-y-1 mt-1', collapsed && 'md:mt-2')}>
-                {drwhLinks.map((link) => (
-                  <SidebarNavLink
-                    key={link.href}
-                    link={link}
-                    active={isActive(link.href)}
-                    collapsed={collapsed}
-                    onNavigate={() => setMobileOpen(false)}
-                  />
-                ))}
-              </div>
-            )}
+            ))}
           </div>
         </nav>
 
