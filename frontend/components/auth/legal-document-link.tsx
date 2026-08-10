@@ -1,9 +1,6 @@
-'use client';
-
 import Link from 'next/link';
 import { LEGAL_ROUTES } from '@/lib/auth/constants';
 
-/** TODO: Replace with real legal pages when published. */
 export function LegalDocumentLink({
   label,
   href,
@@ -14,8 +11,9 @@ export function LegalDocumentLink({
   return (
     <Link
       href={href}
+      target="_blank"
+      rel="noopener noreferrer"
       className="text-accent font-medium hover:underline"
-      onClick={(event) => event.preventDefault()}
     >
       {label}
     </Link>

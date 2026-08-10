@@ -57,8 +57,7 @@ export function AccountRegistrationForm() {
       mobile: '',
       password: '',
       confirmPassword: '',
-      acceptTerms: false,
-      acceptPrivacy: false,
+      acceptLegal: false,
     },
   });
 
@@ -222,30 +221,18 @@ export function AccountRegistrationForm() {
             <input
               type="checkbox"
               className="mt-1 w-4 h-4 rounded border-input accent-accent"
-              aria-invalid={Boolean(errors.acceptTerms)}
-              {...register('acceptTerms')}
+              aria-invalid={Boolean(errors.acceptLegal)}
+              {...register('acceptLegal')}
             />
             <span>
-              I accept the <LegalDocumentLink label="Terms of Service" href={LEGAL_ROUTES.termsOfService} />
+              I agree to the{' '}
+              <LegalDocumentLink label="Terms of Service" href={LEGAL_ROUTES.termsOfService} /> and
+              acknowledge the{' '}
+              <LegalDocumentLink label="Privacy Policy" href={LEGAL_ROUTES.privacyPolicy} />
             </span>
           </label>
-          {errors.acceptTerms ? (
-            <p className="text-sm text-destructive">{errors.acceptTerms.message}</p>
-          ) : null}
-
-          <label className="flex items-start gap-3 text-sm text-foreground">
-            <input
-              type="checkbox"
-              className="mt-1 w-4 h-4 rounded border-input accent-accent"
-              aria-invalid={Boolean(errors.acceptPrivacy)}
-              {...register('acceptPrivacy')}
-            />
-            <span>
-              I accept the <LegalDocumentLink label="Privacy Policy" href={LEGAL_ROUTES.privacyPolicy} />
-            </span>
-          </label>
-          {errors.acceptPrivacy ? (
-            <p className="text-sm text-destructive">{errors.acceptPrivacy.message}</p>
+          {errors.acceptLegal ? (
+            <p className="text-sm text-destructive">{errors.acceptLegal.message}</p>
           ) : null}
         </div>
 

@@ -9,10 +9,13 @@ export const AUTH_ROUTES = {
   demoDashboard: '/projects/demo',
 } as const;
 
-/** TODO: Replace with published legal pages when available. */
+/** Default signup entry — SME / Company is the only supported onboarding persona in the prototype. */
+export const SME_REGISTER_ROUTE = `${AUTH_ROUTES.register}?role=sme` as const;
+
+/** Published legal pages for the prototype. */
 export const LEGAL_ROUTES = {
-  termsOfService: '/legal/terms-of-service',
-  privacyPolicy: '/legal/privacy-policy',
+  termsOfService: '/terms',
+  privacyPolicy: '/privacy',
 } as const;
 
 export const SUPPORTED_REGISTER_ROLES = ['sme'] as const;

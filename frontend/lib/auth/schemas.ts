@@ -50,11 +50,8 @@ export const accountRegistrationSchema = z
     mobile: indianMobileSchema,
     password: passwordSchema,
     confirmPassword: z.string().min(1, 'Confirm your password'),
-    acceptTerms: z.boolean().refine((value) => value === true, {
-      message: 'You must accept the Terms of Service',
-    }),
-    acceptPrivacy: z.boolean().refine((value) => value === true, {
-      message: 'You must accept the Privacy Policy',
+    acceptLegal: z.boolean().refine((value) => value === true, {
+      message: 'You must agree to the Terms of Service and acknowledge the Privacy Policy',
     }),
   })
   .refine((data) => data.password === data.confirmPassword, {

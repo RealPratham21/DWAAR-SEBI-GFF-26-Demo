@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { AUTH_ROUTES } from '@/lib/auth/constants';
+import { AUTH_ROUTES, SME_REGISTER_ROUTE } from '@/lib/auth/constants';
 import { useAuth } from '@/lib/auth/context';
 import { getPrimaryActionLabel, getRouteForNextAction } from '@/lib/auth/navigation';
 
@@ -31,7 +31,7 @@ export function LandingAuthActions() {
           Log in
         </Link>
         <Link
-          href={AUTH_ROUTES.roleSelection}
+          href={SME_REGISTER_ROUTE}
           className="text-sm font-medium px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
         >
           Register
@@ -72,7 +72,7 @@ export function LandingHeroActions() {
     return (
       <div className="flex items-center justify-center gap-4">
         <Link
-          href={AUTH_ROUTES.roleSelection}
+          href={SME_REGISTER_ROUTE}
           className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-md font-medium hover:opacity-90 transition-opacity"
         >
           Get Started
@@ -117,7 +117,7 @@ export function LandingCtaAction() {
 
   const href = isAuthenticated
     ? getRouteForNextAction(nextAction ?? 'start_sme_onboarding', redirectTo)
-    : AUTH_ROUTES.roleSelection;
+    : SME_REGISTER_ROUTE;
   const label = isAuthenticated ? getPrimaryActionLabel(nextAction) : 'Get Started Now';
 
   return (

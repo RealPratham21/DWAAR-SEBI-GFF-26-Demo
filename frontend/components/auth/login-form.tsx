@@ -18,6 +18,7 @@ import { useAuth } from '@/lib/auth/context';
 import {
   AUTH_ROUTES,
   REMEMBER_ME_HELPER,
+  SME_REGISTER_ROUTE,
 } from '@/lib/auth/constants';
 import { getRouteForNextAction } from '@/lib/auth/navigation';
 import { loginSchema, type LoginInput, type LoginValues } from '@/lib/auth/schemas';
@@ -167,8 +168,8 @@ export function LoginForm({ defaultEmail = '' }: { defaultEmail?: string }) {
 
       <p className="text-sm text-center text-muted-foreground">
         New to Dwaar?{' '}
-        <Link href={AUTH_ROUTES.roleSelection} className="text-accent font-medium hover:underline">
-          Choose how you are joining
+        <Link href={SME_REGISTER_ROUTE} className="text-accent font-medium hover:underline">
+          Create an account
         </Link>
       </p>
     </div>
