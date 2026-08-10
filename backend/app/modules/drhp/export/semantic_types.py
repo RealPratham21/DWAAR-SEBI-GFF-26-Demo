@@ -71,6 +71,19 @@ def is_identifier(semantic_type: str | None) -> bool:
     return semantic_type.casefold() in IDENTIFIER_TYPES
 
 
+def infer_semantic_type_from_row_label(label: str) -> str | None:
+    lowered = label.strip().casefold()
+    if not lowered:
+        return None
+    if "(no.)" in lowered or "number of shares" in lowered or "equity shares (no" in lowered:
+        return "share_count"
+    if "share capital (₹" in lowered or "(₹)" in lowered or "amount (₹" in lowered:
+        return "currency_inr"
+    if "estimated cost" in lowered or "from net proceeds" in lowered:
+        return "currency_inr"
+    return None
+
+
 def infer_semantic_type_from_header(header: str) -> str | None:
     lowered = header.strip().casefold()
     if not lowered:

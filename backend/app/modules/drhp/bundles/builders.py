@@ -127,6 +127,8 @@ def _base_bundle(
         person_registry=person_registry,
         entity_registry=entity_registry,
     )
+    context["personRegistry"] = person_registry
+    context["entityRegistry"] = entity_registry
     all_refs = list(source_refs or []) + person_refs + entity_refs
     mapping = get_chapter_mapping(chapter_key)
     deps = list(get_dependency_chapters(chapter_key))

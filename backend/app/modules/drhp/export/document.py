@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
@@ -15,7 +16,10 @@ from app.modules.drhp.constants import (
 
 COVER_CHAPTER_KEY = "cover-page-front-matter"
 from app.modules.drhp.export.content import cell_text, normalize_chapter_ast
+from app.modules.drhp.export.publication_safety import scan_document_chapters
 from app.modules.drhp.export.styles import DRAFT_FOOTER_NOTICE, EXPORTER_VERSION
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -191,6 +195,10 @@ def assemble_export_document(
             )
         )
     partial_label = "Partial Draft" if is_partial else None
+    available_asts = [chapter.chapter_ast for chapter in chapters if chapter.available and chapter.chapter_ast]
+    safety_warnings = scan_document_chapters(available_asts)
+    if safety_warnings:
+        logger.warning("DRHP publication safety scan findings: %s", "; ".join(safety_warnings[:20]))
     return DRHPExportDocument(
         issuer_name=issuer,
         version_number=version_number,

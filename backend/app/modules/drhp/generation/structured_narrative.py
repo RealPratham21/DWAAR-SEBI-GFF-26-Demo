@@ -12,8 +12,10 @@ from uuid import uuid4
 from app.modules.drhp.ast.schemas import CohereStructuredChapterOutput, DrhpBlockAST, DrhpSectionAST
 from app.modules.drhp.constants import PLACEHOLDER_TOKEN
 from app.modules.drhp.generation.source_extractors import (
+    extract_approvals,
     extract_business_profile,
     extract_corporate_events,
+    extract_customer_display_name,
     extract_customers_section,
     extract_directors,
     extract_group_entities,
@@ -21,6 +23,7 @@ from app.modules.drhp.generation.source_extractors import (
     extract_ipo_offer,
     extract_litigation_matters,
     extract_market_series,
+    extract_mda_facts,
     extract_objects,
     extract_products,
     extract_promoters,
@@ -182,9 +185,9 @@ def _build_business(
         if isinstance(c, dict):
             cust_rows.append(
                 [
-                    str(c.get("customerName") or c.get("name") or "-"),
+                    extract_customer_display_name(c) or "-",
                     str(c.get("revenueContributionPercentage") or c.get("revenueContributionPct") or "-"),
-                    str(c.get("relationshipDurationYears") or "-"),
+                    str(c.get("relationshipSince") or c.get("relationshipDurationYears") or "-"),
                 ]
             )
     if cust_rows:
@@ -233,12 +236,20 @@ def _build_objects(
     snapshots: dict[str, WorkstreamSnapshot],
     validation_failures: list[str],
 ) -> tuple[list[DrhpSectionAST], list[str]]:
+    from app.modules.drhp.generation.fact_locking import format_locked_display
+
     refs = _ref_ids(bundle)
     objects = extract_objects(snapshots)
     if not objects:
         raise InsufficientSourceError("objects_empty")
     rows = [
-        [o["name"], o["category"], o["estimatedCost"], o["fromProceeds"], o["description"][:100]]
+        [
+            o["name"],
+            o["category"],
+            format_locked_display(o["estimatedCost"], semantic_type="currency_inr") if o["estimatedCost"] else PLACEHOLDER_TOKEN,
+            format_locked_display(o["fromProceeds"], semantic_type="currency_inr") if o["fromProceeds"] else PLACEHOLDER_TOKEN,
+            o["description"][:100],
+        ]
         for o in objects
     ]
     oi = snapshots.get("objects-of-issue")
@@ -247,9 +258,19 @@ def _build_objects(
         proceeds = (oi.payload.get("proceedsAndFundingSummary") or {})
     intro = ""
     if proceeds.get("freshIssueGrossProceeds"):
-        intro = (
-            f"The Fresh Issue is intended to raise gross proceeds of ₹ {proceeds['freshIssueGrossProceeds']} "
-            f"for deployment towards the Objects set out below."
+        gross = format_locked_display(proceeds["freshIssueGrossProceeds"], semantic_type="currency_inr")
+        intro = f"The Fresh Issue is intended to raise gross proceeds of {gross} for deployment towards the Objects set out below."
+    deployment_bits = [
+        f"{o['name']} ({format_locked_display(o['estimatedCost'], semantic_type='currency_inr')})"
+        for o in objects
+        if o.get("estimatedCost")
+    ]
+    narrative = ""
+    if deployment_bits:
+        narrative = (
+            "The principal deployment heads comprise "
+            + ", ".join(deployment_bits[:4])
+            + ("." if len(deployment_bits) <= 4 else ", among others disclosed in the table below.")
         )
     sections = [
         DrhpSectionAST(
@@ -258,12 +279,13 @@ def _build_objects(
             order=1,
             blocks=[
                 _paragraph(intro or "The net proceeds of the Fresh Issue are proposed to be utilised towards the following Objects.", refs),
+                *([_paragraph(narrative, refs, 2)] if narrative else []),
                 _table(
                     ["Object", "Category", "Estimated cost (₹)", "From net proceeds (₹)", "Description"],
                     rows,
                     "Objects register and proposed allocation",
                     refs,
-                    2,
+                    3 if narrative else 2,
                 ),
             ],
         )
@@ -445,12 +467,7 @@ def _build_legal(
 ) -> tuple[list[DrhpSectionAST], list[str]]:
     refs = _ref_ids(bundle)
     matters = extract_litigation_matters(snapshots)
-    lac = snapshots.get("litigation-approvals-compliance")
-    approvals: list[dict[str, Any]] = []
-    if lac:
-        approvals = (
-            (lac.payload.get("governmentRegulatoryAndBusinessApprovalsMaster") or {}).get("approvals") or []
-        )
+    approvals = extract_approvals(snapshots)
     sections: list[DrhpSectionAST] = []
     if matters:
         rows = [[m["title"], m["forum"], m["status"], m["amount"]] for m in matters]
@@ -470,25 +487,15 @@ def _build_legal(
             )
         )
     if approvals:
-        appr_rows = []
-        for a in approvals[:20]:
-            if isinstance(a, dict):
-                appr_rows.append(
-                    [
-                        str(a.get("approvalName") or a.get("licenceName") or "—"),
-                        str(a.get("issuingAuthority") or "—"),
-                        str(a.get("validityStatus") or a.get("status") or "—"),
-                    ]
-                )
-        if appr_rows:
-            sections.append(
-                DrhpSectionAST(
-                    section_key="approvals",
-                    heading="Government and Regulatory Approvals",
-                    order=2,
-                    blocks=[_table(["Approval / Licence", "Authority", "Status"], appr_rows, "Material approvals", refs)],
-                )
+        appr_rows = [[a["name"], a["authority"], a["status"], a["expiry"] or "—"] for a in approvals[:20]]
+        sections.append(
+            DrhpSectionAST(
+                section_key="approvals",
+                heading="Government and Regulatory Approvals",
+                order=2,
+                blocks=[_table(["Approval / Licence", "Authority", "Status", "Expiry / renewal"], appr_rows, "Material approvals", refs)],
             )
+        )
     if not sections:
         raise InsufficientSourceError("legal_empty")
     return sections, validation_failures
@@ -499,14 +506,12 @@ def _build_group(
     snapshots: dict[str, WorkstreamSnapshot],
     validation_failures: list[str],
 ) -> tuple[list[DrhpSectionAST], list[str]]:
+    from app.modules.drhp.generation.source_extractors import extract_rpt_transactions
+
     refs = _ref_ids(bundle)
     entities = extract_group_entities(snapshots)
-    ge = snapshots.get("group-entities-related-parties")
-    rpts: list[dict[str, Any]] = []
-    if ge:
-        rpts = (
-            (ge.payload.get("relatedPartyTransactionsBalancesAndCommitments") or {}).get("transactions") or []
-        )
+    entity_registry = bundle.global_context.get("entityRegistry") or {}
+    rpts = extract_rpt_transactions(snapshots, entity_registry=entity_registry)
     sections: list[DrhpSectionAST] = []
     if entities:
         rows = [[e["name"], e["relationship"], e["cin"], e["office"]] for e in entities]
@@ -521,25 +526,25 @@ def _build_group(
             )
         )
     if rpts:
-        rpt_rows = []
-        for t in rpts[:15]:
-            if isinstance(t, dict):
-                rpt_rows.append(
-                    [
-                        str(t.get("relatedPartyName") or t.get("partyName") or "—"),
-                        str(t.get("transactionNature") or t.get("nature") or "—"),
-                        str(t.get("transactionAmount") or t.get("amount") or "—"),
-                    ]
-                )
-        if rpt_rows:
-            sections.append(
-                DrhpSectionAST(
-                    section_key="rpt",
-                    heading="Related Party Transactions",
-                    order=2,
-                    blocks=[_table(["Related party", "Nature", "Amount (₹)"], rpt_rows, "RPT register", refs)],
-                )
+        rpt_rows = [[r["party"], r["nature"], r["amount"]] for r in rpts]
+        commentary = ""
+        if rpts[0].get("party") and rpts[0].get("amount"):
+            commentary = (
+                f"During the disclosed period, our Company had related party transactions with "
+                f"{rpts[0]['party']} in the nature of {rpts[0]['nature'].lower()} aggregating {rpts[0]['amount']}."
             )
+        blocks = []
+        if commentary:
+            blocks.append(_paragraph(commentary, refs))
+        blocks.append(_table(["Related party", "Nature", "Amount"], rpt_rows, "RPT register", refs, 2 if commentary else 1))
+        sections.append(
+            DrhpSectionAST(
+                section_key="rpt",
+                heading="Related Party Transactions",
+                order=2,
+                blocks=blocks,
+            )
+        )
     if not sections:
         raise InsufficientSourceError("group_empty")
     return sections, validation_failures
@@ -579,15 +584,8 @@ def _build_financial_mda(
     validation_failures: list[str],
 ) -> tuple[list[DrhpSectionAST], list[str]]:
     refs = _ref_ids(bundle)
-    fin = snapshots.get("financials-kpis")
-    mda = {}
-    if fin:
-        mda = fin.payload.get("mdaTrendsMaterialDevelopmentsAndConfirmations") or {}
-    trends = _clean_join(
-        mda.get("revenueTrendNarrative") if isinstance(mda, dict) else "",
-        mda.get("profitabilityTrendNarrative") if isinstance(mda, dict) else "",
-        mda.get("materialDevelopmentsNarrative") if isinstance(mda, dict) else "",
-    )
+    mda_facts = extract_mda_facts(snapshots)
+    trends = mda_facts.get("narrative") or ""
     if not trends:
         trends = (
             "Management's discussion covers revenue growth from operations, margin trends, working capital "
@@ -650,7 +648,7 @@ def _risk_body_for_candidate(candidate: dict[str, Any], snapshots: dict[str, Wor
             )
         cust = (customers.get("materialCustomers") or customers.get("customers") or [])
         if cust and isinstance(cust[0], dict):
-            name = cust[0].get("customerName") or cust[0].get("name") or "a major customer"
+            name = extract_customer_display_name(cust[0]) or "a major customer"
             share = cust[0].get("revenueContributionPercentage") or cust[0].get("revenueContributionPct")
             return (
                 f"Revenue concentration in {name} ({share}% contribution) exposes our Company to customer-specific "
@@ -671,6 +669,29 @@ def _risk_body_for_candidate(candidate: dict[str, Any], snapshots: dict[str, Wor
             "dedicated cash flows for debt service. Increases in interest rates or covenant breaches could "
             "adversely affect our financial condition."
         )
+    if category in {"operating_dependency", "contract_dependency", "borrowings_covenant"}:
+        facts = candidate.get("supportingFacts") or []
+        if facts:
+            return (
+                f"Dependence on disclosed operating relationships may affect continuity of operations. "
+                f"{facts[0]} Any disruption may adversely affect our business and financial performance."
+            )
+    if category == "regulatory_approval":
+        facts = candidate.get("supportingFacts") or []
+        if facts:
+            return (
+                f"Regulatory approvals and licences are essential to our operations. "
+                f"{facts[0]} Delay or denial of renewal may restrict permitted activities."
+            )
+    if category in {"financial_trend", "industry_risk", "execution_risk", "governance"}:
+        facts = candidate.get("supportingFacts") or []
+        heading = candidate.get("headingSeed") or "this factor"
+        if facts:
+            return f"{facts[0]} This may adversely affect our business, results of operations and cash flows."
+        return (
+            f"Developments relating to {heading.lower()} may adversely affect our business, "
+            f"results of operations and cash flows."
+        )
     return ""
 
 
@@ -679,10 +700,12 @@ def _build_summary(
     snapshots: dict[str, WorkstreamSnapshot],
     validation_failures: list[str],
 ) -> tuple[list[DrhpSectionAST], list[str]]:
+    from app.modules.drhp.generation.fact_locking import format_locked_display
+
     refs = _ref_ids(bundle)
-    digests = bundle.model_dump(by_alias=True, mode="json").get("chapterDigests") or []
     identity = extract_identity(snapshots)
     ipo = extract_ipo_offer(snapshots)
+    directors = extract_directors(snapshots)
     bullets: list[str] = []
     if identity.get("legalName"):
         profile = extract_business_profile(snapshots)
@@ -691,16 +714,17 @@ def _build_summary(
             + (" — " + profile.get("briefBusinessOverview", "")[:180] if profile.get("briefBusinessOverview") else "")
         )
     if ipo.get("freshIssueShares") and ipo.get("faceValue"):
-        bullets.append(
-            f"Fresh Issue of up to {ipo['freshIssueShares']} Equity Shares of face value ₹ {ipo['faceValue']} each."
-        )
-    for digest in digests:
-        line = digest.get("summaryLine") if isinstance(digest, dict) else None
-        if line and "generated." not in str(line).lower():
-            bullets.append(str(line)[:240])
+        shares = format_locked_display(ipo["freshIssueShares"], semantic_type="share_count")
+        face = format_locked_display(ipo["faceValue"], semantic_type="currency_inr")
+        bullets.append(f"Fresh Issue of up to {shares} Equity Shares of face value {face} each.")
+    if directors:
+        board_names = ", ".join(f"{d['name']} ({humanize_designation(d['designation'])})" for d in directors[:5])
+        bullets.append(f"The Board comprises {board_names}.")
     objects = extract_objects(snapshots)
     if objects:
-        bullets.append(f"Objects of the Issue include {objects[0]['name']} and {len(objects)} disclosed deployment heads.")
+        first_cost = format_locked_display(objects[0]["estimatedCost"], semantic_type="currency_inr") if objects[0].get("estimatedCost") else ""
+        head = f"{objects[0]['name']}" + (f" ({first_cost})" if first_cost else "")
+        bullets.append(f"Objects of the Issue include {head} and {len(objects)} disclosed deployment heads.")
     if not bullets:
         raise InsufficientSourceError("summary_empty")
     intro = (

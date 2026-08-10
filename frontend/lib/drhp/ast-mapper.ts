@@ -32,6 +32,12 @@ type AstChapter = {
   sections?: AstSection[];
 };
 
+/** True when persisted AST has at least one section block (mirrors backend export check). */
+export function hasRenderableChapterAst(ast: AstChapter | null | undefined): boolean {
+  if (!ast?.sections?.length) return false;
+  return ast.sections.some((section) => (section.blocks?.length ?? 0) > 0);
+}
+
 export function astChapterToBlocks(
   ast: AstChapter | null | undefined,
   sourceRefsSummary: Array<Record<string, unknown>> = [],

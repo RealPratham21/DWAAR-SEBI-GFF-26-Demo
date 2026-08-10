@@ -536,7 +536,7 @@ class DRHPPdfRenderer:
             flowables.extend(caption_flow)
 
         body_row_count = len(table_data)
-        if body_row_count <= 6:
+        if body_row_count <= 3:
             flowables.append(KeepTogether([table]))
         else:
             flowables.append(table)
