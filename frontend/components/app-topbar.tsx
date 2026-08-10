@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, User, LogOut } from 'lucide-react';
+import { User, LogOut } from 'lucide-react';
 import { NotificationBell } from '@/components/notification-bell';
 import { useAuth } from '@/lib/auth/context';
 import { useOptionalWorkspaceBootstrap } from '@/lib/workspace/context';
@@ -42,15 +42,6 @@ export function AppTopBar({ pageTitle }: AppTopBarProps) {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="hidden md:flex items-center bg-muted rounded-md px-3 py-2 w-48">
-          <Search size={16} className="text-muted-foreground mr-2" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="bg-transparent text-sm text-foreground placeholder-muted-foreground outline-none w-full"
-          />
-        </div>
-
         <NotificationBell />
 
         <div className="flex items-center gap-2 pl-4 border-l border-border">
