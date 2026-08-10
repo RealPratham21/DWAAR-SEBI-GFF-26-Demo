@@ -3,7 +3,8 @@
 
 FROM python:3.12-slim-bookworm AS base
 
-COPY --from=ghcr.io/astral-sh/uv:0.6.17 /uv /usr/local/bin/uv
+# Install via PyPI — some cloud builders deny ghcr.io OAuth for astral-sh/uv images.
+RUN pip install --no-cache-dir uv==0.6.17
 
 WORKDIR /app
 
