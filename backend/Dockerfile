@@ -32,10 +32,8 @@ COPY app ./app
 COPY alembic ./alembic
 COPY alembic.ini ./
 COPY scripts/verify_s3_configuration.py ./scripts/verify_s3_configuration.py
-COPY scripts/railway_predeploy.sh ./scripts/railway_predeploy.sh
 
 RUN uv sync --locked --no-dev \
-    && chmod +x ./scripts/railway_predeploy.sh \
     && useradd --create-home --uid 10001 --shell /usr/sbin/nologin dwaar \
     && chown -R dwaar:dwaar /app /opt/venv \
     && chmod 1777 /tmp
@@ -45,4 +43,5 @@ USER dwaar
 EXPOSE 8000
 
 # Default: API. Railway overrides CMD for the worker service.
-CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips='*'"]
+# Use --no-dev so `uv run` does not pull development dependency groups.
+CMD ["sh", "-c", "exec uv run --no-dev uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips='*'"]

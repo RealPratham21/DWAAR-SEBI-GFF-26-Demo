@@ -15,7 +15,7 @@ from app.models import (  # noqa: F401
     User,
     UserNotification,
 )
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config, pool
 
 config = context.config
 
@@ -42,13 +42,10 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    from sqlalchemy import create_engine
-
-    print("Alembic: opening database connection...", flush=True)
-    connectable = create_engine(
-        settings.database_url,
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section, {}),
+        prefix="sqlalchemy.",
         poolclass=pool.NullPool,
-        connect_args={"connect_timeout": 15},
     )
 
     with connectable.connect() as connection:
@@ -56,8 +53,6 @@ def run_migrations_online() -> None:
 
         with context.begin_transaction():
             context.run_migrations()
-
-    print("Alembic: migrations complete.", flush=True)
 
 
 if context.is_offline_mode():
