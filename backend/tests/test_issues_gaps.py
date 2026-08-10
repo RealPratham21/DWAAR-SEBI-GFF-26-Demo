@@ -118,6 +118,27 @@ def test_severity_unknown_applicability_is_low() -> None:
     )
 
 
+def test_evidence_ref_response_coerces_uuid_fields() -> None:
+    from app.modules.issues_gaps.service import _evidence_ref_from_dict
+
+    doc_id = uuid.uuid4()
+    version_id = uuid.uuid4()
+    ref = _evidence_ref_from_dict(
+        {
+            "documentId": doc_id,
+            "documentVersionId": version_id,
+            "originalFilename": "coi.pdf",
+            "pageNumbers": [1, 2],
+            "requirementKey": "cin",
+            "requirementLabel": "CIN",
+        }
+    )
+    assert ref.document_id == str(doc_id)
+    assert ref.document_version_id == str(version_id)
+    assert ref.original_filename == "coi.pdf"
+    assert ref.page_numbers == [1, 2]
+
+
 def test_severity_blocker_stays_blocking() -> None:
     assert severity_from_assessment_state("potential_concern", blocking_hint=True) == "blocking"
     assert (

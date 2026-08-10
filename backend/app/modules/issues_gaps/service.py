@@ -41,6 +41,26 @@ def _load_acknowledgements(db: Session, user_id: uuid.UUID) -> dict[str, GlobalI
     return {row.fingerprint: row for row in rows}
 
 
+def _optional_str(value: Any) -> str | None:
+    if value is None:
+        return None
+    return str(value)
+
+
+def _evidence_ref_from_dict(ref: dict[str, Any]) -> EvidenceRefResponse:
+    """Build API evidence refs; upstream detectors may pass UUID objects."""
+    return EvidenceRefResponse(
+        document_id=_optional_str(ref.get("documentId") or ref.get("document_id")),
+        document_version_id=_optional_str(
+            ref.get("documentVersionId") or ref.get("document_version_id")
+        ),
+        original_filename=ref.get("originalFilename") or ref.get("original_filename"),
+        page_numbers=list(ref.get("pageNumbers") or ref.get("page_numbers") or []),
+        requirement_key=ref.get("requirementKey") or ref.get("requirement_key"),
+        requirement_label=ref.get("requirementLabel") or ref.get("requirement_label"),
+    )
+
+
 def _to_response(
     issue: RawGlobalIssue,
     ack: GlobalIssueAcknowledgement | None,
@@ -60,20 +80,11 @@ def _to_response(
         for ref in issue.source_refs
         if isinstance(ref, dict)
     ]
-    evidence_refs = []
-    for ref in issue.evidence_refs:
-        if not isinstance(ref, dict):
-            continue
-        evidence_refs.append(
-            EvidenceRefResponse(
-                document_id=ref.get("documentId") or ref.get("document_id"),
-                document_version_id=ref.get("documentVersionId") or ref.get("document_version_id"),
-                original_filename=ref.get("originalFilename") or ref.get("original_filename"),
-                page_numbers=list(ref.get("pageNumbers") or ref.get("page_numbers") or []),
-                requirement_key=ref.get("requirementKey") or ref.get("requirement_key"),
-                requirement_label=ref.get("requirementLabel") or ref.get("requirement_label"),
-            )
-        )
+    evidence_refs = [
+        _evidence_ref_from_dict(ref)
+        for ref in issue.evidence_refs
+        if isinstance(ref, dict)
+    ]
 
     return GlobalIssueResponse(
         id=issue.fingerprint,
