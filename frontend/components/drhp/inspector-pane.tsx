@@ -86,7 +86,12 @@ export function InspectorPane({
             hasGeneratedBlocks={hasGeneratedBlocks}
           />
         ) : (
-          <CopilotPanel chapter={chapter} selectedBlockId={selectedBlockId} />
+          <CopilotPanel
+            chapter={chapter}
+            selectedBlockId={selectedBlockId}
+            selectedBlock={selectedBlock}
+            documentVersionId={documentVersionId}
+          />
         )}
       </div>
     </aside>
