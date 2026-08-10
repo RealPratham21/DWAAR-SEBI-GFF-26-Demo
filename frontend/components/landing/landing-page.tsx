@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { CopyButton } from '@/components/landing/copy-button';
+import { LandingEventLogoStrip } from '@/components/landing/landing-event-logo-strip';
 import {
   LandingDashboardLink,
   LandingDemoLink,
@@ -12,7 +13,7 @@ import {
   HeroDashboardPreview,
   TraceabilityChain,
 } from '@/components/landing/product-previews';
-import { AUTH_ROUTES } from '@/lib/auth/constants';
+import { SME_REGISTER_ROUTE } from '@/lib/auth/constants';
 import { NIVARA_DEMO } from '@/lib/demo/constants';
 
 const WORKFLOW_BEFORE = [
@@ -128,6 +129,7 @@ export function LandingPage() {
         <div className="mx-auto grid max-w-6xl gap-12 px-6 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
           <div>
             <SectionEyebrow>SEBI Securities Market TechSprint @ GFF 2026</SectionEyebrow>
+            <LandingEventLogoStrip />
             <h1 className="max-w-xl text-4xl font-bold leading-[1.12] tracking-tight text-foreground sm:text-5xl">
               From company information to a review-ready DRHP.
             </h1>
@@ -375,7 +377,7 @@ export function LandingPage() {
                 <ArrowRight size={16} />
               </LandingDemoLink>
               <Link
-                href={AUTH_ROUTES.roleSelection}
+                href={SME_REGISTER_ROUTE}
                 className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
               >
                 Start fresh onboarding

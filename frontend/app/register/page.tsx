@@ -6,46 +6,57 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { AccountRegistrationForm } from '@/components/auth/account-registration-form';
 import { PublicAuthRedirect } from '@/components/auth/public-auth-redirect';
 import { PublicAuthShell } from '@/components/auth/public-auth-shell';
-import { AUTH_ROUTES, SUPPORTED_REGISTER_ROLES } from '@/lib/auth/constants';
+import {
+  AUTH_ROUTES,
+  SME_REGISTER_ROUTE,
+  SUPPORTED_REGISTER_ROLES,
+} from '@/lib/auth/constants';
 
 function RegisterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const role = searchParams.get('role');
+  const rawRole = searchParams.get('role');
 
   useEffect(() => {
-    if (!role || !SUPPORTED_REGISTER_ROLES.includes(role as (typeof SUPPORTED_REGISTER_ROLES)[number])) {
-      router.replace(AUTH_ROUTES.roleSelection);
+    if (
+      !rawRole ||
+      !SUPPORTED_REGISTER_ROLES.includes(rawRole as (typeof SUPPORTED_REGISTER_ROLES)[number])
+    ) {
+      router.replace(SME_REGISTER_ROUTE);
     }
-  }, [role, router]);
+  }, [rawRole, router]);
 
-  if (!role || !SUPPORTED_REGISTER_ROLES.includes(role as (typeof SUPPORTED_REGISTER_ROLES)[number])) {
+  if (
+    !rawRole ||
+    !SUPPORTED_REGISTER_ROLES.includes(rawRole as (typeof SUPPORTED_REGISTER_ROLES)[number])
+  ) {
     return (
-      <PublicAuthShell backHref={AUTH_ROUTES.roleSelection} backLabel="Back to role selection">
-        <div className="text-center space-y-4 py-12">
-          <p className="text-muted-foreground">Select your role to create an account.</p>
-          <Link href={AUTH_ROUTES.roleSelection} className="text-accent font-medium hover:underline">
-            Go to role selection
-          </Link>
-        </div>
+      <PublicAuthShell backHref={AUTH_ROUTES.home} backLabel="Back to home">
+        <p className="text-muted-foreground py-12 text-center">Loading registration…</p>
       </PublicAuthShell>
     );
   }
 
   return (
     <PublicAuthRedirect>
-      <PublicAuthShell backHref={AUTH_ROUTES.roleSelection} backLabel="Back to role selection">
+      <PublicAuthShell backHref={AUTH_ROUTES.home} backLabel="Back to home">
         <div className="max-w-xl mx-auto space-y-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">Create your Dwaar account</h1>
             <p className="text-muted-foreground">
-              Create your personal account first. Your company and IPO preparation details will be
-              collected in the next step.
+              Create your personal account for your company&apos;s IPO preparation workspace. Company
+              and offering details are collected in onboarding after signup.
             </p>
           </div>
           <div className="bg-card border border-border rounded-lg p-8">
             <AccountRegistrationForm />
           </div>
+          <p className="text-sm text-center text-muted-foreground">
+            Already have an account?{' '}
+            <Link href={AUTH_ROUTES.login} className="text-accent font-medium hover:underline">
+              Sign in
+            </Link>
+          </p>
         </div>
       </PublicAuthShell>
     </PublicAuthRedirect>
@@ -56,7 +67,7 @@ export default function RegisterPage() {
   return (
     <Suspense
       fallback={
-        <PublicAuthShell backHref={AUTH_ROUTES.roleSelection} backLabel="Back to role selection">
+        <PublicAuthShell backHref={AUTH_ROUTES.home} backLabel="Back to home">
           <p className="text-muted-foreground">Loading…</p>
         </PublicAuthShell>
       }

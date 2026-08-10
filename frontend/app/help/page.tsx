@@ -112,8 +112,8 @@ export default function HelpPage() {
                       a: 'Most companies complete DRHP preparation in 6-9 months with Dwaar, depending on documentation readiness and complexity.',
                     },
                     {
-                      q: 'Can I collaborate with my merchant banker in Dwaar?',
-                      a: 'Yes, you can invite your merchant banker and other stakeholders to access and comment on sections in real-time.',
+                      q: 'Can my advisors or team members access my workspace?',
+                      a: 'The current prototype focuses on a single issuer workspace. Shared access and external reviewer workflows are planned for a later release.',
                     },
                     {
                       q: 'What documents do I need to upload?',
