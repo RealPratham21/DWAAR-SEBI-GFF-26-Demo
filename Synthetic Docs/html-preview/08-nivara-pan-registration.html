@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>PAN Registration Record</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 16mm 22mm 16mm;
+      @bottom-center {
+        content: "SYNTHETIC DEMO DOCUMENT — NOT VALID FOR OFFICIAL USE";
+        font-size: 8pt;
+        color: #666;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.45;
+      color: #1a1a1a;
+      margin: 0;
+    }
+    .watermark-banner {
+      position: fixed;
+      top: 40%;
+      left: -8%;
+      width: 116%;
+      transform: rotate(-24deg);
+      text-align: center;
+      font-size: 22pt;
+      font-weight: 700;
+      color: rgba(180, 0, 0, 0.08);
+      letter-spacing: 0.08em;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .page-content { position: relative; z-index: 1; }
+    .doc-header {
+      border-bottom: 2px solid #2c5282;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .doc-header h1 {
+      font-size: 16pt;
+      margin: 0 0 4px 0;
+      color: #1a365d;
+    }
+    .doc-header .subtitle {
+      font-size: 9pt;
+      color: #4a5568;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 16px;
+      margin: 12px 0;
+    }
+    .meta-item label {
+      display: block;
+      font-size: 8pt;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #718096;
+      margin-bottom: 2px;
+    }
+    .meta-item .value {
+      font-weight: 600;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 10pt;
+    }
+    table.data-table th,
+    table.data-table td {
+      border: 1px solid #cbd5e0;
+      padding: 6px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    table.data-table th {
+      background: #edf2f7;
+      font-weight: 600;
+    }
+    .section-title {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #2d3748;
+      margin: 18px 0 8px 0;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .clause {
+      margin: 10px 0;
+      padding-left: 12px;
+      border-left: 3px solid #bee3f8;
+    }
+    .clause-number {
+      font-weight: 700;
+      color: #2b6cb0;
+    }
+    .signature-block {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .signature-line {
+      border-top: 1px solid #4a5568;
+      padding-top: 4px;
+      font-size: 9pt;
+      color: #4a5568;
+    }
+    .page-break { page-break-before: always; }
+    .footer-note {
+      margin-top: 20px;
+      font-size: 8pt;
+      color: #718096;
+      border-top: 1px dashed #cbd5e0;
+      padding-top: 8px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 8pt;
+      font-weight: 600;
+      background: #ebf8ff;
+      color: #2c5282;
+    }
+    .certificate-box {
+      border: 2px double #2c5282;
+      padding: 24px;
+      margin: 16px 0;
+    }
+    .certificate-title {
+      text-align: center;
+      font-size: 18pt;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: #1a365d;
+      margin-bottom: 16px;
+    }
+    p { margin: 8px 0; }
+    ul { margin: 8px 0; padding-left: 20px; }
+  </style>
+  
+</head>
+<body>
+  <div class="watermark-banner">SYNTHETIC DEMO DOCUMENT — NOT VALID FOR OFFICIAL USE</div>
+  <div class="page-content">
+    
+<div class="certificate-box">
+  <div class="certificate-title">PERMANENT ACCOUNT NUMBER — REGISTRATION RECORD</div>
+  <p style="text-align:center;font-size:9pt;">Generic tax registration record — not an official PAN card</p>
+  <div class="meta-grid">
+    <div class="meta-item"><label>Legal Name</label><div class="value">Nivara Techfab Private Limited</div></div>
+    <div class="meta-item"><label>PAN</label><div class="value">AABCN1234Q</div></div>
+    <div class="meta-item"><label>Entity Type</label><div class="value">Company</div></div>
+    <div class="meta-item"><label>Issue Date</label><div class="value">2019-06-20</div></div>
+    <div class="meta-item"><label>Issuing Authority</label><div class="value">Generic tax registration authority (synthetic demo wording)</div></div>
+  </div>
+</div>
+
+    <div class="footer-note">SYNTHETIC DEMO DOCUMENT — NOT VALID FOR OFFICIAL USE — Fixture ID: nivara-techfab-v1</div>
+  </div>
+</body>
+</html>

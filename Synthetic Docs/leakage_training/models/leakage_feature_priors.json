@@ -1,0 +1,237 @@
+{
+  "global": {
+    "numeric": {
+      "batch_total_intended_amount_minor": 551710.977407,
+      "batch_intent_count": 215.0,
+      "batch_avg_amount_minor": 2565.0394754999998,
+      "batch_max_amount_minor": 4940.3174645,
+      "batch_min_amount_minor": 123.203944,
+      "batch_amount_stddev": 1449.926741,
+      "batch_same_beneficiary_amount_density": 0.016885499999999998,
+      "batch_max_pair_count": 3.0,
+      "client_payout_ref_coverage_rate": 0.9491315,
+      "created_hour": 8.0,
+      "created_day_of_week": 3.0,
+      "weekend_flag": 0.0,
+      "parse_success_rate": 0.9776985,
+      "mapping_confidence_score": 0.807055,
+      "required_field_completeness_rate": 0.9576009999999999,
+      "canonicalization_error_rate": 0.0204945,
+      "missing_required_field_rate": 0.0177005,
+      "unknown_column_count": 2.0,
+      "invalid_amount_rate": 0.0033875,
+      "invalid_beneficiary_rate": 0.0037245,
+      "provider_missing_provider_ref_rate": 0.175892,
+      "provider_missing_client_ref_rate": 0.009250999999999999,
+      "provider_settlement_delay_p50_days": 1.746302,
+      "provider_settlement_delay_p95_days": 5.531419,
+      "settlement_delay_p50_days": 1.6096110000000001,
+      "settlement_delay_p95_days": 5.3560945
+    },
+    "categorical": {
+      "currency": "inr",
+      "source_system": "razorpay",
+      "rail": "upi",
+      "intent_type": "payout",
+      "provider_key": "razorpay"
+    }
+  },
+  "segments": {
+    "source_system": {
+      "razorpay": {
+        "numeric": {
+          "batch_total_intended_amount_minor": 551710.977407,
+          "batch_intent_count": 215.0,
+          "batch_avg_amount_minor": 2565.0394754999998,
+          "batch_max_amount_minor": 4940.3174645,
+          "batch_min_amount_minor": 123.203944,
+          "batch_amount_stddev": 1449.926741,
+          "batch_same_beneficiary_amount_density": 0.016885499999999998,
+          "batch_max_pair_count": 3.0,
+          "client_payout_ref_coverage_rate": 0.9491315,
+          "created_hour": 8.0,
+          "created_day_of_week": 3.0,
+          "weekend_flag": 0.0,
+          "parse_success_rate": 0.9776985,
+          "mapping_confidence_score": 0.807055,
+          "required_field_completeness_rate": 0.9576009999999999,
+          "canonicalization_error_rate": 0.0204945,
+          "missing_required_field_rate": 0.0177005,
+          "unknown_column_count": 2.0,
+          "invalid_amount_rate": 0.0033875,
+          "invalid_beneficiary_rate": 0.0037245,
+          "provider_missing_provider_ref_rate": 0.175892,
+          "provider_missing_client_ref_rate": 0.009250999999999999,
+          "provider_settlement_delay_p50_days": 1.746302,
+          "provider_settlement_delay_p95_days": 5.531419,
+          "settlement_delay_p50_days": 1.6096110000000001,
+          "settlement_delay_p95_days": 5.3560945
+        },
+        "categorical": {
+          "currency": "inr",
+          "source_system": "razorpay",
+          "rail": "upi",
+          "intent_type": "payout",
+          "provider_key": "razorpay"
+        },
+        "row_count": 378
+      }
+    },
+    "source_system__rail": {
+      "razorpay||upi": {
+        "numeric": {
+          "batch_total_intended_amount_minor": 541427.874,
+          "batch_intent_count": 210.0,
+          "batch_avg_amount_minor": 2556.194585,
+          "batch_max_amount_minor": 4909.657,
+          "batch_min_amount_minor": 127.759236,
+          "batch_amount_stddev": 1448.108292,
+          "batch_same_beneficiary_amount_density": 0.018163,
+          "batch_max_pair_count": 3.0,
+          "client_payout_ref_coverage_rate": 0.963375,
+          "created_hour": 8.0,
+          "created_day_of_week": 3.0,
+          "weekend_flag": 0.0,
+          "parse_success_rate": 0.981167,
+          "mapping_confidence_score": 0.817916,
+          "required_field_completeness_rate": 0.961263,
+          "canonicalization_error_rate": 0.016867,
+          "missing_required_field_rate": 0.012731,
+          "unknown_column_count": 2.0,
+          "invalid_amount_rate": 0.003,
+          "invalid_beneficiary_rate": 0.003186,
+          "provider_missing_provider_ref_rate": 0.163835,
+          "provider_missing_client_ref_rate": 0.007351,
+          "provider_settlement_delay_p50_days": 1.665646,
+          "provider_settlement_delay_p95_days": 5.330232,
+          "settlement_delay_p50_days": 1.503744,
+          "settlement_delay_p95_days": 5.342003
+        },
+        "categorical": {
+          "currency": "inr",
+          "source_system": "razorpay",
+          "rail": "upi",
+          "intent_type": "payout",
+          "provider_key": "razorpay"
+        },
+        "row_count": 197
+      },
+      "razorpay||imps": {
+        "numeric": {
+          "batch_total_intended_amount_minor": 566696.454991,
+          "batch_intent_count": 219.0,
+          "batch_avg_amount_minor": 2582.877941,
+          "batch_max_amount_minor": 4974.830158,
+          "batch_min_amount_minor": 121.022147,
+          "batch_amount_stddev": 1454.221918,
+          "batch_same_beneficiary_amount_density": 0.01599,
+          "batch_max_pair_count": 3.0,
+          "client_payout_ref_coverage_rate": 0.943167,
+          "created_hour": 8.0,
+          "created_day_of_week": 3.0,
+          "weekend_flag": 0.0,
+          "parse_success_rate": 0.975459,
+          "mapping_confidence_score": 0.786343,
+          "required_field_completeness_rate": 0.953221,
+          "canonicalization_error_rate": 0.024858,
+          "missing_required_field_rate": 0.02,
+          "unknown_column_count": 3.0,
+          "invalid_amount_rate": 0.003884,
+          "invalid_beneficiary_rate": 0.004337,
+          "provider_missing_provider_ref_rate": 0.180808,
+          "provider_missing_client_ref_rate": 0.010703,
+          "provider_settlement_delay_p50_days": 1.824904,
+          "provider_settlement_delay_p95_days": 5.638402,
+          "settlement_delay_p50_days": 1.722461,
+          "settlement_delay_p95_days": 5.366156
+        },
+        "categorical": {
+          "currency": "inr",
+          "source_system": "razorpay",
+          "rail": "imps",
+          "intent_type": "payout",
+          "provider_key": "razorpay"
+        },
+        "row_count": 181
+      }
+    },
+    "source_system__rail__provider_key": {
+      "razorpay||upi||razorpay": {
+        "numeric": {
+          "batch_total_intended_amount_minor": 541427.874,
+          "batch_intent_count": 210.0,
+          "batch_avg_amount_minor": 2556.194585,
+          "batch_max_amount_minor": 4909.657,
+          "batch_min_amount_minor": 127.759236,
+          "batch_amount_stddev": 1448.108292,
+          "batch_same_beneficiary_amount_density": 0.018163,
+          "batch_max_pair_count": 3.0,
+          "client_payout_ref_coverage_rate": 0.963375,
+          "created_hour": 8.0,
+          "created_day_of_week": 3.0,
+          "weekend_flag": 0.0,
+          "parse_success_rate": 0.981167,
+          "mapping_confidence_score": 0.817916,
+          "required_field_completeness_rate": 0.961263,
+          "canonicalization_error_rate": 0.016867,
+          "missing_required_field_rate": 0.012731,
+          "unknown_column_count": 2.0,
+          "invalid_amount_rate": 0.003,
+          "invalid_beneficiary_rate": 0.003186,
+          "provider_missing_provider_ref_rate": 0.163835,
+          "provider_missing_client_ref_rate": 0.007351,
+          "provider_settlement_delay_p50_days": 1.665646,
+          "provider_settlement_delay_p95_days": 5.330232,
+          "settlement_delay_p50_days": 1.503744,
+          "settlement_delay_p95_days": 5.342003
+        },
+        "categorical": {
+          "currency": "inr",
+          "source_system": "razorpay",
+          "rail": "upi",
+          "intent_type": "payout",
+          "provider_key": "razorpay"
+        },
+        "row_count": 197
+      },
+      "razorpay||imps||razorpay": {
+        "numeric": {
+          "batch_total_intended_amount_minor": 566696.454991,
+          "batch_intent_count": 219.0,
+          "batch_avg_amount_minor": 2582.877941,
+          "batch_max_amount_minor": 4974.830158,
+          "batch_min_amount_minor": 121.022147,
+          "batch_amount_stddev": 1454.221918,
+          "batch_same_beneficiary_amount_density": 0.01599,
+          "batch_max_pair_count": 3.0,
+          "client_payout_ref_coverage_rate": 0.943167,
+          "created_hour": 8.0,
+          "created_day_of_week": 3.0,
+          "weekend_flag": 0.0,
+          "parse_success_rate": 0.975459,
+          "mapping_confidence_score": 0.786343,
+          "required_field_completeness_rate": 0.953221,
+          "canonicalization_error_rate": 0.024858,
+          "missing_required_field_rate": 0.02,
+          "unknown_column_count": 3.0,
+          "invalid_amount_rate": 0.003884,
+          "invalid_beneficiary_rate": 0.004337,
+          "provider_missing_provider_ref_rate": 0.180808,
+          "provider_missing_client_ref_rate": 0.010703,
+          "provider_settlement_delay_p50_days": 1.824904,
+          "provider_settlement_delay_p95_days": 5.638402,
+          "settlement_delay_p50_days": 1.722461,
+          "settlement_delay_p95_days": 5.366156
+        },
+        "categorical": {
+          "currency": "inr",
+          "source_system": "razorpay",
+          "rail": "imps",
+          "intent_type": "payout",
+          "provider_key": "razorpay"
+        },
+        "row_count": 181
+      }
+    }
+  }
+}

@@ -1,0 +1,472 @@
+{
+  "tenant_id": "6402b1bf-8100-4fa8-95f9-a1a9452b22fe",
+  "signup_email": "leakage.training.20260613075528.662b2d@example.com",
+  "date_shift_days": 42,
+  "context_batch_ids": [
+    "LEAK_BATCH_013",
+    "LEAK_BATCH_014",
+    "LEAK_BATCH_015",
+    "LEAK_BATCH_016"
+  ],
+  "focus_batch_id": "LEAK_BATCH_017",
+  "focus_runtime_batch_id": "LEAK_BATCH_017__6402b1bf",
+  "pre_settlement_proof": {
+    "batch_contract": {
+      "batch_id": "LEAK_BATCH_017__6402b1bf",
+      "tenant_id": "6402b1bf-8100-4fa8-95f9-a1a9452b22fe",
+      "batch_finality_status": "PROCESSING",
+      "intent_row_count": 199,
+      "total_count": 199,
+      "pending_count": 199,
+      "total_intended_amount_minor": "500683.75",
+      "intent_total_amount_minor": "500683.75",
+      "unmatched_amount_minor": "0.00",
+      "under_settlement_amount_minor": "0.00",
+      "reversal_exposure_minor": "0.00",
+      "predicted_leakage_rate": "0.102566",
+      "predicted_leakage_minor": "51353.05",
+      "predicted_leakage_model_id": "leakage_prediction_v1",
+      "predicted_at": "2026-06-13 07:56:50.601679+00:00",
+      "first_intent_created_at": "2026-06-13 07:56:37.836407+00:00",
+      "created_at": "2026-06-13 07:56:37.836407+00:00",
+      "last_updated_at": "2026-06-13 07:56:50.602499+00:00"
+    },
+    "feature_row": {
+      "feature_row_id": "feat_leakage_batch_a64550d15d72c97a",
+      "scope_ref": "LEAK_BATCH_017__6402b1bf",
+      "feature_family": "LEAKAGE",
+      "features_json": "{\"rail\": \"UPI\", \"currency\": \"INR\", \"intent_type\": \"PAYOUT\", \"created_hour\": 7, \"provider_key\": \"razorpay\", \"weekend_flag\": 1, \"source_system\": \"RAZORPAY\", \"batch_intent_count\": 199, \"parse_success_rate\": 1, \"batch_amount_stddev\": 1469.2173696717432, \"created_day_of_week\": 6, \"invalid_amount_rate\": 0, \"batch_max_pair_count\": 1, \"unknown_column_count\": 0, \"batch_avg_amount_minor\": 2515.998743718593, \"batch_max_amount_minor\": 4959.08, \"batch_min_amount_minor\": 110.84, \"invalid_beneficiary_rate\": 0, \"mapping_confidence_score\": 0.78, \"settlement_delay_p50_days\": 0, \"settlement_delay_p95_days\": 0, \"canonicalization_error_rate\": 0, \"missing_required_field_rate\": 0, \"client_payout_ref_coverage_rate\": 1, \"provider_missing_client_ref_rate\": 0, \"required_field_completeness_rate\": 0.93, \"batch_total_intended_amount_minor\": 500683.75, \"provider_missing_provider_ref_rate\": 0.10069444444444445, \"provider_settlement_delay_p50_days\": 0, \"provider_settlement_delay_p95_days\": 0, \"batch_same_beneficiary_amount_density\": 0.0245462729717112}",
+      "label_json": null,
+      "model_version": "leakage_batch_features_v1",
+      "window_start": "2026-07-01 00:00:00+00:00",
+      "window_end": "2026-07-02 00:00:00+00:00",
+      "created_at": "2026-06-13 07:56:50.285020+00:00"
+    },
+    "prediction_row": {
+      "prediction_id": "pred_ae49b77f-f7bc-4af4-8fc5-5154fb4a1fc0",
+      "prediction_family": "LEAKAGE",
+      "prediction_value": "0.102566",
+      "prediction_score": 0.1025658368212603,
+      "model_id": "leakage_prediction_v1",
+      "created_at": "2026-06-13 07:56:50.601679+00:00"
+    },
+    "intent_counts": {
+      "payment_intents": 199,
+      "dlq_items": 0
+    },
+    "settlement_observation_count": 0,
+    "attachment_summary": null
+  },
+  "post_settlement_states": {
+    "LEAK_BATCH_013": {
+      "runtime_batch_id": "LEAK_BATCH_013__6402b1bf",
+      "runtime_intent_path": "C:\\Users\\PRATHAMESH\\Desktop\\Company 1\\Arealis-Zord-intent\\backend\\generated\\leakage_training\\extracted\\runtime_ingest\\LEAK_BATCH_013__6402b1bf\\intent.csv",
+      "runtime_settlement_path": "C:\\Users\\PRATHAMESH\\Desktop\\Company 1\\Arealis-Zord-intent\\backend\\generated\\leakage_training\\extracted\\runtime_ingest\\LEAK_BATCH_013__6402b1bf\\settlement_replay.xlsx",
+      "expected_leakage_rate": "0.25",
+      "expected_total_leakage_amount": "145928.26",
+      "batch_contract": {
+        "batch_id": "LEAK_BATCH_013__6402b1bf",
+        "tenant_id": "6402b1bf-8100-4fa8-95f9-a1a9452b22fe",
+        "batch_finality_status": "PARTIALLY_SETTLED",
+        "intent_row_count": 234,
+        "total_count": 187,
+        "pending_count": 0,
+        "total_intended_amount_minor": "323358.14",
+        "intent_total_amount_minor": "593106.36",
+        "unmatched_amount_minor": "0.00",
+        "under_settlement_amount_minor": "0.00",
+        "reversal_exposure_minor": "0.00",
+        "predicted_leakage_rate": "0.032251",
+        "predicted_leakage_minor": "19128.17",
+        "predicted_leakage_model_id": "leakage_prediction_v1",
+        "predicted_at": "2026-06-13 07:56:35.581029+00:00",
+        "first_intent_created_at": "2026-06-13 07:55:33.399505+00:00",
+        "created_at": "2026-06-13 07:55:33.399505+00:00",
+        "last_updated_at": "2026-06-13 07:56:57.933046+00:00"
+      },
+      "feature_row": {
+        "feature_row_id": "feat_leakage_batch_26ac3947979e10e7",
+        "scope_ref": "LEAK_BATCH_013__6402b1bf",
+        "feature_family": "LEAKAGE",
+        "features_json": "{\"rail\": \"UPI\", \"currency\": \"INR\", \"intent_type\": \"PAYOUT\", \"created_hour\": 7, \"provider_key\": \"razorpay\", \"weekend_flag\": 1, \"source_system\": \"RAZORPAY\", \"batch_intent_count\": 234, \"parse_success_rate\": 1, \"batch_amount_stddev\": 1432.1530776852521, \"created_day_of_week\": 6, \"invalid_amount_rate\": null, \"batch_max_pair_count\": null, \"unknown_column_count\": null, \"batch_avg_amount_minor\": 2534.642564102564, \"batch_max_amount_minor\": 4995.69, \"batch_min_amount_minor\": 110.84, \"invalid_beneficiary_rate\": null, \"mapping_confidence_score\": 0.998, \"settlement_delay_p50_days\": 0, \"settlement_delay_p95_days\": 0, \"canonicalization_error_rate\": 0, \"missing_required_field_rate\": 0, \"client_payout_ref_coverage_rate\": 1, \"provider_missing_client_ref_rate\": 0, \"required_field_completeness_rate\": 1, \"batch_total_intended_amount_minor\": 593106.36, \"provider_missing_provider_ref_rate\": 0.0196078431372549, \"provider_settlement_delay_p50_days\": 0, \"provider_settlement_delay_p95_days\": 0, \"batch_same_beneficiary_amount_density\": null}",
+        "label_json": "{\"batch_id\": \"LEAK_BATCH_013__6402b1bf\", \"predicted_leakage_rate\": 0, \"target_leakage_amount_minor\": 0, \"total_intended_amount_minor\": 323358.14, \"under_settlement_amount_minor\": 0, \"unmatched_intent_amount_minor\": 0, \"confirmed_reversal_amount_minor\": 0}",
+        "model_version": "leakage_batch_features_v1",
+        "window_start": "2026-06-13 00:00:00+00:00",
+        "window_end": "2026-06-14 00:00:00+00:00",
+        "created_at": "2026-06-13 07:56:34.858932+00:00"
+      },
+      "label_row": {
+        "label_id": "lbl_bd335dc7-9d1a-4d16-add1-914ab2df8d1d",
+        "label_family": "LEAKAGE",
+        "label_value": 0.0,
+        "label_source": "batch_finality",
+        "created_at": "2026-06-13 07:56:28.751736+00:00"
+      },
+      "prediction_row": {
+        "prediction_id": "pred_45bcaf0e-2031-4d6e-9e2a-76246ff9b7f0",
+        "prediction_family": "LEAKAGE",
+        "prediction_value": "0.032251",
+        "prediction_score": 0.03225082954420165,
+        "model_id": "leakage_prediction_v1",
+        "created_at": "2026-06-13 07:56:35.581029+00:00"
+      },
+      "intent_counts": {
+        "payment_intents": 234,
+        "dlq_items": 0
+      },
+      "settlement_observation_count": 187,
+      "attachment_summary": {
+        "batch_attachment_summary_id": "a0564110-36fe-4cdb-9540-434a7ac67ec3",
+        "tenant_id": "6402b1bf-8100-4fa8-95f9-a1a9452b22fe",
+        "batch_id": "LEAK_BATCH_013__6402b1bf",
+        "source_reference": "3cf910a8-fe90-4cc0-8b59-41f726a9ed71",
+        "attachment_job_id": "945e13af-91fe-4330-87e3-23377ae07ab8",
+        "total_intent_count": 187,
+        "exact_match_count": 129,
+        "high_confidence_count": 0,
+        "ambiguous_count": 58,
+        "unresolved_count": 0,
+        "conflicted_count": 0,
+        "total_intended_amount": "323358.14",
+        "total_observed_amount": "323358.14",
+        "total_variance": "0.00",
+        "batch_attachment_status": "PARTIALLY_SETTLED",
+        "aggregate_score": "0.8643",
+        "ambiguity_score": "0.0362",
+        "created_at": "2026-06-13 07:55:45.960095+00:00",
+        "updated_at": "2026-06-13 07:55:45.960095+00:00"
+      }
+    },
+    "LEAK_BATCH_014": {
+      "runtime_batch_id": "LEAK_BATCH_014__6402b1bf",
+      "runtime_intent_path": "C:\\Users\\PRATHAMESH\\Desktop\\Company 1\\Arealis-Zord-intent\\backend\\generated\\leakage_training\\extracted\\runtime_ingest\\LEAK_BATCH_014__6402b1bf\\intent.csv",
+      "runtime_settlement_path": "C:\\Users\\PRATHAMESH\\Desktop\\Company 1\\Arealis-Zord-intent\\backend\\generated\\leakage_training\\extracted\\runtime_ingest\\LEAK_BATCH_014__6402b1bf\\settlement_replay.xlsx",
+      "expected_leakage_rate": "0.22",
+      "expected_total_leakage_amount": "126161.57",
+      "batch_contract": {
+        "batch_id": "LEAK_BATCH_014__6402b1bf",
+        "tenant_id": "6402b1bf-8100-4fa8-95f9-a1a9452b22fe",
+        "batch_finality_status": "PARTIALLY_SETTLED",
+        "intent_row_count": 216,
+        "total_count": 173,
+        "pending_count": 0,
+        "total_intended_amount_minor": "340999.40",
+        "intent_total_amount_minor": "582756.10",
+        "unmatched_amount_minor": "0.00",
+        "under_settlement_amount_minor": "0.00",
+        "reversal_exposure_minor": "0.00",
+        "predicted_leakage_rate": "0.000000",
+        "predicted_leakage_minor": "0.00",
+        "predicted_leakage_model_id": "leakage_prediction_v1",
+        "predicted_at": "2026-06-13 07:56:49.707085+00:00",
+        "first_intent_created_at": "2026-06-13 07:55:47.865618+00:00",
+        "created_at": "2026-06-13 07:55:47.865618+00:00",
+        "last_updated_at": "2026-06-13 07:57:16.833011+00:00"
+      },
+      "feature_row": {
+        "feature_row_id": "feat_leakage_batch_6567ac61f723ecee",
+        "scope_ref": "LEAK_BATCH_014__6402b1bf",
+        "feature_family": "LEAKAGE",
+        "features_json": "{\"rail\": \"UPI\", \"currency\": \"INR\", \"intent_type\": \"PAYOUT\", \"created_hour\": 7, \"provider_key\": \"razorpay\", \"weekend_flag\": 1, \"source_system\": \"RAZORPAY\", \"batch_intent_count\": 216, \"parse_success_rate\": 1, \"batch_amount_stddev\": 1428.0976087322106, \"created_day_of_week\": 6, \"invalid_amount_rate\": null, \"batch_max_pair_count\": null, \"unknown_column_count\": null, \"batch_avg_amount_minor\": 2697.9449074074073, \"batch_max_amount_minor\": 4909.66, \"batch_min_amount_minor\": 170.22, \"invalid_beneficiary_rate\": null, \"mapping_confidence_score\": 0.9805, \"settlement_delay_p50_days\": 0, \"settlement_delay_p95_days\": 0, \"canonicalization_error_rate\": 0, \"missing_required_field_rate\": 0, \"client_payout_ref_coverage_rate\": 1, \"provider_missing_client_ref_rate\": 0, \"required_field_completeness_rate\": 1, \"batch_total_intended_amount_minor\": 582756.1, \"provider_missing_provider_ref_rate\": 0.10661764705882353, \"provider_settlement_delay_p50_days\": 0, \"provider_settlement_delay_p95_days\": 0, \"batch_same_beneficiary_amount_density\": null}",
+        "label_json": "{\"batch_id\": \"LEAK_BATCH_014__6402b1bf\", \"predicted_leakage_rate\": 0, \"target_leakage_amount_minor\": 0, \"total_intended_amount_minor\": 340999.4, \"under_settlement_amount_minor\": 0, \"unmatched_intent_amount_minor\": 0, \"confirmed_reversal_amount_minor\": 0}",
+        "model_version": "leakage_batch_features_v1",
+        "window_start": "2026-06-13 00:00:00+00:00",
+        "window_end": "2026-06-14 00:00:00+00:00",
+        "created_at": "2026-06-13 07:56:48.455563+00:00"
+      },
+      "label_row": {
+        "label_id": "lbl_74bb033e-3b58-4c22-acb7-939f106a928f",
+        "label_family": "LEAKAGE",
+        "label_value": 0.0,
+        "label_source": "batch_finality",
+        "created_at": "2026-06-13 07:56:47.621710+00:00"
+      },
+      "prediction_row": {
+        "prediction_id": "pred_be7560c1-8026-4592-a884-c38f7239f3bd",
+        "prediction_family": "LEAKAGE",
+        "prediction_value": "0.000000",
+        "prediction_score": 0.0,
+        "model_id": "leakage_prediction_v1",
+        "created_at": "2026-06-13 07:56:49.707085+00:00"
+      },
+      "intent_counts": {
+        "payment_intents": 216,
+        "dlq_items": 0
+      },
+      "settlement_observation_count": 173,
+      "attachment_summary": {
+        "batch_attachment_summary_id": "e5f6f4ae-ab80-44da-b4f8-6a6c3d4c9afe",
+        "tenant_id": "6402b1bf-8100-4fa8-95f9-a1a9452b22fe",
+        "batch_id": "LEAK_BATCH_014__6402b1bf",
+        "source_reference": "56408a57-367c-4ae4-8d97-645054f992f7",
+        "attachment_job_id": "4236afb3-d98e-4c41-b809-e60562cd79e7",
+        "total_intent_count": 173,
+        "exact_match_count": 119,
+        "high_confidence_count": 0,
+        "ambiguous_count": 54,
+        "unresolved_count": 0,
+        "conflicted_count": 0,
+        "total_intended_amount": "340999.40",
+        "total_observed_amount": "340999.40",
+        "total_variance": "0.00",
+        "batch_attachment_status": "PARTIALLY_SETTLED",
+        "aggregate_score": "0.8636",
+        "ambiguity_score": "0.0356",
+        "created_at": "2026-06-13 07:56:00.289462+00:00",
+        "updated_at": "2026-06-13 07:56:00.289462+00:00"
+      }
+    },
+    "LEAK_BATCH_015": {
+      "runtime_batch_id": "LEAK_BATCH_015__6402b1bf",
+      "runtime_intent_path": "C:\\Users\\PRATHAMESH\\Desktop\\Company 1\\Arealis-Zord-intent\\backend\\generated\\leakage_training\\extracted\\runtime_ingest\\LEAK_BATCH_015__6402b1bf\\intent.csv",
+      "runtime_settlement_path": "C:\\Users\\PRATHAMESH\\Desktop\\Company 1\\Arealis-Zord-intent\\backend\\generated\\leakage_training\\extracted\\runtime_ingest\\LEAK_BATCH_015__6402b1bf\\settlement_replay.xlsx",
+      "expected_leakage_rate": "0.23",
+      "expected_total_leakage_amount": "123923.53",
+      "batch_contract": {
+        "batch_id": "LEAK_BATCH_015__6402b1bf",
+        "tenant_id": "6402b1bf-8100-4fa8-95f9-a1a9452b22fe",
+        "batch_finality_status": "PARTIALLY_SETTLED",
+        "intent_row_count": 213,
+        "total_count": 170,
+        "pending_count": 0,
+        "total_intended_amount_minor": "299512.24",
+        "intent_total_amount_minor": "541428.05",
+        "unmatched_amount_minor": "0.00",
+        "under_settlement_amount_minor": "0.00",
+        "reversal_exposure_minor": "0.00",
+        "predicted_leakage_rate": "0.000110",
+        "predicted_leakage_minor": "59.68",
+        "predicted_leakage_model_id": "leakage_prediction_v1",
+        "predicted_at": "2026-06-13 07:57:03.088534+00:00",
+        "first_intent_created_at": "2026-06-13 07:56:02.824017+00:00",
+        "created_at": "2026-06-13 07:56:02.824017+00:00",
+        "last_updated_at": "2026-06-13 07:57:03.091788+00:00"
+      },
+      "feature_row": {
+        "feature_row_id": "feat_leakage_batch_924dfc9ed01ce62f",
+        "scope_ref": "LEAK_BATCH_015__6402b1bf",
+        "feature_family": "LEAKAGE",
+        "features_json": "{\"rail\": \"UPI\", \"currency\": \"INR\", \"intent_type\": \"PAYOUT\", \"created_hour\": 7, \"provider_key\": \"razorpay\", \"weekend_flag\": 1, \"source_system\": \"RAZORPAY\", \"batch_intent_count\": 213, \"parse_success_rate\": 1, \"batch_amount_stddev\": 1390.6659761992717, \"created_day_of_week\": 6, \"invalid_amount_rate\": null, \"batch_max_pair_count\": null, \"unknown_column_count\": null, \"batch_avg_amount_minor\": 2541.9157276995306, \"batch_max_amount_minor\": 4978.75, \"batch_min_amount_minor\": 105.43, \"invalid_beneficiary_rate\": null, \"mapping_confidence_score\": 0.9767, \"settlement_delay_p50_days\": 0, \"settlement_delay_p95_days\": 0, \"canonicalization_error_rate\": 0, \"missing_required_field_rate\": 0, \"client_payout_ref_coverage_rate\": 1, \"provider_missing_client_ref_rate\": 0, \"required_field_completeness_rate\": 1, \"batch_total_intended_amount_minor\": 541428.05, \"provider_missing_provider_ref_rate\": 0.12589073634204276, \"provider_settlement_delay_p50_days\": 0, \"provider_settlement_delay_p95_days\": 0, \"batch_same_beneficiary_amount_density\": null}",
+        "label_json": "{\"batch_id\": \"LEAK_BATCH_015__6402b1bf\", \"predicted_leakage_rate\": 0, \"target_leakage_amount_minor\": 0, \"total_intended_amount_minor\": 299512.24, \"under_settlement_amount_minor\": 0, \"unmatched_intent_amount_minor\": 0, \"confirmed_reversal_amount_minor\": 0}",
+        "model_version": "leakage_batch_features_v1",
+        "window_start": "2026-06-13 00:00:00+00:00",
+        "window_end": "2026-06-14 00:00:00+00:00",
+        "created_at": "2026-06-13 07:57:01.803077+00:00"
+      },
+      "label_row": {
+        "label_id": "lbl_0d878be8-5b9a-4ed4-b8a6-cad278ce9111",
+        "label_family": "LEAKAGE",
+        "label_value": 0.0,
+        "label_source": "batch_finality",
+        "created_at": "2026-06-13 07:56:59.372455+00:00"
+      },
+      "prediction_row": {
+        "prediction_id": "pred_2c5f6373-fda5-464f-ad47-095211602575",
+        "prediction_family": "LEAKAGE",
+        "prediction_value": "0.000110",
+        "prediction_score": 0.00011022722753981085,
+        "model_id": "leakage_prediction_v1",
+        "created_at": "2026-06-13 07:57:03.088534+00:00"
+      },
+      "intent_counts": {
+        "payment_intents": 213,
+        "dlq_items": 0
+      },
+      "settlement_observation_count": 170,
+      "attachment_summary": {
+        "batch_attachment_summary_id": "a02bb485-4f96-44ad-bd90-f2f2ecd3c3b0",
+        "tenant_id": "6402b1bf-8100-4fa8-95f9-a1a9452b22fe",
+        "batch_id": "LEAK_BATCH_015__6402b1bf",
+        "source_reference": "51aad636-a8a8-4aa2-b58b-568ecc084abf",
+        "attachment_job_id": "c9a51aaf-2a83-47fe-a0c6-01592695f050",
+        "total_intent_count": 170,
+        "exact_match_count": 117,
+        "high_confidence_count": 0,
+        "ambiguous_count": 53,
+        "unresolved_count": 0,
+        "conflicted_count": 0,
+        "total_intended_amount": "299512.24",
+        "total_observed_amount": "299512.24",
+        "total_variance": "0.00",
+        "batch_attachment_status": "PARTIALLY_SETTLED",
+        "aggregate_score": "0.8637",
+        "ambiguity_score": "0.0357",
+        "created_at": "2026-06-13 07:56:11.389684+00:00",
+        "updated_at": "2026-06-13 07:56:11.389684+00:00"
+      }
+    },
+    "LEAK_BATCH_016": {
+      "runtime_batch_id": "LEAK_BATCH_016__6402b1bf",
+      "runtime_intent_path": "C:\\Users\\PRATHAMESH\\Desktop\\Company 1\\Arealis-Zord-intent\\backend\\generated\\leakage_training\\extracted\\runtime_ingest\\LEAK_BATCH_016__6402b1bf\\intent.csv",
+      "runtime_settlement_path": "C:\\Users\\PRATHAMESH\\Desktop\\Company 1\\Arealis-Zord-intent\\backend\\generated\\leakage_training\\extracted\\runtime_ingest\\LEAK_BATCH_016__6402b1bf\\settlement_replay.xlsx",
+      "expected_leakage_rate": "0.25",
+      "expected_total_leakage_amount": "149284.91",
+      "batch_contract": {
+        "batch_id": "LEAK_BATCH_016__6402b1bf",
+        "tenant_id": "6402b1bf-8100-4fa8-95f9-a1a9452b22fe",
+        "batch_finality_status": "PARTIALLY_SETTLED",
+        "intent_row_count": 223,
+        "total_count": 178,
+        "pending_count": 0,
+        "total_intended_amount_minor": "320323.41",
+        "intent_total_amount_minor": "601242.26",
+        "unmatched_amount_minor": "0.00",
+        "under_settlement_amount_minor": "0.00",
+        "reversal_exposure_minor": "0.00",
+        "predicted_leakage_rate": "0.000000",
+        "predicted_leakage_minor": "0.00",
+        "predicted_leakage_model_id": "leakage_prediction_v1",
+        "predicted_at": "2026-06-13 07:57:10.920526+00:00",
+        "first_intent_created_at": "2026-06-13 07:56:13.818879+00:00",
+        "created_at": "2026-06-13 07:56:13.818879+00:00",
+        "last_updated_at": "2026-06-13 07:57:10.920691+00:00"
+      },
+      "feature_row": {
+        "feature_row_id": "feat_leakage_batch_07bcfc8c63216cab",
+        "scope_ref": "LEAK_BATCH_016__6402b1bf",
+        "feature_family": "LEAKAGE",
+        "features_json": "{\"rail\": \"UPI\", \"currency\": \"INR\", \"intent_type\": \"PAYOUT\", \"created_hour\": 7, \"provider_key\": \"razorpay\", \"weekend_flag\": 1, \"source_system\": \"RAZORPAY\", \"batch_intent_count\": 223, \"parse_success_rate\": 1, \"batch_amount_stddev\": 1423.003675953891, \"created_day_of_week\": 6, \"invalid_amount_rate\": null, \"batch_max_pair_count\": null, \"unknown_column_count\": null, \"batch_avg_amount_minor\": 2696.1536322869956, \"batch_max_amount_minor\": 4933.3, \"batch_min_amount_minor\": 156.3, \"invalid_beneficiary_rate\": null, \"mapping_confidence_score\": 0.9747, \"settlement_delay_p50_days\": 0, \"settlement_delay_p95_days\": 0, \"canonicalization_error_rate\": 0, \"missing_required_field_rate\": 0, \"client_payout_ref_coverage_rate\": 1, \"provider_missing_client_ref_rate\": 0, \"required_field_completeness_rate\": 1, \"batch_total_intended_amount_minor\": 601242.26, \"provider_missing_provider_ref_rate\": 0.13628318584070798, \"provider_settlement_delay_p50_days\": 0, \"provider_settlement_delay_p95_days\": 0, \"batch_same_beneficiary_amount_density\": null}",
+        "label_json": "{\"batch_id\": \"LEAK_BATCH_016__6402b1bf\", \"predicted_leakage_rate\": 0, \"target_leakage_amount_minor\": 0, \"total_intended_amount_minor\": 320323.41, \"under_settlement_amount_minor\": 0, \"unmatched_intent_amount_minor\": 0, \"confirmed_reversal_amount_minor\": 0}",
+        "model_version": "leakage_batch_features_v1",
+        "window_start": "2026-06-13 00:00:00+00:00",
+        "window_end": "2026-06-14 00:00:00+00:00",
+        "created_at": "2026-06-13 07:57:09.864377+00:00"
+      },
+      "label_row": {
+        "label_id": "lbl_923ac054-2d1b-4dc2-a0bc-1c0aa200b868",
+        "label_family": "LEAKAGE",
+        "label_value": 0.0,
+        "label_source": "batch_finality",
+        "created_at": "2026-06-13 07:57:08.558470+00:00"
+      },
+      "prediction_row": {
+        "prediction_id": "pred_e97e8a79-4e1a-4976-bf06-c7069f83c146",
+        "prediction_family": "LEAKAGE",
+        "prediction_value": "0.000000",
+        "prediction_score": 0.0,
+        "model_id": "leakage_prediction_v1",
+        "created_at": "2026-06-13 07:57:10.920526+00:00"
+      },
+      "intent_counts": {
+        "payment_intents": 223,
+        "dlq_items": 0
+      },
+      "settlement_observation_count": 178,
+      "attachment_summary": {
+        "batch_attachment_summary_id": "27fbfbb6-09e4-4179-9b01-c34e228d5189",
+        "tenant_id": "6402b1bf-8100-4fa8-95f9-a1a9452b22fe",
+        "batch_id": "LEAK_BATCH_016__6402b1bf",
+        "source_reference": "LEAK_BATCH_016__6402b1bf",
+        "attachment_job_id": "fff34b8f-0e24-4aa3-a797-b2b49de66385",
+        "total_intent_count": 178,
+        "exact_match_count": 122,
+        "high_confidence_count": 0,
+        "ambiguous_count": 56,
+        "unresolved_count": 0,
+        "conflicted_count": 0,
+        "total_intended_amount": "320323.41",
+        "total_observed_amount": "320323.41",
+        "total_variance": "0.00",
+        "batch_attachment_status": "PARTIALLY_SETTLED",
+        "aggregate_score": "0.8626",
+        "ambiguity_score": "0.0363",
+        "created_at": "2026-06-13 07:56:33.602678+00:00",
+        "updated_at": "2026-06-13 07:56:33.602678+00:00"
+      }
+    },
+    "LEAK_BATCH_017": {
+      "runtime_batch_id": "LEAK_BATCH_017__6402b1bf",
+      "runtime_intent_path": "C:\\Users\\PRATHAMESH\\Desktop\\Company 1\\Arealis-Zord-intent\\backend\\generated\\leakage_training\\extracted\\runtime_ingest\\LEAK_BATCH_017__6402b1bf\\intent.csv",
+      "runtime_settlement_path": "C:\\Users\\PRATHAMESH\\Desktop\\Company 1\\Arealis-Zord-intent\\backend\\generated\\leakage_training\\extracted\\runtime_ingest\\LEAK_BATCH_017__6402b1bf\\settlement_replay.xlsx",
+      "expected_leakage_rate": "0.06",
+      "expected_total_leakage_amount": "28670.03",
+      "batch_contract": {
+        "batch_id": "LEAK_BATCH_017__6402b1bf",
+        "tenant_id": "6402b1bf-8100-4fa8-95f9-a1a9452b22fe",
+        "batch_finality_status": "PARTIALLY_SETTLED",
+        "intent_row_count": 199,
+        "total_count": 195,
+        "pending_count": 0,
+        "total_intended_amount_minor": "362983.26",
+        "intent_total_amount_minor": "500683.75",
+        "unmatched_amount_minor": "0.00",
+        "under_settlement_amount_minor": "0.00",
+        "reversal_exposure_minor": "0.00",
+        "predicted_leakage_rate": "0.000963",
+        "predicted_leakage_minor": "482.32",
+        "predicted_leakage_model_id": "leakage_prediction_v1",
+        "predicted_at": "2026-06-13 07:57:16.896515+00:00",
+        "first_intent_created_at": "2026-06-13 07:56:37.836407+00:00",
+        "created_at": "2026-06-13 07:56:37.836407+00:00",
+        "last_updated_at": "2026-06-13 07:57:16.896699+00:00"
+      },
+      "feature_row": {
+        "feature_row_id": "feat_leakage_batch_a64550d15d72c97a",
+        "scope_ref": "LEAK_BATCH_017__6402b1bf",
+        "feature_family": "LEAKAGE",
+        "features_json": "{\"rail\": \"UPI\", \"currency\": \"INR\", \"intent_type\": \"PAYOUT\", \"created_hour\": 7, \"provider_key\": \"razorpay\", \"weekend_flag\": 1, \"source_system\": \"RAZORPAY\", \"batch_intent_count\": 199, \"parse_success_rate\": 1, \"batch_amount_stddev\": 1469.2173696717432, \"created_day_of_week\": 6, \"invalid_amount_rate\": null, \"batch_max_pair_count\": null, \"unknown_column_count\": null, \"batch_avg_amount_minor\": 2515.998743718593, \"batch_max_amount_minor\": 4959.08, \"batch_min_amount_minor\": 110.84, \"invalid_beneficiary_rate\": null, \"mapping_confidence_score\": 0.9779, \"settlement_delay_p50_days\": 0, \"settlement_delay_p95_days\": 0, \"canonicalization_error_rate\": 0, \"missing_required_field_rate\": 0, \"client_payout_ref_coverage_rate\": 1, \"provider_missing_client_ref_rate\": 0, \"required_field_completeness_rate\": 1, \"batch_total_intended_amount_minor\": 500683.75, \"provider_missing_provider_ref_rate\": 0.12180451127819548, \"provider_settlement_delay_p50_days\": 0, \"provider_settlement_delay_p95_days\": 0, \"batch_same_beneficiary_amount_density\": null}",
+        "label_json": "{\"batch_id\": \"LEAK_BATCH_017__6402b1bf\", \"predicted_leakage_rate\": 0, \"target_leakage_amount_minor\": 0, \"total_intended_amount_minor\": 362983.26, \"under_settlement_amount_minor\": 0, \"unmatched_intent_amount_minor\": 0, \"confirmed_reversal_amount_minor\": 0}",
+        "model_version": "leakage_batch_features_v1",
+        "window_start": "2026-06-13 00:00:00+00:00",
+        "window_end": "2026-06-14 00:00:00+00:00",
+        "created_at": "2026-06-13 07:57:16.209349+00:00"
+      },
+      "label_row": {
+        "label_id": "lbl_1fd51640-e3e6-4eb2-b3f0-15724a5ad026",
+        "label_family": "LEAKAGE",
+        "label_value": 0.0,
+        "label_source": "batch_finality",
+        "created_at": "2026-06-13 07:57:15.212142+00:00"
+      },
+      "prediction_row": {
+        "prediction_id": "pred_a220f395-e16e-470c-b507-b9c1a19b314b",
+        "prediction_family": "LEAKAGE",
+        "prediction_value": "0.000963",
+        "prediction_score": 0.0009633137976006317,
+        "model_id": "leakage_prediction_v1",
+        "created_at": "2026-06-13 07:57:16.896515+00:00"
+      },
+      "intent_counts": {
+        "payment_intents": 199,
+        "dlq_items": 0
+      },
+      "settlement_observation_count": 195,
+      "attachment_summary": {
+        "batch_attachment_summary_id": "7c739d85-6260-4efc-a50a-50e128710149",
+        "tenant_id": "6402b1bf-8100-4fa8-95f9-a1a9452b22fe",
+        "batch_id": "LEAK_BATCH_017__6402b1bf",
+        "source_reference": "3e11cb26-adca-449a-881c-83a761ec7264",
+        "attachment_job_id": "ee2b505f-9666-4c4e-8cb7-5270b1f6afb8",
+        "total_intent_count": 195,
+        "exact_match_count": 149,
+        "high_confidence_count": 0,
+        "ambiguous_count": 46,
+        "unresolved_count": 0,
+        "conflicted_count": 0,
+        "total_intended_amount": "362983.26",
+        "total_observed_amount": "362983.26",
+        "total_variance": "0.00",
+        "batch_attachment_status": "PARTIALLY_SETTLED",
+        "aggregate_score": "0.8914",
+        "ambiguity_score": "0.0459",
+        "created_at": "2026-06-13 07:56:57.601775+00:00",
+        "updated_at": "2026-06-13 07:56:57.601776+00:00"
+      }
+    }
+  },
+  "timeseries_response": {
+    "tenant_id": "6402b1bf-8100-4fa8-95f9-a1a9452b22fe",
+    "data_available": true,
+    "computed_at": "2026-06-13T07:57:16.659256785Z",
+    "window_start": "2026-06-13T00:00:00Z",
+    "window_end": "2026-06-13T00:00:00Z",
+    "granularity": "day",
+    "series": [
+      {
+        "date": "2026-06-13",
+        "current_leakage_minor": 0,
+        "predicted_leakage_minor": 19670.17
+      }
+    ]
+  }
+}
